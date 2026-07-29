@@ -183,7 +183,6 @@ function initWorld(){
   renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.45;
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  if(renderer.outputEncoding)renderer.outputEncoding=THREE.sRGBEncoding;
   
   scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x0a0612,0.008);clock=new THREE.Clock();
   fpCam=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,2000);
@@ -196,9 +195,8 @@ function initWorld(){
   sun.position.set(30,60,25);sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.near=0.5;sun.shadow.camera.far=250;
   sun.shadow.camera.left=-90;sun.shadow.camera.right=90;sun.shadow.camera.top=90;sun.shadow.camera.bottom=-90;
-  sun.shadow.bias=-0.0008;sun.shadow.radius=8;scene.add(sun);
+  sun.shadow.bias=-0.0008;scene.add(sun);
   // Soft fill light from opposite direction
-  const fill=new THREE.DirectionalLight(0x8090c0,0.3);fill.position.set(-20,30,-15);scene.add(fill);
   scene.add(new THREE.PointLight(0x7b68ee,2,200,-40,30,-40));
   scene.add(new THREE.PointLight(0xd4af37,1.5,150,40,20,40));
   buildStars();buildDrift();buildScentSystem();buildHub();buildAllDimensions();buildAvatar();loadSoulNPCs();
