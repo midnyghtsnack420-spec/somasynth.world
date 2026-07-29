@@ -112,7 +112,7 @@ body{min-height:100vh;background:#04020f;overflow-x:hidden;font-family:'Montserr
     </div>
 
     <button class="submit-btn" onclick="attemptEntry()">Initiate Sovereign Entry</button>
-    <div class="back-link"><a href="index.html">← Return to Cathedral</a></div>
+    <div class="back-link"><a href="index">← Return to Cathedral</a></div>
   </div>
 </div>
 
@@ -157,7 +157,7 @@ document.getElementById('resKey').addEventListener('input',function(){
 function attemptEntry(){
   const burst=document.getElementById('success-burst');
   burst.classList.add('show');
-  setTimeout(()=>{ window.location.href='portal_dashboard.html'; },1800);
+  setTimeout(()=>{ window.location.href='portal_dashboard'; },1800);
 }
 </script>
 </body>

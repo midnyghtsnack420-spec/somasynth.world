@@ -158,7 +158,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Mo
     WASD &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;·&nbsp; Manual Override<br>
     [L] &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;·&nbsp; Akashic Library
   </div>
-  <div id="back"><a href="index.html">← CATHEDRAL ENTRANCE</a></div>
+  <div id="back"><a href="index">← CATHEDRAL ENTRANCE</a></div>
 </div>
 
 <script>
@@ -827,7 +827,7 @@ document.addEventListener('keydown', e=>{
     f.style.cssText='position:fixed;inset:0;background:rgba(212,175,55,0.35);z-index:9999;pointer-events:none;transition:opacity 0.8s;';
     document.body.appendChild(f);
     setTimeout(()=>{f.style.opacity='0';},100);
-    setTimeout(()=>{window.open('akashic.html','_blank');document.body.removeChild(f);},900);
+    setTimeout(()=>{window.open('akashic','_blank');document.body.removeChild(f);},900);
   }
 });
 
