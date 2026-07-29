@@ -114,7 +114,7 @@
   let pct=0;const lbar=document.getElementById('lbar');
   const barTick=setInterval(()=>{pct=Math.min(pct+(Math.random()*3),85);if(lbar)lbar.style.width=pct+'%';},80);
   const s=document.createElement('script');
-  s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+  s.src='three.min.js';
   s.onload=function(){clearInterval(barTick);if(lbar)lbar.style.width='100%';setTimeout(function(){try{initWorld();}catch(e){showErr(e.message);}},300);};
   s.onerror=function(){clearInterval(barTick);showErr('Failed to load 3D engine.');};
   document.head.appendChild(s);
