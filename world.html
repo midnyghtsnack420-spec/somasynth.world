@@ -184,7 +184,7 @@ function initWorld(){
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.45;
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   if(renderer.outputEncoding)renderer.outputEncoding=THREE.sRGBEncoding;
-  if(renderer.physicallyCorrectLights!==undefined)renderer.physicallyCorrectLights=true;
+  
   scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x0a0612,0.008);clock=new THREE.Clock();
   fpCam=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,2000);
   tpCam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,2000);cam=fpCam;
