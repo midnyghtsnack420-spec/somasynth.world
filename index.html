@@ -1245,6 +1245,7 @@
                 <a href="world">The World</a>
                 <a href="#the-people-sec">The People</a>
                 <a href="frequency">The Frequency</a>
+                <a href="citizens" style="color: #ffd700;">The Citizens</a>
                 <a href="#" class="nav-portal-btn" id="nav-portal-trigger">Enter Portal</a>
             </nav>
         </header>
@@ -1461,7 +1462,8 @@
                     <ul>
                         <li><a href="mission">The Mission</a></li>
                         <li><a href="world">The World</a></li>
-                        <li><a href="frequency">The Frequency</a></li>
+                        <li><a href="frequency">The Frequency</a>
+                <a href="citizens" style="color: #ffd700;">The Citizens</a></li>
                     </ul>
                 </div>
                 <div class="footer-links-col">
@@ -1713,5 +1715,15 @@
         });
     </script>
 <a href="world" style="display:inline-block;margin-top:16px;padding:14px 36px;background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.06));border:1px solid rgba(212,175,55,0.55);color:#d4af37;font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.35em;text-decoration:none;text-transform:uppercase;transition:all 0.4s;">&#9670; ENTER THE SOVEREIGN WORLD</a>
+
+        <!-- GATES OPEN STATUS -->
+        <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 100; background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05)); border: 1px solid #d4af37; padding: 8px 24px; border-radius: 2px; font-family: 'Cinzel', serif; font-size: 0.65rem; color: #ffd700; letter-spacing: 0.3em; text-transform: uppercase; animation: gateGlow 3s ease-in-out infinite; display: flex; align-items: center; gap: 8px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: #ffd700; box-shadow: 0 0 10px #ffd700; animation: dotPulse 1.5s ease-in-out infinite;"></span>
+            <a href="citizens" style="color: #ffd700; text-decoration: none;">GATES OPEN · 150 SOULS AWAKENED · ENTER THE CITY</a>
+        </div>
+        <style>
+            @keyframes gateGlow { 0%,100% { box-shadow: 0 0 15px rgba(212,175,55,0.3); } 50% { box-shadow: 0 0 35px rgba(212,175,55,0.6); } }
+            @keyframes dotPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        </style>
 </body>
 </html>
