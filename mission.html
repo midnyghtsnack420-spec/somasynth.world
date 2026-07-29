@@ -1015,5 +1015,52 @@
         resizeCanvas();
         animate();
     </script>
+
+    <!-- LIVE DIRECTIVES FROM CIVILIZATION LEDGER -->
+    <section id="live-directives" style="background: rgba(10, 5, 24, 0.5); padding: 4rem 2rem; position: relative; z-index: 10;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h3 class="section-title" style="text-align: center; font-family: 'Cinzel', serif; color: #d4af37; letter-spacing: 0.2em; margin-bottom: 0.5rem;">Active Directives</h3>
+            <p style="text-align: center; color: #a09cb0; font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 2rem;">Live from the Civilization Ledger</p>
+            <div id="directivesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem;">
+                <div style="text-align: center; padding: 2rem; color: #a09cb0;">Loading directives from ledger...</div>
+            </div>
+            <div id="directiveCount" style="text-align: center; color: #a09cb0; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 1.5rem;"></div>
+        </div>
+    </section>
+
+    <script>
+    async function loadDirectives() {
+        try {
+            const res = await fetch('data/directives.json');
+            const data = await res.json();
+            const directives = data.directives || [];
+            const grid = document.getElementById('directivesGrid');
+            
+            if (directives.length === 0) {
+                grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#a09cb0;">No directives found.</div>';
+                return;
+            }
+            
+            grid.innerHTML = directives.map(d => {
+                const statusColor = d.status === 'Active' || d.status === 'active' ? '#d4af37' : '#a09cb0';
+                return '<div style="background: linear-gradient(135deg, rgba(18,9,36,0.7), rgba(5,2,10,0.9)); border: 1px solid rgba(212,175,55,0.15); padding: 1.2rem; border-radius: 2px; transition: all 0.3s;" onmouseover="this.style.borderColor=\'#d4af37\'" onmouseout="this.style.borderColor=\'rgba(212,175,55,0.15)\'">' +
+                    '<div style="font-family:Cinzel,serif;color:#d4af37;font-size:0.9rem;margin-bottom:4px;">' + (d.name || 'Unnamed') + '</div>' +
+                    '<div style="font-size:0.55rem;color:#a09cb0;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">' + (d.category || '') + ' · <span style="color:' + statusColor + ';">' + (d.status || '') + '</span></div>' +
+                    '<div style="font-size:0.72rem;color:#f5f5f5;line-height:1.5;">' + (d.lead ? 'Lead: ' + d.lead : '') + '</div>' +
+                    (d.target_completion ? '<div style="font-size:0.65rem;color:#a09cb0;margin-top:4px;">Target: ' + d.target_completion.split('T')[0] + '</div>' : '') +
+                    (d.blockers ? '<div style="font-size:0.65rem;color:#ff6060;margin-top:4px;">⚠ ' + d.blockers + '</div>' : '') +
+                    '</div>';
+            }).join('');
+            
+            document.getElementById('directiveCount').textContent = directives.length + ' Directives · Synced ' + (data.last_updated || '');
+        } catch (e) {
+            console.error('Failed to load directives:', e);
+            document.getElementById('directivesGrid').innerHTML = '<div style="text-align:center;padding:2rem;color:#ff6060;">Connection to ledger failed. Retrying...</div>';
+            setTimeout(loadDirectives, 5000);
+        }
+    }
+    loadDirectives();
+    </script>
+
 </body>
 </html>

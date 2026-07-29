@@ -1725,5 +1725,33 @@
             @keyframes gateGlow { 0%,100% { box-shadow: 0 0 15px rgba(212,175,55,0.3); } 50% { box-shadow: 0 0 35px rgba(212,175,55,0.6); } }
             @keyframes dotPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
         </style>
+
+    <script>
+    async function loadLiveStats() {
+        try {
+            const res = await fetch('data/overview.json');
+            const d = await res.json();
+            // Try to update any stat elements that exist
+            const updates = [
+                ['live-souls', d.total_souls],
+                ['live-directives', d.total_directives],
+                ['live-nodes', d.total_neuro_nodes],
+                ['live-members', d.total_members],
+                ['live-grid', d.grid_status],
+                ['live-guard', d.guard_status]
+            ];
+            updates.forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            });
+            console.log('Live stats loaded:', d);
+        } catch (e) {
+            console.log('Stats will retry...', e);
+            setTimeout(loadLiveStats, 10000);
+        }
+    }
+    loadLiveStats();
+    </script>
+
 </body>
 </html>
