@@ -51,6 +51,7 @@
     <button id="fpb" onclick="setPOV('fp')" style="background:rgba(212,175,55,.18);border:1px solid #ffd700;padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#ffd700;letter-spacing:.18em;cursor:pointer;text-transform:uppercase;">⊙ FIRST PERSON</button>
     <button id="tpb" onclick="setPOV('tp')" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.28);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#d4af37;letter-spacing:.18em;cursor:pointer;text-transform:uppercase;">◎ THIRD PERSON</button>
     <button onclick="toggleSnd()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a09cb0;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;" id="sndb">♪ AMBIENCE: OFF</button>
+    <button id="hvb" onclick="toggleHover()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.25);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a0c0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;">⊕ HOVER: OFF</button>
     <button onclick="window.open('akashic','_blank')" style="background:rgba(0,0,0,.82);border:1px solid rgba(123,104,238,.3);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#b0a0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;">📚 AKASHIC LIBRARY</button>
   </div>
 
@@ -82,7 +83,10 @@
     <div style="font-family:'Cinzel',serif;color:#d4af37;font-size:.62rem;margin-bottom:5px;">MIND NAVIGATION</div>
     Hold Click &nbsp;·&nbsp; Glide Forward<br>
     Mouse &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;·&nbsp; Steer / Look<br>
-    Scroll &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;·&nbsp; Ascend / Descend<br>
+    E / Space &nbsp;&nbsp;&nbsp;·&nbsp; Ascend<br>
+    Q / Shift &nbsp;&nbsp;&nbsp;·&nbsp; Descend<br>
+    Scroll &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;·&nbsp; Altitude Adjust<br>
+    H &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;·&nbsp; Hover Lock<br>
     WASD &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;·&nbsp; Direct Control
   </div>
 
@@ -163,7 +167,8 @@ let pivot, pov='fp';
 let velF=0, velR=0, velY=0;
 let yaw=0, pitch=0;
 let lmb=false, rmb=false;
-let keys={w:0,s:0,a:0,d:0};
+let keys={w:0,s:0,a:0,d:0,up:0,down:0,hover:0};
+let hoverMode=false, hoverAlt=4;
 let mx=0, my=0;
 let orbRings=[], spinners=[], pillarGlow=[];
 let catBeam=null, driftAttr=null, driftN=0;
@@ -227,12 +232,18 @@ function initWorld(){
   document.addEventListener('mousedown', e=>{ if(e.button===0) lmb=true; if(e.button===2) rmb=true; });
   document.addEventListener('mouseup',   e=>{ if(e.button===0) lmb=false; if(e.button===2) rmb=false; });
   document.addEventListener('contextmenu', e=>e.preventDefault());
-  document.addEventListener('wheel', e=>{ velY -= e.deltaY*0.003; velY=Math.max(-15,Math.min(15,velY)); });
+  document.addEventListener('wheel', e=>{
+    if(hoverMode){ hoverAlt=Math.max(0.5,Math.min(120,hoverAlt-e.deltaY*0.008)); }
+    else { velY -= e.deltaY*0.003; velY=Math.max(-15,Math.min(15,velY)); }
+  });
   document.addEventListener('keydown', e=>{
     if(e.code==='KeyW'||e.code==='ArrowUp')    keys.w=1;
     if(e.code==='KeyS'||e.code==='ArrowDown')  keys.s=1;
     if(e.code==='KeyA'||e.code==='ArrowLeft')  keys.a=1;
     if(e.code==='KeyD'||e.code==='ArrowRight') keys.d=1;
+    if(e.code==='KeyE'||e.code==='Space')      keys.up=1;
+    if(e.code==='KeyQ'||e.code==='ShiftLeft'||e.code==='ShiftRight') keys.down=1;
+    if(e.code==='KeyH'){ hoverMode=!hoverMode; hoverAlt=pivot.position.y; updateHoverBtn(); }
     if(e.code==='KeyL') window.open('akashic','_blank');
   });
   document.addEventListener('keyup', e=>{
@@ -240,6 +251,8 @@ function initWorld(){
     if(e.code==='KeyS'||e.code==='ArrowDown')  keys.s=0;
     if(e.code==='KeyA'||e.code==='ArrowLeft')  keys.a=0;
     if(e.code==='KeyD'||e.code==='ArrowRight') keys.d=0;
+    if(e.code==='KeyE'||e.code==='Space')      keys.up=0;
+    if(e.code==='KeyQ'||e.code==='ShiftLeft'||e.code==='ShiftRight') keys.down=0;
   });
 
   // Freq ticker
@@ -506,7 +519,21 @@ function updateMovement(dt){
   velF+=(tF-velF)*(tF!==0?.08:DRAG); velF*=(1-DRAG); velF=Math.max(-MAXV,Math.min(MAXV,velF));
   let tR=0; if(keys.a) tR=-ACC*.6; if(keys.d) tR=ACC*.6;
   velR+=(tR-velR)*.08; velR*=(1-DRAG*1.2);
-  velY*=(1-DRAG*.8);
+  // Ascend / Descend
+  let tY=0;
+  if(keys.up)   tY= ACC*0.7;
+  if(keys.down) tY=-ACC*0.7;
+  velY+=(tY-velY)*0.1; velY*=(1-DRAG*0.7);
+
+  // Hover mode — lock altitude, gentle bob
+  if(hoverMode){
+    const diff=hoverAlt-pivot.position.y;
+    velY=diff*6; // spring to hover altitude
+    // Still allow manual up/down to shift hover altitude
+    if(keys.up)   hoverAlt=Math.min(120,hoverAlt+8*dt);
+    if(keys.down) hoverAlt=Math.max(0.5,hoverAlt-8*dt);
+  }
+
   if(lmb||rmb){ yaw-=mx*.0016*18*dt; pitch-=my*.5*.0016*14*dt; pitch=Math.max(-1.1,Math.min(1.1,pitch)); }
   pivot.rotation.y=yaw; fpCam.rotation.x=pitch;
   const fw=new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(0,yaw,0,'YXZ'));
@@ -573,6 +600,26 @@ function toggleSnd(){
 }
 
 // ── POV ───────────────────────────────────────────────────────
+function toggleHover(){
+  hoverMode=!hoverMode;
+  if(hoverMode) hoverAlt=pivot.position.y;
+  updateHoverBtn();
+}
+function updateHoverBtn(){
+  const b=document.getElementById('hvb'); if(!b) return;
+  if(hoverMode){
+    b.textContent='⊕ HOVER: ON';
+    b.style.background='rgba(100,160,255,.22)';
+    b.style.borderColor='#a0d0ff';
+    b.style.color='#c8e8ff';
+  } else {
+    b.textContent='⊕ HOVER: OFF';
+    b.style.background='rgba(0,0,0,.82)';
+    b.style.borderColor='rgba(212,175,55,.25)';
+    b.style.color='#a0c0ff';
+  }
+}
+
 function setPOV(m){
   pov=m; cam=m==='fp'?fpCam:tpCam;
   document.getElementById('fpb').style.background=m==='fp'?'rgba(212,175,55,.18)':'rgba(0,0,0,.82)';
