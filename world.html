@@ -63,6 +63,16 @@
     <div id="portalDesc" style="font-size:.6rem;color:#6a5880;margin-bottom:10px;letter-spacing:.08em;"></div>
     <div style="font-size:.58rem;color:#ffd700;letter-spacing:.15em;">PRESS [F] TO CHOOSE YOUR SOUL</div>
   </div>
+  <!-- PILLAR NAVIGATION -->
+<div id="pillarNav" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:100;pointer-events:all;">
+  <div onclick="navPillar(-1)" style="width:42px;height:42px;border-radius:50%;background:rgba(2,1,12,.85);border:1px solid rgba(212,175,55,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:1.2rem;color:#d4af37;" onmouseover="this.style.borderColor='#ffd700';this.style.background='rgba(10,5,24,.95)'" onmouseout="this.style.borderColor='rgba(212,175,55,.4)';this.style.background='rgba(2,1,12,.85)'">◄</div>
+  <div id="navInfo" style="background:rgba(2,1,12,.85);border:1px solid rgba(212,175,55,.3);padding:8px 20px;min-width:180px;text-align:center;border-radius:2px;">
+    <div id="navName" style="font-family:'Cinzel',serif;font-size:.72rem;color:#d4af37;letter-spacing:.15em;">D3 MATERIAL</div>
+    <div id="navFreq" style="font-size:.55rem;color:#7b68ee;letter-spacing:.1em;margin-top:2px;">174 Hz · GROUNDING</div>
+  </div>
+  <div onclick="navPillar(1)" style="width:42px;height:42px;border-radius:50%;background:rgba(2,1,12,.85);border:1px solid rgba(212,175,55,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:1.2rem;color:#d4af37;" onmouseover="this.style.borderColor='#ffd700';this.style.background='rgba(10,5,24,.95)'" onmouseout="this.style.borderColor='rgba(212,175,55,.4)';this.style.background='rgba(2,1,12,.85)'">►</div>
+  <div onclick="confirmNavPillar()" style="background:rgba(212,175,55,.15);border:1px solid #d4af37;padding:8px 24px;cursor:pointer;transition:all .3s;border-radius:2px;font-family:'Cinzel',serif;font-size:.68rem;color:#ffd700;letter-spacing:.2em;" onmouseover="this.style.background='rgba(212,175,55,.3)'" onmouseout="this.style.background='rgba(212,175,55,.15)'">ENTER</div>
+</div>
   <div style="position:absolute;bottom:22px;left:22px;background:rgba(2,1,12,.82);border:1px solid rgba(212,175,55,.25);padding:7px;">
     <canvas id="mmc" width="130" height="130" style="display:block;"></canvas>
     <div style="font-size:.48rem;color:#d4af37;letter-spacing:.25em;text-align:center;margin-top:5px;text-transform:uppercase;" id="mmLabel">Dimension Hub</div>
@@ -168,7 +178,7 @@ function initWorld(){
   cv.addEventListener('contextmenu',e=>e.preventDefault());
   cv.addEventListener('mousemove',e=>{mx=e.movementX;my=e.movementY;});
   cv.addEventListener('wheel',e=>{e.preventDefault();if(!hoverMode){velY-=e.deltaY*0.003;velY=Math.max(-15,Math.min(15,velY));}else{hoverAlt=Math.max(0.5,Math.min(120,hoverAlt-e.deltaY*0.01));}},{passive:false});
-  addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='KeyH')toggleHover();if(e.code==='KeyF'&&nearPortal>=0)showSoulPicker(portalGroups[nearPortal].dimId);});
+  addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='KeyH')toggleHover();if(e.code==='KeyF'&&nearPortal>=0)showSoulPicker(portalGroups[nearPortal].dimId);if(e.code==='ArrowLeft')navPillar(-1);if(e.code==='ArrowRight')navPillar(1);if(e.code==='Enter'&&curDim===0)confirmNavPillar();});
   addEventListener('keyup',e=>{keys[e.code]=0;if(e.code==='KeyW'||e.code==='ArrowUp')keys.w=0;if(e.code==='KeyS'||e.code==='ArrowDown')keys.s=0;if(e.code==='KeyA'||e.code==='ArrowLeft')keys.a=0;if(e.code==='KeyD'||e.code==='ArrowRight')keys.d=0;if(e.code==='KeyE'||e.code==='Space')keys.up=0;if(e.code==='KeyQ'||e.code==='ShiftLeft'||e.code==='ShiftRight')keys.down=0;});
   setInterval(()=>{freqV+=(Math.random()-.5)*.25;freqV=Math.max(1,Math.min(7,freqV));const dl=curDim===0?'HUB':DIMENSIONS[curDim].short;document.getElementById('freqd').innerHTML='DIM: '+dl+' · <span id="mvst">'+document.getElementById('mvst').textContent+'</span>';},1200);
   dismissLoader();animate();
@@ -255,68 +265,340 @@ function buildDimension(g,id){
 }
 
 function buildD3(g){
-  const tg=new THREE.PlaneGeometry(300,300,40,40),tp=tg.attributes.position;
-  for(let i=0;i<tp.count;i++){const x=tp.getX(i),y=tp.getY(i);tp.setZ(i,Math.sin(x*0.05)*3+Math.cos(y*0.05)*4+Math.sin(x*0.1+y*0.1)*2);}
+  // Rich terrain with multiple noise layers
+  const tg=new THREE.PlaneGeometry(400,400,80,80),tp=tg.attributes.position;
+  for(let i=0;i<tp.count;i++){const x=tp.getX(i),y=tp.getY(i);
+    const h=Math.sin(x*0.03)*8+Math.cos(y*0.025)*10+Math.sin(x*0.08+y*0.06)*3+Math.cos(x*0.15+y*0.12)*1.5;
+    tp.setZ(i,h);}
   tg.computeVertexNormals();
-  const terrain=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({color:0x2a5a2a,roughness:0.9,metalness:0.02}));
-  terrain.rotation.x=-Math.PI/2;terrain.position.y=-2;g.add(terrain);
-  for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2,r=50+Math.random()*30;const mt=new THREE.Mesh(new THREE.ConeGeometry(8+Math.random()*6,16+Math.random()*12,8),new THREE.MeshStandardMaterial({color:0x3a4a3a,roughness:0.8}));mt.position.set(Math.cos(a)*r,5,Math.sin(a)*r);g.add(mt);}
-  const river=new THREE.Mesh(new THREE.PlaneGeometry(8,200),new THREE.MeshBasicMaterial({color:0x1a6aaa,transparent:true,opacity:0.7}));
-  river.rotation.x=-Math.PI/2;river.position.set(20,-1.5,0);g.add(river);
-  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,r=20+Math.random()*15;const b=new THREE.Mesh(new THREE.BoxGeometry(3+Math.random()*3,4+Math.random()*4,3+Math.random()*3),new THREE.MeshStandardMaterial({color:0x6a7a8a,roughness:0.6}));b.position.set(Math.cos(a)*r,2,Math.sin(a)*r);g.add(b);}
-  for(let i=0;i<40;i++){const a=(i/40)*Math.PI*2,r=10+Math.random()*40;const s=new THREE.Mesh(new THREE.SphereGeometry(0.2,8,8),new THREE.MeshBasicMaterial({color:0x80a0c0,transparent:true,opacity:0.4}));s.position.set(Math.cos(a)*r,2+Math.random()*3,Math.sin(a)*r);s.userData={baseY:2+Math.random()*3,phase:Math.random()*Math.PI*2,speed:0.3+Math.random()*0.5,type:'earthly'};g.add(s);earthlySouls.push(s);}
-  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0x1a3a6a,transparent:true,opacity:0.15,side:THREE.BackSide})));
+  const terrain=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({color:0x2d6a3d,roughness:0.9,metalness:0.03,flatShading:true}));
+  terrain.rotation.x=-Math.PI/2;terrain.position.y=-3;g.add(terrain);
+  // Mountain ranges
+  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,r=60+Math.random()*50;
+    const mt=new THREE.Mesh(new THREE.ConeGeometry(10+Math.random()*8,20+Math.random()*18,8),new THREE.MeshStandardMaterial({color:0x4a4a4a,roughness:0.85,flatShading:true}));
+    mt.position.set(Math.cos(a)*r,8,Math.sin(a)*r);g.add(mt);
+    // Snow cap
+    const cap=new THREE.Mesh(new THREE.ConeGeometry(3+Math.random()*2,5+Math.random()*3,8),new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.3}));
+    cap.position.set(Math.cos(a)*r,22,Math.sin(a)*r);g.add(cap);}
+  // Forest - hundreds of trees
+  for(let i=0;i<80;i++){const a=Math.random()*Math.PI*2,r=15+Math.random()*65;
+    const tx=Math.cos(a)*r,tz=Math.sin(a)*r;
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.6,5+Math.random()*4,6),new THREE.MeshStandardMaterial({color:0x4a2a10,roughness:0.8}));
+    trunk.position.set(tx,2,tz);g.add(trunk);
+    const tc=0.2+Math.random()*0.3;
+    const leaves=new THREE.Mesh(new THREE.ConeGeometry(3+Math.random()*3,8+Math.random()*6,8),new THREE.MeshStandardMaterial({color:new THREE.Color(0.15+tc,0.4+tc*0.5,0.15+tc*0.3),roughness:0.8}));
+    leaves.position.set(tx,8+Math.random()*3,tz);g.add(leaves);}
+  // River — animated water plane winding through
+  const riverGeom=new THREE.PlaneGeometry(12,300,1,40),rp=riverGeom.attributes.position;
+  for(let i=0;i<rp.count;i++){const y=rp.getY(i);rp.setX(i,Math.sin(y*0.05)*4);}
+  const river=new THREE.Mesh(riverGeom,new THREE.MeshBasicMaterial({color:0x1a6abb,transparent:true,opacity:0.75}));
+  river.rotation.x=-Math.PI/2;river.position.set(30,-1.5,0);river.userData={type:'water'};g.add(river);
+  // Second river
+  const river2=river.clone();river2.position.set(-40,-1.5,20);river2.rotation.z=0.3;g.add(river2);
+  // City in distance with lit windows
+  for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2,r=90+Math.random()*30;
+    const bh=8+Math.random()*20;
+    const b=new THREE.Mesh(new THREE.BoxGeometry(4+Math.random()*4,bh,4+Math.random()*4),new THREE.MeshStandardMaterial({color:0x5a6a7a,roughness:0.5,emissive:0xffaa33,emissiveIntensity:0.15}));
+    b.position.set(Math.cos(a)*r,bh/2-1,Math.sin(a)*r);g.add(b);}
+  // Cloud layer
+  for(let i=0;i<15;i++){const cl=new THREE.Mesh(new THREE.SphereGeometry(8+Math.random()*6,8,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.15}));
+    cl.position.set((Math.random()-0.5)*200,30+Math.random()*15,(Math.random()-0.5)*200);cl.scale.set(2,0.5,2);g.add(cl);spinners.push({m:cl,spd:0.0005});}
+  // Rain particles
+  for(let i=0;i<200;i++){const r=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,1.5,4),new THREE.MeshBasicMaterial({color:0x80a0cc,transparent:true,opacity:0.3}));
+    r.position.set((Math.random()-0.5)*120,Math.random()*40,(Math.random()-0.5)*120);r.userData={type:'rain',baseY:Math.random()*40,speed:0.3+Math.random()*0.3};g.add(r);}
+  // Earthly souls — wandering dim blue orbs
+  for(let i=0;i<40;i++){const a=(i/40)*Math.PI*2,r=10+Math.random()*55;
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.25,8,8),new THREE.MeshBasicMaterial({color:0x6090c0,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
+    s.position.set(Math.cos(a)*r,2+Math.random()*4,Math.sin(a)*r);
+    s.userData={baseY:2+Math.random()*4,phase:Math.random()*Math.PI*2,speed:0.3+Math.random()*0.4,type:'earthly'};
+    g.add(s);earthlySouls.push(s);}
+  // Sky dome
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0x1a3a6a,transparent:true,opacity:0.2,side:THREE.BackSide})));
+  g.add(new THREE.Fog(0x224488,40,180));
 }
 
 function buildD4(g){
-  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(60,55,3,32),new THREE.MeshStandardMaterial({color:0x0a3050,roughness:0.1,metalness:0.8}));
-  gnd.position.y=-1;g.add(gnd);
-  for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2,r=15+Math.random()*35,h=8+Math.random()*16;const c=new THREE.Mesh(new THREE.ConeGeometry(1.5+Math.random()*2,h,6),stdMat(0x00bfff,0x00bfff,0.5,0.9,0.05));c.position.set(Math.cos(a)*r,h/2,Math.sin(a)*r);c.rotation.y=Math.random()*Math.PI;g.add(c);spinners.push({m:c,spd:0.002*(Math.random()-0.5)});}
-  const ctr=new THREE.Mesh(new THREE.OctahedronGeometry(6,0),stdMat(0x00ddff,0x00ddff,0.8,0.9,0.05));ctr.position.y=12;g.add(ctr);spinners.push({m:ctr,spd:0.004});
-  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=10+Math.random()*30;const s=new THREE.Mesh(new THREE.SphereGeometry(0.3,8,8),new THREE.MeshBasicMaterial({color:0x00ddff,transparent:true,opacity:0.6}));s.position.set(Math.cos(a)*r,3+Math.random()*6,Math.sin(a)*r);s.userData={baseY:3+Math.random()*6,phase:Math.random()*Math.PI*2,speed:0.5,type:'awakening',orbitR:r,orbitA:a};g.add(s);}
-  for(let i=0;i<5;i++){const b=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,80,8),new THREE.MeshBasicMaterial({color:0x00bfff,transparent:true,opacity:0.3}));b.position.set((Math.random()-0.5)*60,40,(Math.random()-0.5)*60);g.add(b);}
+  // Crystal floor — reflective hexagonal
+  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(80,75,4,6),new THREE.MeshStandardMaterial({color:0x0a2a50,roughness:0.05,metalness:0.95,emissive:0x00bfff,emissiveIntensity:0.05}));
+  gnd.position.y=-2;g.add(gnd);
+  // Massive crystal formations — clusters of prisms
+  for(let i=0;i<25;i++){const a=(i/25)*Math.PI*2,r=15+Math.random()*45,h=10+Math.random()*22;
+    const cluster=new THREE.Group();
+    for(let j=0;j<3+Math.floor(Math.random()*4);j++){
+      const ch=h*(0.5+Math.random()*0.6);
+      const c=new THREE.Mesh(new THREE.ConeGeometry(1+Math.random()*2.5,ch,5+Math.floor(Math.random()*3)),stdMat(0x00bfff,0x00ddff,0.6,0.9,0.05));
+      c.position.set((Math.random()-0.5)*4,0,(Math.random()-0.5)*4);
+      c.rotation.set((Math.random()-0.5)*0.4,(Math.random())*Math.PI,(Math.random()-0.5)*0.4);
+      cluster.add(c);}
+    cluster.position.set(Math.cos(a)*r,h/2,Math.sin(a)*r);
+    g.add(cluster);spinners.push({m:cluster,spd:0.001*(Math.random()-0.5)});}
+  // Central massive crystal
+  const ctr=new THREE.Mesh(new THREE.OctahedronGeometry(8,1),stdMat(0x00ddff,0x00ffff,0.9,0.95,0.05));
+  ctr.position.y=15;g.add(ctr);spinners.push({m:ctr,spd:0.005});
+  const ctrGlow=new THREE.Mesh(new THREE.SphereGeometry(14,16,16),new THREE.MeshBasicMaterial({color:0x00ffff,transparent:true,opacity:0.15,blending:THREE.AdditiveBlending}));
+  ctrGlow.position.y=15;g.add(ctrGlow);
+  // Prismatic light beams from above — colored rays splitting
+  const beamColors=[0xff0066,0xff6600,0xffee00,0x00ff66,0x00bfff,0x6600ff];
+  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;
+    const bc=beamColors[i%6];
+    const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.5,100,8,1,true),new THREE.MeshBasicMaterial({color:bc,transparent:true,opacity:0.15,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    beam.position.set(Math.cos(a)*20,45,Math.sin(a)*20);beam.rotation.z=0.1;g.add(beam);
+    spinners.push({m:beam,spd:0.002*(i%2?1:-1)});}
+  // Floating crystal shards
+  for(let i=0;i<60;i++){const sh=new THREE.Mesh(new THREE.OctahedronGeometry(0.3+Math.random()*0.7,0),new THREE.MeshBasicMaterial({color:0x00bfff,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending}));
+    sh.position.set((Math.random()-0.5)*100,5+Math.random()*25,(Math.random()-0.5)*100);
+    sh.userData={baseY:5+Math.random()*25,phase:Math.random()*Math.PI*2,speed:0.5,type:'shard',orbitR:5+Math.random()*40,orbitA:Math.random()*Math.PI*2};
+    g.add(sh);spinners.push({m:sh,spd:0.01*(Math.random()-0.5)});}
+  // Awakening souls
+  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=10+Math.random()*35;
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.4,10,10),new THREE.MeshBasicMaterial({color:0x00ddff,transparent:true,opacity:0.65,blending:THREE.AdditiveBlending}));
+    s.position.set(Math.cos(a)*r,4+Math.random()*8,Math.sin(a)*r);
+    s.userData={baseY:4+Math.random()*8,phase:Math.random()*Math.PI*2,speed:0.5,type:'awakening',orbitR:r,orbitA:a};
+    g.add(s);
+    const sg=new THREE.Mesh(new THREE.SphereGeometry(0.9,8,8),new THREE.MeshBasicMaterial({color:0x00ddff,transparent:true,opacity:0.2,blending:THREE.AdditiveBlending}));
+    sg.position.copy(s.position);s.userData.glow=sg;g.add(sg);}
+  // Crystal particles drifting up
+  for(let i=0;i<100;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(0.08,4,4),new THREE.MeshBasicMaterial({color:0x00ddff,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
+    p.position.set((Math.random()-0.5)*100,Math.random()*30,(Math.random()-0.5)*100);p.userData={baseY:Math.random()*30,phase:Math.random()*Math.PI*2,type:'particle'};g.add(p);}
+  g.add(new THREE.Fog(0x002244,30,150));
 }
 
 function buildD5(g){
-  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(70,65,3,32),new THREE.MeshStandardMaterial({color:0x4a3a10,roughness:0.4,metalness:0.6}));
-  gnd.position.y=-1;g.add(gnd);
-  const fColors=[0xffd700,0xff80c0,0x80ff90,0xff7080,0xc080ff];
-  for(let i=0;i<25;i++){const a=(i/25)*Math.PI*2,r=10+Math.random()*50;const stem=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.2,4+Math.random()*4,6),stdMat(0x8B6914,0x4a3000,0.1,0.3,0.8));stem.position.set(Math.cos(a)*r,2,Math.sin(a)*r);g.add(stem);const bc=fColors[i%5];const bloom=new THREE.Mesh(new THREE.SphereGeometry(1.5+Math.random()*1.5,12,12),stdMat(bc,bc,0.8,0.3,0.3));bloom.material.transparent=true;bloom.material.opacity=0.85;bloom.position.set(Math.cos(a)*r,5+Math.random()*2,Math.sin(a)*r);g.add(bloom);}
-  for(let i=0;i<10;i++){const a=(i/10)*Math.PI*2,r=25+Math.random()*30;const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.4,6,8),stdMat(0x8B6914,0x4a3000,0.2,0.3,0.8));trunk.position.set(Math.cos(a)*r,3,Math.sin(a)*r);g.add(trunk);const leaves=new THREE.Mesh(new THREE.SphereGeometry(4,12,12),stdMat(0xffd700,0x7a5000,0.5,0.3,0.7));leaves.material.transparent=true;leaves.material.opacity=0.8;leaves.position.set(Math.cos(a)*r,8,Math.sin(a)*r);g.add(leaves);}
-  for(let i=0;i<25;i++){const a=(i/25)*Math.PI*2,r=8+Math.random()*45;const s=new THREE.Mesh(new THREE.SphereGeometry(0.5,12,12),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.8}));s.position.set(Math.cos(a)*r,4+Math.random()*5,Math.sin(a)*r);s.userData={baseY:4+Math.random()*5,phase:Math.random()*Math.PI*2,speed:0.6,type:'lightbody',orbitR:r,orbitA:a};g.add(s);const sg=new THREE.Mesh(new THREE.SphereGeometry(1,8,8),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.2}));sg.position.copy(s.position);s.userData.glow=sg;g.add(sg);}
-  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0xaa8800,transparent:true,opacity:0.1,side:THREE.BackSide})));
+  // Golden ground with flowers
+  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(90,85,4,64),new THREE.MeshStandardMaterial({color:0x5a4a10,roughness:0.3,metalness:0.7,emissive:0xffd700,emissiveIntensity:0.05}));
+  gnd.position.y=-2;g.add(gnd);
+  // Flower fields — hundreds of impossible flowers
+  const fColors=[0xffd700,0xff80c0,0x80ff90,0xff7080,0xc080ff,0xffa500,0x00ffaa];
+  for(let i=0;i<120;i++){const a=Math.random()*Math.PI*2,r=8+Math.random()*70;
+    const bc=fColors[i%7];
+    const stem=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.15,3+Math.random()*3,5),new THREE.MeshStandardMaterial({color:0x4a7a10,roughness:0.6}));
+    stem.position.set(Math.cos(a)*r,1,Math.sin(a)*r);g.add(stem);
+    const bloom=new THREE.Mesh(new THREE.SphereGeometry(0.8+Math.random()*1.2,10,10),stdMat(bc,bc,0.8,0.3,0.3));
+    bloom.material.transparent=true;bloom.material.opacity=0.85;
+    bloom.position.set(Math.cos(a)*r,4+Math.random()*2,Math.sin(a)*r);
+    bloom.userData={type:'flower',phase:Math.random()*Math.PI*2};g.add(bloom);spinners.push({m:bloom,spd:0.01});}
+  // Golden trees with glowing canopies
+  for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2,r=25+Math.random()*50;
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,7+Math.random()*5,8),stdMat(0x8B6914,0x4a3000,0.2,0.3,0.8));
+    trunk.position.set(Math.cos(a)*r,3,Math.sin(a)*r);g.add(trunk);
+    for(let j=0;j<3;j++){const leaves=new THREE.Mesh(new THREE.SphereGeometry(3+Math.random()*2,12,12),stdMat(0xffd700,0xffaa00,0.6,0.3,0.7));
+      leaves.material.transparent=true;leaves.material.opacity=0.75;
+      leaves.position.set(Math.cos(a)*r+(Math.random()-0.5)*3,9+j*2,Math.sin(a)*r+(Math.random()-0.5)*3);
+      g.add(leaves);spinners.push({m:leaves,spd:0.003*(Math.random()-0.5)});}}
+  // Waterfalls from floating islands
+  for(let i=0;i<4;i++){const a=(i/4)*Math.PI*2,r=40+Math.random()*20;
+    // Floating island
+    const island=new THREE.Mesh(new THREE.CylinderGeometry(6,4,3,12),new THREE.MeshStandardMaterial({color:0x6a5a20,roughness:0.5}));
+    island.position.set(Math.cos(a)*r,25,Math.sin(a)*r);g.add(island);
+    // Waterfall
+    const wf=new THREE.Mesh(new THREE.PlaneGeometry(3,25),new THREE.MeshBasicMaterial({color:0x80ddff,transparent:true,opacity:0.5,side:THREE.DoubleSide}));
+    wf.position.set(Math.cos(a)*r,12,Math.sin(a)*r);wf.userData={type:'waterfall'};g.add(wf);
+    // Pond at base
+    const pond=new THREE.Mesh(new THREE.CircleGeometry(5,16),new THREE.MeshBasicMaterial({color:0x4099cc,transparent:true,opacity:0.6}));
+    pond.rotation.x=-Math.PI/2;pond.position.set(Math.cos(a)*r,0.5,Math.sin(a)*r);g.add(pond);}
+  // Butterflies — animated wing pairs
+  for(let i=0;i<30;i++){const bf=new THREE.Group();
+    const w1=new THREE.Mesh(new THREE.PlaneGeometry(0.6,0.4),new THREE.MeshBasicMaterial({color:fColors[i%7],transparent:true,opacity:0.7,side:THREE.DoubleSide}));
+    w1.position.x=-0.35;bf.add(w1);
+    const w2=w1.clone();w2.position.x=0.35;bf.add(w2);
+    bf.position.set((Math.random()-0.5)*80,5+Math.random()*10,(Math.random()-0.5)*80);
+    bf.userData={type:'butterfly',wings:[w1,w2],phase:Math.random()*Math.PI*2,speed:0.5+Math.random()*0.5,orbitR:10+Math.random()*30,orbitA:Math.random()*Math.PI*2,baseY:5+Math.random()*10};
+    g.add(bf);}
+  // Golden light rays from above
+  for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2;
+    const ray=new THREE.Mesh(new THREE.CylinderGeometry(0.2,2,80,8,1,true),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.1,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    ray.position.set(Math.cos(a)*30,40,Math.sin(a)*30);g.add(ray);}
+  // Falling petals
+  for(let i=0;i<80;i++){const pt=new THREE.Mesh(new THREE.PlaneGeometry(0.2,0.2),new THREE.MeshBasicMaterial({color:fColors[i%7],transparent:true,opacity:0.5,side:THREE.DoubleSide}));
+    pt.position.set((Math.random()-0.5)*100,Math.random()*30,(Math.random()-0.5)*100);
+    pt.userData={baseY:Math.random()*30,phase:Math.random()*Math.PI*2,type:'petal'};g.add(pt);}
+  // Light-body souls with halos
+  for(let i=0;i<25;i++){const a=(i/25)*Math.PI*2,r=8+Math.random()*55;
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.5,12,12),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.85,blending:THREE.AdditiveBlending}));
+    s.position.set(Math.cos(a)*r,4+Math.random()*6,Math.sin(a)*r);
+    s.userData={baseY:4+Math.random()*6,phase:Math.random()*Math.PI*2,speed:0.6,type:'lightbody',orbitR:r,orbitA:a};
+    g.add(s);
+    const halo=new THREE.Mesh(new THREE.TorusGeometry(1,0.08,6,16),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
+    halo.position.copy(s.position);halo.rotation.x=Math.PI/2;s.userData.glow=halo;g.add(halo);}
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0xaa8800,transparent:true,opacity:0.12,side:THREE.BackSide})));
+  g.add(new THREE.Fog(0xddbb44,40,180));
 }
 
 function buildD6(g){
-  for(let i=0;i<4;i++){const w=new THREE.Mesh(new THREE.PlaneGeometry(200,200,32,32),new THREE.MeshBasicMaterial({color:0x8a2be2,transparent:true,opacity:0.08,wireframe:true}));w.rotation.x=-Math.PI/2;w.position.y=i*4-6;g.add(w);spinners.push({m:w,spd:0.001*(i+1)});}
-  for(let i=0;i<15;i++){const pts=[],a0=(i/15)*Math.PI*2;for(let j=0;j<20;j++){const t=j/20;pts.push(new THREE.Vector3(Math.cos(a0+t*2)*30*(1-t*0.3),t*20-5,Math.sin(a0+t*2)*30*(1-t*0.3)));}const curve=new THREE.CatmullRomCurve3(pts);const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,40,0.15,8,false),new THREE.MeshBasicMaterial({color:0x8a2be2,transparent:true,opacity:0.4}));g.add(tube);}
-  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=10+Math.random()*40;const s=new THREE.Mesh(new THREE.SphereGeometry(0.4,8,8),new THREE.MeshBasicMaterial({color:0x8a2be2,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending}));s.position.set(Math.cos(a)*r,Math.random()*15,Math.sin(a)*r);s.userData={baseY:Math.random()*15,phase:Math.random()*Math.PI*2,speed:0.8,type:'energy',orbitR:r,orbitA:a};g.add(s);}
-  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0x2a0a4a,transparent:true,opacity:0.2,side:THREE.BackSide})));
+  // Multiple undulating wave planes at different heights
+  const eColors=[0x8a2be2,0x6a0dad,0x9933cc,0xbb44dd,0x7722aa];
+  for(let i=0;i<5;i++){const wg=new THREE.PlaneGeometry(250,250,40,40),wp=wg.attributes.position;
+    for(let j=0;j<wp.count;j++){const x=wp.getX(j),y=wp.getY(j);wp.setZ(j,Math.sin(x*0.05+i)*6+Math.cos(y*0.04+i*1.5)*5);}
+    wg.computeVertexNormals();
+    const w=new THREE.Mesh(wg,new THREE.MeshBasicMaterial({color:eColors[i],transparent:true,opacity:0.06+i*0.02,wireframe:true}));
+    w.rotation.x=-Math.PI/2;w.position.y=i*5-10;g.add(w);spinners.push({m:w,spd:0.001*(i+1)});}
+  // Energy streams — flowing rivers of light
+  for(let i=0;i<20;i++){const pts=[],a0=(i/20)*Math.PI*2,c0=eColors[i%5];
+    for(let j=0;j<30;j++){const t=j/30;pts.push(new THREE.Vector3(
+      Math.cos(a0+t*3)*35*(1-t*0.2),t*25-8+Math.sin(t*5)*3,
+      Math.sin(a0+t*3)*35*(1-t*0.2)));}
+    const curve=new THREE.CatmullRomCurve3(pts);
+    const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,50,0.2,8,false),new THREE.MeshBasicMaterial({color:c0,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending}));
+    g.add(tube);}
+  // Central energy vortex
+  const vortex=new THREE.Mesh(new THREE.CylinderGeometry(0.5,12,30,8,20,true),new THREE.MeshBasicMaterial({color:0x8a2be2,transparent:true,opacity:0.15,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+  vortex.position.y=10;g.add(vortex);spinners.push({m:vortex,spd:0.01});
+  // Particle fountains erupting upward
+  for(let i=0;i<150;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(0.1,4,4),new THREE.MeshBasicMaterial({color:eColors[i%5],transparent:true,opacity:0.5,blending:THREE.AdditiveBlending}));
+    const a=Math.random()*Math.PI*2,r=Math.random()*40;
+    p.position.set(Math.cos(a)*r,Math.random()*25,Math.sin(a)*r);
+    p.userData={baseY:Math.random()*25,phase:Math.random()*Math.PI*2,type:'particle',speed:0.02+Math.random()*0.04};g.add(p);}
+  // Lightning-like energy arcs
+  for(let i=0;i<6;i++){const pts=[];
+    for(let j=0;j<10;j++){pts.push(new THREE.Vector3((Math.random()-0.5)*80,Math.random()*30,(Math.random()-0.5)*80));}
+    const curve=new THREE.CatmullRomCurve3(pts);
+    const arc=new THREE.Mesh(new THREE.TubeGeometry(curve,20,0.05,4,false),new THREE.MeshBasicMaterial({color:0xcc88ff,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
+    g.add(arc);spinners.push({m:arc,spd:0.05*(Math.random()-0.5)});}
+  // Energy souls
+  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=10+Math.random()*40;
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.45,10,10),new THREE.MeshBasicMaterial({color:0x8a2be2,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending}));
+    s.position.set(Math.cos(a)*r,Math.random()*18,Math.sin(a)*r);
+    s.userData={baseY:Math.random()*18,phase:Math.random()*Math.PI*2,speed:0.8,type:'energy',orbitR:r,orbitA:a};
+    g.add(s);}
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0x2a0a4a,transparent:true,opacity:0.25,side:THREE.BackSide})));
+  g.add(new THREE.Fog(0x330055,40,160));
 }
 
 function buildD7(g){
-  for(let i=0;i<300;i++){const st=new THREE.Mesh(new THREE.SphereGeometry(0.08+Math.random()*0.15,6,6),new THREE.MeshBasicMaterial({color:0xda70d6,transparent:true,opacity:0.6+Math.random()*0.4}));st.position.set((Math.random()-0.5)*200,Math.random()*80-10,(Math.random()-0.5)*200);g.add(st);}
-  for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2,r=30+Math.random()*20;const cl=new THREE.Group();for(let j=0;j<15;j++){const pt=new THREE.Mesh(new THREE.SphereGeometry(0.2,6,6),new THREE.MeshBasicMaterial({color:0xff00ff,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending}));pt.position.set((Math.random()-0.5)*8,Math.random()*8,(Math.random()-0.5)*8);cl.add(pt);}cl.position.set(Math.cos(a)*r,15+Math.random()*15,Math.sin(a)*r);g.add(cl);spinners.push({m:cl,spd:0.003*(Math.random()-0.5)});}
-  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=15+Math.random()*50;const s=new THREE.Mesh(new THREE.SphereGeometry(0.3,8,8),new THREE.MeshBasicMaterial({color:0xda70d6,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending}));s.position.set(Math.cos(a)*r,Math.random()*30,Math.sin(a)*r);s.userData={baseY:Math.random()*30,phase:Math.random()*Math.PI*2,speed:0.5,type:'consciousness',orbitR:r,orbitA:a};g.add(s);}
+  // Dense star field — consciousness as stars
+  const sStars=[];
+  for(let i=0;i<500;i++){const st=new THREE.Mesh(new THREE.SphereGeometry(0.06+Math.random()*0.2,6,6),new THREE.MeshBasicMaterial({color:new THREE.Color().setHSL(0.75+Math.random()*0.15,0.8,0.5+Math.random()*0.3),transparent:true,opacity:0.5+Math.random()*0.5}));
+    st.position.set((Math.random()-0.5)*250,Math.random()*90-15,(Math.random()-0.5)*250);
+    st.userData={phase:Math.random()*Math.PI*2,type:'star'};g.add(st);sStars.push(st);}
+  // Neural network — lines connecting thought clusters
+  const nodePos=[];
+  for(let i=0;i<40;i++){nodePos.push(new THREE.Vector3((Math.random()-0.5)*120,Math.random()*40,(Math.random()-0.5)*120));}
+  for(let i=0;i<40;i++){
+    for(let j=i+1;j<40;j++){const d=nodePos[i].distanceTo(nodePos[j]);if(d<25){
+      const geo=new THREE.BufferGeometry().setFromPoints([nodePos[i],nodePos[j]]);
+      const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xda70d6,transparent:true,opacity:0.15,blending:THREE.AdditiveBlending}));
+      g.add(line);}}
+  }
+  // Thought clusters — groups of pulsing nodes
+  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,r=25+Math.random()*30;
+    const cl=new THREE.Group();
+    for(let j=0;j<20;j++){const pt=new THREE.Mesh(new THREE.SphereGeometry(0.15+Math.random()*0.2,6,6),new THREE.MeshBasicMaterial({color:0xff00ff,transparent:true,opacity:0.5+Math.random()*0.3,blending:THREE.AdditiveBlending}));
+      pt.position.set((Math.random()-0.5)*10,Math.random()*10,(Math.random()-0.5)*10);
+      pt.userData={phase:Math.random()*Math.PI*2,type:'thought'};cl.add(pt);}
+    cl.position.set(Math.cos(a)*r,12+Math.random()*20,Math.sin(a)*r);
+    g.add(cl);spinners.push({m:cl,spd:0.003*(Math.random()-0.5)});}
+  // Ripples of awareness — expanding rings
+  for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(1,0.1,6,32),new THREE.MeshBasicMaterial({color:0xda70d6,transparent:true,opacity:0.3,blending:THREE.AdditiveBlending}));
+    ring.position.set((Math.random()-0.5)*80,Math.random()*30,(Math.random()-0.5)*80);
+    ring.userData={type:'ripple',phase:i,baseR:1};g.add(ring);}
+  // Consciousness souls
+  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=15+Math.random()*55;
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.35,10,10),new THREE.MeshBasicMaterial({color:0xda70d6,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending}));
+    s.position.set(Math.cos(a)*r,Math.random()*35,Math.sin(a)*r);
+    s.userData={baseY:Math.random()*35,phase:Math.random()*Math.PI*2,speed:0.5,type:'consciousness',orbitR:r,orbitA:a};
+    g.add(s);}
+  // Brain-like neural structure at center
+  const brain=new THREE.Mesh(new THREE.IcosahedronGeometry(8,2),new THREE.MeshBasicMaterial({color:0xda70d6,transparent:true,opacity:0.08,wireframe:true}));
+  brain.position.y=15;g.add(brain);spinners.push({m:brain,spd:0.002});
+  g.add(new THREE.Fog(0x2a0a3a,50,180));
 }
 
 function buildD8(g){
-  const gs=new THREE.Mesh(new THREE.IcosahedronGeometry(15,2),new THREE.MeshBasicMaterial({color:0x7b68ee,wireframe:true}));gs.position.y=10;g.add(gs);spinners.push({m:gs,spd:0.003});
-  for(let i=0;i<6;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(20+i*5,0.2,8,64),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.3}));ring.position.y=10;ring.rotation.x=Math.PI/2+i*0.3;g.add(ring);spinners.push({m:ring,spd:0.005*(i%2?1:-1)});}
-  for(let i=0;i<50;i++){const a=(i/50)*Math.PI*2,r=20+Math.random()*40;const n=new THREE.Mesh(new THREE.SphereGeometry(0.3,8,8),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending}));n.position.set(Math.cos(a)*r,5+Math.random()*15,Math.sin(a)*r);n.userData={baseY:5+Math.random()*15,phase:Math.random()*Math.PI*2,speed:1.0,type:'frequency',orbitR:r,orbitA:a};g.add(n);}
-  const core=new THREE.Mesh(new THREE.SphereGeometry(3,16,16),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.3,blending:THREE.AdditiveBlending}));core.position.y=10;g.add(core);
-  const grid=new THREE.GridHelper(80,20,0x7b68ee,0x2d1a5e);grid.position.y=0;grid.material.transparent=true;grid.material.opacity=0.3;g.add(grid);
+  // Vibrating grid floor — pulsing with data
+  const grid=new THREE.GridHelper(120,30,0x7b68ee,0x2d1a5e);grid.position.y=0;
+  grid.material.transparent=true;grid.material.opacity=0.4;g.add(grid);
+  // Second grid at angle
+  const grid2=new THREE.GridHelper(120,30,0x9988ff,0x3d2a6e);grid2.position.y=0.1;grid2.rotation.y=Math.PI/4;
+  grid2.material.transparent=true;grid2.material.opacity=0.2;g.add(grid2);
+  // Central vibrating icosahedron
+  const gs=new THREE.Mesh(new THREE.IcosahedronGeometry(12,2),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.3,wireframe:true}));
+  gs.position.y=12;g.add(gs);spinners.push({m:gs,spd:0.003});
+  const gsCore=new THREE.Mesh(new THREE.SphereGeometry(4,16,16),new THREE.MeshBasicMaterial({color:0x9988ff,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
+  gsCore.position.y=12;g.add(gsCore);
+  // Resonant rings at multiple angles
+  for(let i=0;i<8;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(18+i*4,0.25,8,64),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.25+i*0.03}));
+    ring.position.y=12;ring.rotation.x=Math.PI/2+i*0.25;ring.rotation.y=i*0.15;
+    g.add(ring);spinners.push({m:ring,spd:0.005*(i%2?1:-1)});}
+  // Frequency wave visualization — sine wave planes
+  for(let i=0;i<3;i++){const wg=new THREE.PlaneGeometry(100,100,60,4),wp=wg.attributes.position;
+    for(let j=0;j<wp.count;j++){const x=wp.getX(j),y=wp.getY(j);wp.setZ(j,Math.sin(x*0.15+i)*3+Math.cos(y*0.1+i)*2);}
+    const wave=new THREE.Mesh(wg,new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.06,wireframe:true}));
+    wave.rotation.x=-Math.PI/2;wave.position.y=i*3;g.add(wave);spinners.push({m:wave,spd:0.002*(i+1)});}
+  // Data streams flowing in grid channels
+  for(let i=0;i<30;i++){const pts=[];
+    for(let j=0;j<15;j++){pts.push(new THREE.Vector3((Math.random()-0.5)*100,Math.random()*20,(Math.random()-0.5)*100));}
+    const curve=new THREE.CatmullRomCurve3(pts);
+    const stream=new THREE.Mesh(new THREE.TubeGeometry(curve,25,0.08,6,false),new THREE.MeshBasicMaterial({color:0x9988ff,transparent:true,opacity:0.3,blending:THREE.AdditiveBlending}));
+    g.add(stream);}
+  // Frequency nodes — 50 resonating
+  for(let i=0;i<50;i++){const a=(i/50)*Math.PI*2,r=20+Math.random()*40;
+    const n=new THREE.Mesh(new THREE.SphereGeometry(0.35,10,10),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending}));
+    n.position.set(Math.cos(a)*r,5+Math.random()*15,Math.sin(a)*r);
+    n.userData={baseY:5+Math.random()*15,phase:Math.random()*Math.PI*2,speed:1.0,type:'frequency',orbitR:r,orbitA:a};
+    g.add(n);
+    const ng=new THREE.Mesh(new THREE.SphereGeometry(0.8,8,8),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.2,blending:THREE.AdditiveBlending}));
+    ng.position.copy(n.position);n.userData.glow=ng;g.add(ng);}
+  // Geometric morphing shapes
+  for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2,r=30+Math.random()*20;
+    const shape=new THREE.Mesh(new THREE.OctahedronGeometry(1.5+Math.random()*1,0),new THREE.MeshBasicMaterial({color:0x9988ff,transparent:true,opacity:0.4,wireframe:true}));
+    shape.position.set(Math.cos(a)*r,8+Math.random()*10,Math.sin(a)*r);
+    g.add(shape);spinners.push({m:shape,spd:0.01*(Math.random()-0.5)});}
+  g.add(new THREE.Fog(0x1a0a3e,40,150));
 }
 
 function buildHeaven(g){
-  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(80,75,2,32),new THREE.MeshStandardMaterial({color:0xfffaee,roughness:0.1,metalness:0.9,emissive:0xffd700,emissiveIntensity:0.1}));
-  gnd.position.y=-1;g.add(gnd);
-  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;const col=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.9,20,16),stdMat(0xffd700,0xffd700,0.6,0.9,0.05));col.position.set(Math.cos(a)*40,10,Math.sin(a)*40);g.add(col);const cap=new THREE.Mesh(new THREE.SphereGeometry(1.5,16,16),stdMat(0xffffff,0xffd700,1.0,0.5,0.1));cap.position.set(Math.cos(a)*40,21,Math.sin(a)*40);g.add(cap);}
-  const fountain=new THREE.Mesh(new THREE.CylinderGeometry(0.3,3,60,8,1,true),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.3,side:THREE.DoubleSide}));fountain.position.y=30;g.add(fountain);
-  for(let i=0;i<50;i++){const a=(i/50)*Math.PI*2,r=10+Math.random()*60;const s=new THREE.Mesh(new THREE.SphereGeometry(0.6,12,12),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.9,blending:THREE.AdditiveBlending}));s.position.set(Math.cos(a)*r,3+Math.random()*20,Math.sin(a)*r);s.userData={baseY:3+Math.random()*20,phase:Math.random()*Math.PI*2,speed:0.4,type:'ascended',orbitR:r,orbitA:a};g.add(s);const sg=new THREE.Mesh(new THREE.SphereGeometry(1.5,8,8),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.25,blending:THREE.AdditiveBlending}));sg.position.copy(s.position);s.userData.glow=sg;g.add(sg);}
-  for(let i=0;i<200;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(0.06,4,4),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending}));p.position.set((Math.random()-0.5)*150,Math.random()*40,(Math.random()-0.5)*150);p.userData={baseY:Math.random()*40,phase:Math.random()*Math.PI*2,type:'particle'};g.add(p);}
-  g.add(new THREE.PointLight(0xffffff,5,200,0,30,0));
-  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0xfff8dd,transparent:true,opacity:0.08,side:THREE.BackSide})));
+  // Celestial golden floor — radiant
+  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(100,95,3,64),new THREE.MeshStandardMaterial({color:0xfffaee,roughness:0.05,metalness:0.95,emissive:0xffd700,emissiveIntensity:0.15}));
+  gnd.position.y=-2;g.add(gnd);
+  // Cloud floor — wisps below
+  for(let i=0;i<20;i++){const cl=new THREE.Mesh(new THREE.SphereGeometry(6+Math.random()*5,8,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.12}));
+    cl.position.set((Math.random()-0.5)*120,-5+Math.random()*3,(Math.random()-0.5)*120);cl.scale.set(3,0.3,3);g.add(cl);}
+  // 16 celestial golden pillars in a circle
+  for(let i=0;i<16;i++){const a=(i/16)*Math.PI*2;
+    const col=new THREE.Mesh(new THREE.CylinderGeometry(1,1.1,25,16),stdMat(0xffd700,0xffd700,0.7,0.9,0.05));
+    col.position.set(Math.cos(a)*45,12,Math.sin(a)*45);g.add(col);
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(2,16,16),stdMat(0xffffff,0xffd700,1.0,0.5,0.1));
+    cap.position.set(Math.cos(a)*45,25.5,Math.sin(a)*45);g.add(cap);
+    pillarGlow.push({m:cap,base:0.8,ph:i*0.5,spd:2.0,amp:0.2});
+    // Light beam from each pillar
+    const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,80,8,1,true),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.12,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    beam.position.set(Math.cos(a)*45,65,Math.sin(a)*45);g.add(beam);}
+  // Central light fountain — erupting upward
+  const fountain=new THREE.Mesh(new THREE.CylinderGeometry(0.5,5,80,16,1,true),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.25,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+  fountain.position.y=38;g.add(fountain);
+  const fountainCore=new THREE.Mesh(new THREE.SphereGeometry(5,16,16),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
+  fountainCore.position.y=0;g.add(fountainCore);
+  // Rose windows / mandalas in the sky
+  for(let i=0;i<4;i++){const a=(i/4)*Math.PI*2;
+    const mandala=new THREE.Mesh(new THREE.RingGeometry(8,12,16),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.15,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    mandala.position.set(Math.cos(a)*60,40,Math.sin(a)*60);
+    mandala.lookAt(0,40,0);g.add(mandala);spinners.push({m:mandala,spd:0.005*(i%2?1:-1)});
+    for(let j=0;j<8;j++){const ray=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,6),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.2}));
+      ray.position.set(Math.cos(a)*60,40,Math.sin(a)*60);ray.lookAt(0,40,0);
+      ray.rotateZ(j*Math.PI/4);g.add(ray);}}
+  // Divine light rays from all directions
+  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;
+    const ray=new THREE.Mesh(new THREE.CylinderGeometry(0.3,3,100,8,1,true),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.08,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    ray.position.set(Math.cos(a)*50,50,Math.sin(a)*50);ray.rotation.z=0.15*Math.cos(a);g.add(ray);}
+  // Ascended souls — 50 glowing white-gold with halos
+  for(let i=0;i<50;i++){const a=(i/50)*Math.PI*2,r=10+Math.random()*70;
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.6,12,12),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.9,blending:THREE.AdditiveBlending}));
+    s.position.set(Math.cos(a)*r,3+Math.random()*25,Math.sin(a)*r);
+    s.userData={baseY:3+Math.random()*25,phase:Math.random()*Math.PI*2,speed:0.4,type:'ascended',orbitR:r,orbitA:a};
+    g.add(s);
+    const halo=new THREE.Mesh(new THREE.TorusGeometry(1.2,0.1,6,16),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
+    halo.position.copy(s.position);halo.rotation.x=Math.PI/2;s.userData.glow=halo;g.add(halo);}
+  // 300 angelic golden particles
+  for(let i=0;i<300;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(0.06+Math.random()*0.08,4,4),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.5+Math.random()*0.3,blending:THREE.AdditiveBlending}));
+    p.position.set((Math.random()-0.5)*180,Math.random()*50,(Math.random()-0.5)*180);
+    p.userData={baseY:Math.random()*50,phase:Math.random()*Math.PI*2,type:'particle'};g.add(p);}
+  // Choir of light — concentric golden rings
+  for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(15+i*10,0.15,8,64),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.2-i*0.03,blending:THREE.AdditiveBlending}));
+    ring.position.y=20;ring.rotation.x=Math.PI/2;g.add(ring);spinners.push({m:ring,spd:0.003*(i%2?1:-1)});}
+  g.add(new THREE.PointLight(0xffffff,8,250,0,30,0));
+  g.add(new THREE.PointLight(0xffd700,3,100,0,0,0));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0xfff8dd,transparent:true,opacity:0.12,side:THREE.BackSide})));
+  g.add(new THREE.Fog(0xffeecc,50,200));
 }
 
 function checkPortals(t){
@@ -334,6 +616,45 @@ function checkPortals(t){
 
 let companionSoul=null,companionMesh=null,companionGlow=null;
 let allSoulsData=[];
+let navSelectedPillar=1;
+let smoothTargetYaw=null;
+let navSelectedPillar=1;
+
+function navPillar(dir){
+  if(curDim!==0||transitioning) return;
+  navSelectedPillar=Math.max(1,Math.min(7,navSelectedPillar+dir));
+  updateNavDisplay();
+  // Rotate camera to face selected pillar
+  const p=portalGroups[navSelectedPillar-1];
+  if(p){
+    const targetYaw=Math.atan2(p.x-pivot.position.x,p.z-pivot.position.z);
+    // Smoothly rotate
+    smoothTargetYaw=targetYaw;
+  }
+  // Highlight selected pillar
+  portalGroups.forEach((pg,idx)=>{
+    if(pg.ring){
+      pg.ring.material.opacity=idx===navSelectedPillar-1?1.0:0.5;
+      pg.ring.scale.setScalar(idx===navSelectedPillar-1?1.4:1.0);
+    }
+  });
+}
+
+function updateNavDisplay(){
+  const p=portalGroups[navSelectedPillar-1];
+  if(!p) return;
+  document.getElementById('navName').textContent=p.name;
+  document.getElementById('navFreq').textContent=p.freq+' Hz · '+p.freqName;
+}
+
+function confirmNavPillar(){
+  if(curDim!==0||transitioning) return;
+  showSoulPicker(navSelectedPillar);
+}
+
+// Add smooth yaw interpolation
+let smoothTargetYaw=null;
+
 
 function showSoulPicker(dimId){
   if(transitioning||dimId<1||dimId>7) return;
@@ -405,6 +726,7 @@ function beginIncarnation(dimId,soul){
     document.getElementById('dimInfoBody').textContent=dim.info;
     document.getElementById('dimInfoSouls').textContent=dim.freq+' Hz · '+dim.freqName+' — '+dim.soulRole;
     document.getElementById('hubBtn').style.display='block';
+    document.getElementById('pillarNav').style.display='none';
     document.getElementById('portalPrompt').style.opacity='0';nearPortal=-1;
     // Show companion HUD
     if(soul){
@@ -444,7 +766,9 @@ function returnToHub(){
     document.getElementById('dim-label').textContent='SOVEREIGN WORLD · HUB';
     document.getElementById('mmLabel').textContent='Dimension Hub';
     document.getElementById('dimInfo').style.display='none';
-    document.getElementById('hubBtn').style.display='none';document.getElementById('companionHUD').style.display='none';if(companionMesh){scene.remove(companionMesh);scene.remove(companionGlow);companionMesh=null;companionGlow=null;}companionSoul=null;
+    document.getElementById('hubBtn').style.display='none';
+    document.getElementById('pillarNav').style.display='flex';
+    updateNavDisplay();document.getElementById('companionHUD').style.display='none';if(companionMesh){scene.remove(companionMesh);scene.remove(companionGlow);companionMesh=null;companionGlow=null;}companionSoul=null;
     document.getElementById('ztip').style.opacity='0';
     ov.style.opacity='0';setTimeout(()=>ov.remove(),600);transitioning=false;
   },600);
@@ -479,6 +803,20 @@ function updateSoulNPCs(t){
     if(soul.parent&&!soul.parent.visible) return;
     if(soul.userData.type==='earthly'){soul.position.y=soul.userData.baseY+Math.sin(t*soul.userData.speed+soul.userData.phase)*0.8;const a=t*soul.userData.speed*0.1+soul.userData.phase;soul.position.x+=Math.cos(a)*0.02;soul.position.z+=Math.sin(a)*0.02;}
   });
+  // Animate rain
+  dimScenes.forEach(g=>{if(!g.visible)return;g.traverse(obj=>{
+    if(obj.userData&&obj.userData.type==='rain'){obj.position.y-=obj.userData.speed;if(obj.position.y<-2)obj.position.y=obj.userData.baseY;}
+    if(obj.userData&&obj.userData.type==='water'){obj.material.opacity=0.6+Math.sin(t*2+obj.position.x*0.1)*0.15;}
+    if(obj.userData&&obj.userData.type==='waterfall'){obj.material.opacity=0.4+Math.sin(t*3+obj.position.x)*0.1;obj.position.y=12+Math.sin(t*1.5)*0.3;}
+    if(obj.userData&&obj.userData.type==='butterfly'){const bf=obj;const a=t*bf.userData.speed*0.2+bf.userData.orbitA;bf.position.x=Math.cos(a)*bf.userData.orbitR;bf.position.z=Math.sin(a)*bf.userData.orbitR;bf.position.y=bf.userData.baseY+Math.sin(t*bf.userData.speed)*2;const flap=Math.sin(t*15+bf.userData.phase)*0.6;bf.userData.wings[0].rotation.y=flap;bf.userData.wings[1].rotation.y=-flap;}
+    if(obj.userData&&obj.userData.type==='petal'){obj.position.y-=0.03;obj.rotation.z+=0.02;if(obj.position.y<0)obj.position.y=obj.userData.baseY;obj.position.x+=Math.sin(t+obj.userData.phase)*0.02;}
+    if(obj.userData&&obj.userData.type==='ripple'){const r=obj.userData.baseR+t*5+obj.userData.phase*3;if(r<40){obj.scale.setScalar(r);obj.material.opacity=Math.max(0,0.3-r/40*0.3);}else{obj.scale.setScalar(1);}}
+    if(obj.userData&&obj.userData.type==='flower'){obj.rotation.y=Math.sin(t*0.5+obj.userData.phase)*0.3;}
+    if(obj.userData&&obj.userData.type==='thought'&&obj.material){obj.material.opacity=0.4+Math.sin(t*2+obj.userData.phase)*0.2;}
+    if(obj.userData&&obj.userData.type==='star'&&obj.material){obj.material.opacity=0.4+Math.sin(t*1.5+obj.userData.phase)*0.4;}
+    if(obj.userData&&obj.userData.type==='shard'&&obj.userData.orbitR!==undefined){const a=t*0.3+obj.userData.orbitA;obj.position.x=Math.cos(a)*obj.userData.orbitR;obj.position.z=Math.sin(a)*obj.userData.orbitR;obj.position.y=obj.userData.baseY+Math.sin(t*0.5+obj.userData.phase)*2;obj.rotation.x+=0.01;obj.rotation.y+=0.01;}
+    if(obj.userData&&obj.userData.type==='particle'&&obj.userData.speed){obj.position.y+=obj.userData.speed;if(obj.position.y>30)obj.position.y=0;}
+  });});
   dimScenes.forEach((g,dimIdx)=>{
     if(!g.visible) return;
     g.traverse(obj=>{
@@ -588,6 +926,7 @@ function setPOV(m){pov=m;cam=m==='fp'?fpCam:tpCam;document.getElementById('fpb')
 function animate(){
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),.05),t=clock.getElapsedTime();
+  if(smoothTargetYaw!==null){let diff=smoothTargetYaw-yaw;while(diff>Math.PI)diff-=Math.PI*2;while(diff<-Math.PI)diff+=Math.PI*2;yaw+=diff*0.08;if(Math.abs(diff)<0.01)smoothTargetYaw=null;}
   const moving=updateMovement(dt);
   if(pov==='tp') updateTPCam();
   updateAvatar(t,moving);
