@@ -1,2 +1,10 @@
 /data/*  /data/:splat  200
-/*  /index.html  200
+/world    /world.html    200
+/mission  /mission.html  200
+/citizens /citizens.html 200
+/frequency /frequency.html 200
+/portal_login /portal_login.html 200
+/portal_dashboard /portal_dashboard.html 200
+/portal_biotic_dashboard /portal_biotic_dashboard.html 200
+/akashic  /akashic.html 200
+/index    /index.html    200
