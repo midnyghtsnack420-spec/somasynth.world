@@ -46,7 +46,7 @@
   <div style="position:absolute;top:76px;right:22px;display:flex;flex-direction:column;gap:5px;pointer-events:all;">
     <button id="fpb" onclick="setPOV('fp')" style="background:rgba(212,175,55,.18);border:1px solid #ffd700;padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#ffd700;letter-spacing:.18em;cursor:pointer;text-transform:uppercase;">⊙ FIRST PERSON</button>
     <button id="tpb" onclick="setPOV('tp')" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.28);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#d4af37;letter-spacing:.18em;cursor:pointer;text-transform:uppercase;">◎ THIRD PERSON</button>
-    <button onclick="toggleSnd()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a09cb0;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;" id="sndb" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);color:#a09cb0;">♪ AMBIENCE: OFF</button>
+    <button onclick="toggleSnd()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a09cb0;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;" id="sndb" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);color:#a09cb0;">♪ MUSIC: OFF</button>
     <button id="hvb" onclick="toggleHover()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.25);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a0c0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;">⊕ HOVER: OFF</button>
     <button id="hubBtn" onclick="returnToHub()" style="background:rgba(123,104,238,.15);border:1px solid rgba(123,104,238,.4);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#b0a0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;display:none;">↩ RETURN TO HUB</button>
     <button onclick="window.open('akashic','_blank')" style="background:rgba(0,0,0,.82);border:1px solid rgba(123,104,238,.3);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#b0a0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;">📚 AKASHIC LIBRARY</button>
@@ -287,56 +287,377 @@ function updateScent(t,dt){
   }
 }
 
-function buildHub(){
-  const gnd=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshStandardMaterial({color:0x06041a,roughness:0.9,metalness:0.05}));
-  gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
-  const grid=new THREE.GridHelper(500,50,0xd4af37,0x120920);grid.material.opacity=0.12;grid.material.transparent=true;scene.add(grid);
-  const plat=new THREE.Mesh(new THREE.CylinderGeometry(22,22,3,32),new THREE.MeshStandardMaterial({color:0xede8de,roughness:0.5,metalness:0.05}));
-  plat.position.y=0;plat.receiveShadow=true;scene.add(plat);
-  const sp=new THREE.Mesh(new THREE.CylinderGeometry(0.15,2.5,48,8),stdMat(0xd4af37,0xd4af37,0.9,1,0.05));
-  sp.position.y=26;scene.add(sp);
-  catBeam=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,300,8,1,true),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.16,side:THREE.DoubleSide}));
-  catBeam.position.y=150;scene.add(catBeam);
-  [[1.5,0.22],[2.1,0.18],[2.85,0.14]].forEach(([sc,th],i)=>{
-    const r=new THREE.Mesh(new THREE.TorusGeometry(18*sc,th,8,90),stdMat(0xd4af37,0xd4af37,0.85,1,0.05));
-    r.position.y=10+i*10;r.rotation.x=Math.PI/3+i*0.3;r.rotation.z=i*0.6;scene.add(r);orbRings.push({m:r,spd:0.0016*(i+1)});
+// === MINECRAFT PIXELATED TEXTURE GENERATOR & BUILDER HELPERS ===
+const texCache = {};
+
+function makePixelTex(baseColor, variantColor, noise = 0.12) {
+  const key = `${baseColor}_${variantColor}_${noise}`;
+  if (texCache[key]) return texCache[key];
+  const cv = document.createElement('canvas');
+  cv.width = 16; cv.height = 16;
+  const ctx = cv.getContext('2d');
+  const c1 = new THREE.Color(baseColor);
+  const c2 = new THREE.Color(variantColor !== undefined ? variantColor : baseColor);
+  const imgData = ctx.createImageData(16, 16);
+  for (let i = 0; i < 256; i++) {
+    const idx = i * 4;
+    const factor = Math.random();
+    const n = (Math.random() - 0.5) * noise;
+    const r = Math.min(255, Math.max(0, Math.floor((c1.r + (c2.r - c1.r) * factor + n) * 255)));
+    const g = Math.min(255, Math.max(0, Math.floor((c1.g + (c2.g - c1.g) * factor + n) * 255)));
+    const b = Math.min(255, Math.max(0, Math.floor((c1.b + (c2.b - c1.b) * factor + n) * 255)));
+    imgData.data[idx] = r;
+    imgData.data[idx + 1] = g;
+    imgData.data[idx + 2] = b;
+    imgData.data[idx + 3] = 255;
+  }
+  ctx.putImageData(imgData, 0, 0);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.NearestFilter;
+  tex.generateMipmaps = false;
+  tex.needsUpdate = true;
+  texCache[key] = tex;
+  return tex;
+}
+
+function mcMat(baseColor, variantColor, noise = 0.12, extraOpts = {}) {
+  const tex = makePixelTex(baseColor, variantColor, noise);
+  return new THREE.MeshStandardMaterial({
+    map: tex,
+    roughness: 0.8,
+    metalness: 0.1,
+    ...extraOpts
   });
-  const pCols=[0xd4af37,0x4a90d9,0x00bfff,0xffd700,0x8a2be2,0xda70d6,0x7b68ee,0xffffff];
-  const pNames=['HUB','D3 MATERIAL','D4 CRYSTAL','D5 PARADISE','D6 ENERGY','D7 CONSCIOUSNESS','D8 FREQUENCY','HEAVEN'];
-  const pDescs=['Sovereign Hub','Material World','Crystal World','Paradise Gardens','Energy Realm','Consciousness Realm','Frequency Grid','Sovereign Paradise'];
-  const pFreqs=[0,174,285,396,528,639,852,963];
-  const pFreqNames=['','GROUNDING','AWAKENING','LIBERATION','TRANSFORMATION','CONNECTION','INTUITION','DIVINE'];
-  for(let i=1;i<=7;i++){
-    const angle=(i/7)*Math.PI*2,radius=16,x=Math.cos(angle)*radius,z=Math.sin(angle)*radius,col=pCols[i];
-    const freq=pFreqs[i],freqTier=i;
-    // Pillar height increases with frequency tier
-    const pH=12+freqTier*1.8;
-    const base=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.8,1,16),new THREE.MeshStandardMaterial({color:0x1a1030,roughness:0.5,metalness:0.3}));
-    base.position.set(x,1.5,z);scene.add(base);
-    const colM=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.9,pH,16),stdMat(col,col,0.3+freqTier*0.06,0.6,0.2));
-    colM.position.set(x,pH/2+1.5,z);scene.add(colM);
-    // Cap height scales with pillar
-    const capY=pH+3;
-    const cap=new THREE.Mesh(new THREE.SphereGeometry(1.6+freqTier*0.15,16,16),stdMat(col,col,1.0,0.4,0.3));
-    cap.position.set(x,capY,z);scene.add(cap);
-    // Pulse speed increases with frequency — higher dimension = faster vibration
-    pillarGlow.push({m:cap,base:0.5+freqTier*0.08,ph:i*1.3,spd:0.8+freqTier*0.7,amp:0.2+freqTier*0.04});
-    // Ring spins faster at higher frequencies
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(2.5,0.15,8,32),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5+freqTier*0.05}));
-    ring.position.set(x,4,z);ring.rotation.x=Math.PI/2;scene.add(ring);spinners.push({m:ring,spd:0.004*(i%2?1:-1)*(1+freqTier*0.25)});
-    // Ground glow pulses faster at higher frequencies
-    const glow=new THREE.Mesh(new THREE.CircleGeometry(2.3+freqTier*0.15,32),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.12+freqTier*0.02,side:THREE.DoubleSide}));
-    glow.position.set(x,4,z);glow.rotation.x=Math.PI/2;scene.add(glow);
-    // Frequency beam — taller and brighter at higher frequencies
-    const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.3+freqTier*0.05,0.3+freqTier*0.05,40+freqTier*12,8,1,true),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.08+freqTier*0.02,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
-    beam.position.set(x,(40+freqTier*12)/2,z);scene.add(beam);
+}
+
+function voxelBlock(x, y, z, w = 1, h = 1, d = 1, mat) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  mesh.position.set(x, y, z);
+  mesh.receiveShadow = true;
+  mesh.castShadow = true;
+  return mesh;
+}
+
+function mcTree(x, z, g, leafColor = 0x2e7d32, trunkColor = 0x5d4037) {
+  const trunkMat = mcMat(trunkColor, 0x3e2723, 0.15);
+  const leafMat = mcMat(leafColor, 0x1b5e20, 0.2);
+  const th = Math.floor(4 + Math.random() * 3);
+  const trunk = voxelBlock(x, th / 2, z, 1, th, 1, trunkMat);
+  if (g) g.add(trunk);
+  for (let lx = -1; lx <= 1; lx++) {
+    for (let ly = 0; ly <= 2; ly++) {
+      for (let lz = -1; lz <= 1; lz++) {
+        if (ly === 2 && (Math.abs(lx) === 1 && Math.abs(lz) === 1)) continue;
+        const leaf = voxelBlock(x + lx, th + ly - 0.5, z + lz, 1, 1, 1, leafMat);
+        if (g) g.add(leaf);
+      }
+    }
+  }
+}
+
+function mcFlower(x, z, g, color = 0xff3366) {
+  const cv = document.createElement('canvas');
+  cv.width = 16; cv.height = 16;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#2e7d32'; ctx.fillRect(7, 8, 2, 8);
+  ctx.fillStyle = '#' + new THREE.Color(color).getHexString(); ctx.fillRect(5, 3, 6, 6);
+  ctx.fillStyle = '#ffff55'; ctx.fillRect(7, 5, 2, 2);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+  const mat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, alphaTest: 0.1, roughness: 0.9 });
+  const geom = new THREE.PlaneGeometry(0.8, 0.8);
+  const p1 = new THREE.Mesh(geom, mat); p1.position.set(x, 0.4, z);
+  const p2 = new THREE.Mesh(geom, mat); p2.position.set(x, 0.4, z); p2.rotation.y = Math.PI / 2;
+  const flGroup = new THREE.Group(); flGroup.add(p1); flGroup.add(p2);
+  flGroup.userData = { type: 'flower', phase: Math.random() * Math.PI * 2 };
+  if (g) g.add(flGroup);
+  return flGroup;
+}
+
+function mcGrass(x, z, g) {
+  const cv = document.createElement('canvas');
+  cv.width = 16; cv.height = 16;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#4ac03b';
+  ctx.fillRect(2, 4, 3, 12); ctx.fillRect(6, 2, 3, 14); ctx.fillRect(10, 5, 3, 11);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+  const mat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, alphaTest: 0.1, roughness: 0.9 });
+  const geom = new THREE.PlaneGeometry(0.7, 0.7);
+  const p1 = new THREE.Mesh(geom, mat); p1.position.set(x, 0.35, z);
+  const p2 = new THREE.Mesh(geom, mat); p2.position.set(x, 0.35, z); p2.rotation.y = Math.PI / 2;
+  const tuft = new THREE.Group(); tuft.add(p1); tuft.add(p2);
+  if (g) g.add(tuft);
+  return tuft;
+}
+
+function mcWater(x, z, w = 4, d = 4, g) {
+  const waterMat = new THREE.MeshStandardMaterial({
+    map: makePixelTex(0x3f76e4, 0x2255bb, 0.1),
+    color: 0x3f76e4,
+    transparent: true,
+    opacity: 0.65,
+    roughness: 0.1,
+    metalness: 0.2
+  });
+  const water = voxelBlock(x, -0.2, z, w, 0.8, d, waterMat);
+  water.userData = { type: 'water' };
+  if (g) g.add(water);
+  return water;
+}
+
+function mcHill(cx, cz, g, radius = 6, height = 4, topColor = 0x559933, sideColor = 0x886644) {
+  const topMat = mcMat(topColor, 0x337722, 0.15);
+  const sideMat = mcMat(sideColor, 0x664422, 0.15);
+  for (let y = 0; y < height; y++) {
+    const r = Math.max(1, Math.floor(radius * (1 - y / height)));
+    const isTop = (y === height - 1);
+    const mat = isTop ? topMat : sideMat;
+    for (let x = -r; x <= r; x++) {
+      for (let z = -r; z <= r; z++) {
+        if (x * x + z * z <= r * r) {
+          const blk = voxelBlock(cx + x, y + 0.5, cz + z, 1, 1, 1, mat);
+          if (g) g.add(blk);
+        }
+      }
+    }
+  }
+}
+
+function mcGround(g, size = 60, colors = [0x559933, 0x448822, 0x337711]) {
+  const geom = new THREE.BoxGeometry(1, 1, 1);
+  const mat = mcMat(colors[0], colors[1], 0.15);
+  const step = 1;
+  const half = Math.floor(size / 2);
+  const count = (size / step) * (size / step);
+  const inst = new THREE.InstancedMesh(geom, mat, count);
+  const dummy = new THREE.Object3D();
+  let idx = 0;
+  for (let x = -half; x < half; x += step) {
+    for (let z = -half; z < half; z += step) {
+      const hNoise = Math.floor((Math.sin(x * 0.1) + Math.cos(z * 0.1)) * 0.8);
+      dummy.position.set(x + step / 2, hNoise - 0.5, z + step / 2);
+      dummy.updateMatrix();
+      inst.setMatrixAt(idx++, dummy.matrix);
+    }
+  }
+  inst.instanceMatrix.needsUpdate = true;
+  inst.receiveShadow = true;
+  if (g) g.add(inst);
+  return inst;
+}
+
+function mcMushroom(x, z, g, capColor = 0xe74c3c) {
+  const stemMat = mcMat(0xf5f5dc, 0xddddca, 0.1);
+  const capMat = mcMat(capColor, 0xc0392b, 0.15);
+  const stem = voxelBlock(x, 0.25, z, 0.3, 0.5, 0.3, stemMat);
+  const cap = voxelBlock(x, 0.55, z, 0.7, 0.3, 0.7, capMat);
+  const mGroup = new THREE.Group();
+  mGroup.add(stem); mGroup.add(cap);
+  if (g) g.add(mGroup);
+  return mGroup;
+}
+
+function mcLantern(x, y, z, g, color = 0xffaa22) {
+  const mat = new THREE.MeshStandardMaterial({
+    map: makePixelTex(color, 0xffff66, 0.2),
+    emissive: color,
+    emissiveIntensity: 0.8,
+    roughness: 0.3
+  });
+  const block = voxelBlock(x, y, z, 0.6, 0.8, 0.6, mat);
+  const light = new THREE.PointLight(color, 1.5, 12);
+  light.position.set(x, y, z);
+  const lanternGroup = new THREE.Group();
+  lanternGroup.add(block);
+  lanternGroup.add(light);
+  if (g) g.add(lanternGroup);
+  return lanternGroup;
+}
+
+function buildHub(){
+  // Minecraft Spawn Area Ground
+  mcGround(null, 100, [0x4a7c28, 0x3b6320]);
+  
+  // Polished Stone Brick Central Platform
+  const stoneMat = mcMat(0x808080, 0x5a5a5a, 0.12);
+  for(let x=-10; x<=10; x++){
+    for(let z=-10; z<=10; z++){
+      if(x*x + z*z <= 100){
+        voxelBlock(x, 0.25, z, 1, 0.5, 1, stoneMat);
+      }
+    }
+  }
+
+  // Central Beacon Beam
+  const beaconMat = mcMat(0xd4af37, 0xb38f28, 0.1, {emissive: 0xd4af37, emissiveIntensity: 0.6});
+  const sp = voxelBlock(0, 24, 0, 1.5, 48, 1.5, beaconMat);
+  scene.add(sp);
+
+  catBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,300,8,1,true), new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.16,side:THREE.DoubleSide}));
+  catBeam.position.y = 150; scene.add(catBeam);
+
+  [[1.5,0.22],[2.1,0.18],[2.85,0.14]].forEach(([sc,th],i)=>{
+    const r = new THREE.Mesh(new THREE.TorusGeometry(18*sc,th,8,90), stdMat(0xd4af37,0xd4af37,0.85,1,0.05));
+    r.position.y = 10+i*10; r.rotation.x = Math.PI/3+i*0.3; r.rotation.z = i*0.6; scene.add(r); orbRings.push({m:r, spd:0.0016*(i+1)});
+  });
+
+  const pCols = [0xd4af37,0x4a90d9,0x00bfff,0xffd700,0x8a2be2,0xda70d6,0x7b68ee,0xffffff];
+  const pNames = ['HUB','D3 MATERIAL','D4 CRYSTAL','D5 PARADISE','D6 ENERGY','D7 CONSCIOUSNESS','D8 FREQUENCY','HEAVEN'];
+  const pDescs = ['Sovereign Hub','Material World','Crystal World','Paradise Gardens','Energy Realm','Consciousness Realm','Frequency Grid','Sovereign Paradise'];
+  const pFreqs = [0,174,285,396,528,639,852,963];
+  const pFreqNames = ['','GROUNDING','AWAKENING','LIBERATION','TRANSFORMATION','CONNECTION','INTUITION','DIVINE'];
+
+  const obsidianMat = mcMat(0x1a1228, 0x0c0814, 0.2);
+
+  for(let i=1; i<=7; i++){
+    const angle = (i/7)*Math.PI*2, radius = 18, x = Math.cos(angle)*radius, z = Math.sin(angle)*radius, col = pCols[i];
+    const freq = pFreqs[i], freqTier = i;
+    const pH = 12 + freqTier*1.8;
+
+    // Blocky Obsidian Pillar
+    const base = voxelBlock(x, 0.5, z, 3, 1, 3, obsidianMat); scene.add(base);
+    const colM = voxelBlock(x, pH/2 + 1, z, 1.8, pH, 1.8, mcMat(0x221a36, col, 0.15, {emissive: col, emissiveIntensity: 0.2})); scene.add(colM);
+    
+    const capY = pH + 2;
+    const cap = voxelBlock(x, capY, z, 2.2, 2.2, 2.2, mcMat(col, 0xffffff, 0.2, {emissive: col, emissiveIntensity: 0.8})); scene.add(cap);
+
+    pillarGlow.push({m: cap, base: 0.6 + freqTier*0.08, ph: i*1.3, spd: 0.8 + freqTier*0.7, amp: 0.2 + freqTier*0.04});
+
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.5,0.15,8,32), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5+freqTier*0.05}));
+    ring.position.set(x,4,z); ring.rotation.x = Math.PI/2; scene.add(ring); spinners.push({m:ring,spd:0.004*(i%2?1:-1)*(1+freqTier*0.25)});
+
+    const glow = new THREE.Mesh(new THREE.CircleGeometry(2.3+freqTier*0.15,32), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.12+freqTier*0.02,side:THREE.DoubleSide}));
+    glow.position.set(x,4,z); glow.rotation.x = Math.PI/2; scene.add(glow);
+
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.3+freqTier*0.05,0.3+freqTier*0.05,40+freqTier*12,8,1,true), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.08+freqTier*0.02,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    beam.position.set(x,(40+freqTier*12)/2,z); scene.add(beam);
     pillarGlow.push({m:beam,base:0.08+freqTier*0.02,ph:i*2.1,spd:1.5+freqTier*0.8,amp:0.04+freqTier*0.01});
-    // Light intensity increases with frequency
-    scene.add(new THREE.PointLight(col,1.5+freqTier*0.3,25+freqTier*5,x,pH/2,z));
-    // Label with frequency
-    const lbl=makeFreqLabel(pNames[i],pFreqs[i],pFreqNames[i],col);lbl.position.set(x,capY+4,z);scene.add(lbl);
+
+    scene.add(new THREE.PointLight(col, 1.5+freqTier*0.3, 25+freqTier*5, x, pH/2, z));
+    const lbl = makeFreqLabel(pNames[i], pFreqs[i], pFreqNames[i], col); lbl.position.set(x, capY+4, z); scene.add(lbl);
+
     portalGroups.push({x,z,dimId:i,ring,glow,col,name:pNames[i],desc:pDescs[i],freq:pFreqs[i],freqName:pFreqNames[i]});
   }
+
+  // Blocky Trees & Vegetation around edge
+  for(let a=0; a<Math.PI*2; a+=Math.PI/6){
+    const tx = Math.cos(a)*38, tz = Math.sin(a)*38;
+    mcTree(tx, tz, null, 0x2e7d32, 0x5d4037);
+  }
+  for(let i=0; i<25; i++){
+    const rx = (Math.random()-0.5)*70, rz = (Math.random()-0.5)*70;
+    if(rx*rx + rz*rz > 140 && rx*rx + rz*rz < 2000){
+      if(i%3===0) mcFlower(rx, rz, null, pCols[(i%7)+1]);
+      else mcGrass(rx, rz, null);
+    }
+  }
+  mcWater(22, 22, 8, 8, null);
+  mcWater(-24, -18, 6, 10, null);
+
+  // === MINECRAFT-STYLE SOVEREIGN POOL ===
+  // Pool location: east side of hub, 14 blocks from center
+  const poolX = -35, poolZ = 0;
+  const poolW = 16, poolD = 24, poolDepth = 4;
+  const poolStoneMat = mcMat(0x7a6a5a, 0x6a5a4a, 0.15);
+  const poolTileMat = mcMat(0x8a7a6a, 0x7a6a5a, 0.1);
+  const poolWaterMat = new THREE.MeshStandardMaterial({
+    color: 0x1a6aaa, transparent: true, opacity: 0.72,
+    metalness: 0.3, roughness: 0.1,
+    emissive: 0x0a3060, emissiveIntensity: 0.15
+  });
+
+  // Pool floor
+  for(let px=0; px<poolW; px++){
+    for(let pz=0; pz<poolD; pz++){
+      voxelBlock(poolX+px, -poolDepth, poolZ+pz, 1, 1, 1, poolTileMat);
+    }
+  }
+
+  // Pool walls (with steps on the near side)
+  for(let py=0; py<poolDepth; py++){
+    // North and South walls
+    for(let px=0; px<poolW; px++){
+      voxelBlock(poolX+px, py, poolZ-1, 1, 1, 1, poolStoneMat);
+      voxelBlock(poolX+px, py, poolZ+poolD, 1, 1, 1, poolStoneMat);
+    }
+    // East and West walls (with opening for steps on west side)
+    for(let pz=0; pz<poolD; pz++){
+      if(py >= 2 || pz < 4 || pz > 8){
+        voxelBlock(poolX-1, py, poolZ+pz, 1, 1, 1, poolStoneMat);
+      }
+      voxelBlock(poolX+poolW, py, poolZ+pz, 1, 1, 1, poolStoneMat);
+    }
+  }
+
+  // Pool rim (top edge - polished stone)
+  const poolRimMat = mcMat(0x9a8a7a, 0x8a7a6a, 0.08);
+  for(let px=-1; px<=poolW; px++){
+    voxelBlock(poolX+px, 0, poolZ-1, 1, 1, 1, poolRimMat);
+    voxelBlock(poolX+px, 0, poolZ+poolD, 1, 1, 1, poolRimMat);
+  }
+  for(let pz=-1; pz<=poolD; pz++){
+    voxelBlock(poolX-1, 0, poolZ+pz, 1, 1, 1, poolRimMat);
+    voxelBlock(poolX+poolW, 0, poolZ+pz, 1, 1, 1, poolRimMat);
+  }
+
+  // Steps descending into pool (west side)
+  for(let s=0; s<4; s++){
+    voxelBlock(poolX-1, s, poolZ+4+s, 1, 1, 1, poolRimMat);
+  }
+
+  // Water blocks (fill to 1 block below rim)
+  for(let px=0; px<poolW; px++){
+    for(let pz=0; pz<poolD; pz++){
+      for(let py=-poolDepth+1; py<0; py++){
+        const wblock = voxelBlock(poolX+px, py, poolZ+pz, 1, 1, 1, poolWaterMat);
+        wblock.userData.water = true;
+      }
+    }
+  }
+
+  // Poolside decorations - blocky columns (Greek-style)
+  const colMat = mcMat(0xd4c8b0, 0xc4b8a0, 0.05);
+  const colPositions = [
+    [poolX-2, poolZ-2], [poolX+poolW+1, poolZ-2],
+    [poolX-2, poolZ+poolD+1], [poolX+poolW+1, poolZ+poolD+1]
+  ];
+  colPositions.forEach(([cx, cz]) => {
+    for(let cy=0; cy<6; cy++){
+      voxelBlock(cx, cy, cz, 1, 1, 1, colMat);
+    }
+    // Glowing cap
+    voxelBlock(cx, 6, cz, 1, 0.5, 1, mcMat(0xd4af37, 0xb38f28, 0.1, {emissive: 0xd4af37, emissiveIntensity: 0.4}));
+  });
+
+  // Poolside lanterns
+  const lanternPositions = [
+    [poolX+2, poolZ-2], [poolX+poolW-3, poolZ-2],
+    [poolX+2, poolZ+poolD+1], [poolX+poolW-3, poolZ+poolD+1]
+  ];
+  lanternPositions.forEach(([lx, lz]) => {
+    voxelBlock(lx, 1, lz, 0.6, 2, 0.6, mcMat(0x2a2018, 0x1a1408, 0.2));
+    voxelBlock(lx, 3, lz, 0.5, 0.5, 0.5, mcMat(0xffd700, 0xff8c00, 0.3, {emissive: 0xffa500, emissiveIntensity: 0.9}));
+    scene.add(new THREE.PointLight(0xffa500, 0.8, 12, lx, 3, lz));
+  });
+
+  // Poolside flowers
+  for(let i=0; i<12; i++){
+    const fx = poolX + Math.floor(Math.random()*(poolW+4)) - 2;
+    const fz = poolZ + Math.floor(Math.random()*(poolD+4)) - 2;
+    if(fx < poolX-1 || fx > poolX+poolW || fz < poolZ-1 || fz > poolZ+poolD){
+      mcFlower(fx, fz, null, [0xff69b4, 0xffd700, 0xff6347, 0xda70d6][i%4]);
+    }
+  }
+
+  // Poolside trees (2 palm-style blocky trees)
+  mcTree(poolX-4, poolZ+poolD+4, null, 0x2e7d32, 0x5d4037);
+  mcTree(poolX+poolW+3, poolZ-4, null, 0x2e7d32, 0x5d4037);
+
+  // Water shimmer light
+  scene.add(new THREE.PointLight(0x4a90d9, 0.6, 20, poolX+poolW/2, 1, poolZ+poolD/2));
+
   scene.add(new THREE.PointLight(0xffd700,5,100,0,48,0));
 }
 
@@ -366,342 +687,456 @@ function buildDimension(g,id){
 }
 
 function buildD3(g){
-  // Rich terrain with multiple noise layers
-  const tg=new THREE.PlaneGeometry(400,400,80,80),tp=tg.attributes.position;
-  for(let i=0;i<tp.count;i++){const x=tp.getX(i),y=tp.getY(i);
-    const h=Math.sin(x*0.03)*8+Math.cos(y*0.025)*10+Math.sin(x*0.08+y*0.06)*3+Math.cos(x*0.15+y*0.12)*1.5;
-    tp.setZ(i,h);}
-  tg.computeVertexNormals();
-  const terrain=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({color:0x2d6a3d,roughness:0.9,metalness:0.03,flatShading:true}));
-  terrain.rotation.x=-Math.PI/2;terrain.position.y=-3;g.add(terrain);
-  // Mountain ranges
-  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,r=60+Math.random()*50;
-    const mt=new THREE.Mesh(new THREE.ConeGeometry(10+Math.random()*8,20+Math.random()*18,8),new THREE.MeshStandardMaterial({color:0x4a4a4a,roughness:0.85,flatShading:true}));
-    mt.position.set(Math.cos(a)*r,8,Math.sin(a)*r);g.add(mt);
-    // Snow cap
-    const cap=new THREE.Mesh(new THREE.ConeGeometry(3+Math.random()*2,5+Math.random()*3,8),new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.3}));
-    cap.position.set(Math.cos(a)*r,22,Math.sin(a)*r);g.add(cap);}
-  // Forest - hundreds of trees
-  for(let i=0;i<80;i++){const a=Math.random()*Math.PI*2,r=15+Math.random()*65;
-    const tx=Math.cos(a)*r,tz=Math.sin(a)*r;
-    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.6,5+Math.random()*4,6),new THREE.MeshStandardMaterial({color:0x4a2a10,roughness:0.8}));
-    trunk.position.set(tx,2,tz);g.add(trunk);
-    const tc=0.2+Math.random()*0.3;
-    const leaves=new THREE.Mesh(new THREE.ConeGeometry(3+Math.random()*3,8+Math.random()*6,8),new THREE.MeshStandardMaterial({color:new THREE.Color(0.15+tc,0.4+tc*0.5,0.15+tc*0.3),roughness:0.8}));
-    leaves.position.set(tx,8+Math.random()*3,tz);g.add(leaves);}
-  // River — animated water plane winding through
-  const riverGeom=new THREE.PlaneGeometry(12,300,1,40),rp=riverGeom.attributes.position;
-  for(let i=0;i<rp.count;i++){const y=rp.getY(i);rp.setX(i,Math.sin(y*0.05)*4);}
-  const river=new THREE.Mesh(riverGeom,new THREE.MeshBasicMaterial({color:0x1a6abb,transparent:true,opacity:0.75}));
-  river.rotation.x=-Math.PI/2;river.position.set(30,-1.5,0);river.userData={type:'water'};g.add(river);
-  // Second river
-  const river2=river.clone();river2.position.set(-40,-1.5,20);river2.rotation.z=0.3;g.add(river2);
-  // City in distance with lit windows
-  for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2,r=90+Math.random()*30;
-    const bh=8+Math.random()*20;
-    const b=new THREE.Mesh(new THREE.BoxGeometry(4+Math.random()*4,bh,4+Math.random()*4),new THREE.MeshStandardMaterial({color:0x5a6a7a,roughness:0.5,emissive:0xffaa33,emissiveIntensity:0.15}));
-    b.position.set(Math.cos(a)*r,bh/2-1,Math.sin(a)*r);g.add(b);}
-  // Cloud layer
-  for(let i=0;i<15;i++){const cl=new THREE.Mesh(new THREE.SphereGeometry(8+Math.random()*6,8,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.15}));
-    cl.position.set((Math.random()-0.5)*200,30+Math.random()*15,(Math.random()-0.5)*200);cl.scale.set(2,0.5,2);g.add(cl);spinners.push({m:cl,spd:0.0005});}
-  // Rain particles
-  for(let i=0;i<200;i++){const r=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,1.5,4),new THREE.MeshBasicMaterial({color:0x80a0cc,transparent:true,opacity:0.3}));
-    r.position.set((Math.random()-0.5)*120,Math.random()*40,(Math.random()-0.5)*120);r.userData={type:'rain',baseY:Math.random()*40,speed:0.3+Math.random()*0.3};g.add(r);}
-  // Earthly souls — wandering dim blue orbs
-  for(let i=0;i<40;i++){const a=(i/40)*Math.PI*2,r=10+Math.random()*55;
-    const s=new THREE.Mesh(new THREE.SphereGeometry(0.25,8,8),new THREE.MeshBasicMaterial({color:0x6090c0,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
-    s.position.set(Math.cos(a)*r,2+Math.random()*4,Math.sin(a)*r);
-    s.userData={baseY:2+Math.random()*4,phase:Math.random()*Math.PI*2,speed:0.3+Math.random()*0.4,type:'earthly'};
-    g.add(s);earthlySouls.push(s);}
-  // Sky dome
-  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0x1a3a6a,transparent:true,opacity:0.2,side:THREE.BackSide})));
-  g.add(new THREE.Fog(0x224488,40,180));
+  // 1. Voxel ground
+  mcGround(g, 120, [0x4f7928, 0x3d5c1f, 0x2e4718]);
+
+  // 2. Dirt path winding through
+  const dirtMat = mcMat(0x8b5a2b, 0x6e3b12, 0.15);
+  for (let t = -50; t <= 50; t += 1.5) {
+    const px = Math.sin(t * 0.08) * 15;
+    voxelBlock(px, 0.01, t, 2.5, 0.1, 2.5, dirtMat);
+  }
+
+  // 3. Hills & Valleys
+  mcHill(25, -20, g, 10, 5, 0x4f7928, 0x735238);
+  mcHill(-30, 25, g, 12, 6, 0x4f7928, 0x735238);
+  mcHill(35, 30, g, 8, 4, 0x4f7928, 0x735238);
+
+  // 4. Blocky mountains in distance
+  const stoneMat = mcMat(0x696969, 0x505050, 0.12);
+  const snowMat = mcMat(0xffffff, 0xe0e0e0, 0.1);
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2, r = 55;
+    const mx = Math.cos(angle) * r, mz = Math.sin(angle) * r;
+    const mh = 14 + Math.floor(Math.random() * 8);
+    for (let y = 0; y < mh; y++) {
+      const w = Math.max(1, Math.floor((mh - y) * 0.9));
+      const mat = (y >= mh - 3) ? snowMat : stoneMat;
+      const mBlk = voxelBlock(mx, y + 0.5, mz, w * 1.5, 1, w * 1.5, mat);
+      g.add(mBlk);
+    }
+  }
+
+  // 5. Blocky oak trees
+  for (let i = 0; i < 35; i++) {
+    const a = Math.random() * Math.PI * 2, r = 10 + Math.random() * 40;
+    mcTree(Math.cos(a) * r, Math.sin(a) * r, g, 0x2e7d32, 0x5d4037);
+  }
+
+  // 6. Water pools
+  mcWater(18, -15, 10, 12, g);
+  mcWater(-22, 12, 14, 8, g);
+
+  // 7. Small blocky cottages (simple 3-cube / box structures)
+  const woodMat = mcMat(0x8B4513, 0x5c2e0b, 0.15);
+  const roofMat = mcMat(0x4a2e18, 0x311e10, 0.15);
+  const cobbleMat = mcMat(0x707070, 0x484848, 0.15);
+  [ [12, 18], [-18, -22], [28, -10] ].forEach(([hx, hz]) => {
+    const house = voxelBlock(hx, 2, hz, 5, 4, 5, cobbleMat); g.add(house);
+    const roof = voxelBlock(hx, 4.8, hz, 6, 1.6, 6, roofMat); g.add(roof);
+    const door = voxelBlock(hx, 1.2, hz + 2.51, 1.2, 2.2, 0.1, woodMat); g.add(door);
+  });
+
+  // 8. Flowers, mushrooms, grass tufts
+  const fCols = [0xff3333, 0xffcc00, 0xff66cc, 0xff9933];
+  for (let i = 0; i < 60; i++) {
+    const fx = (Math.random() - 0.5) * 80, fz = (Math.random() - 0.5) * 80;
+    if (i % 3 === 0) mcFlower(fx, fz, g, fCols[i % 4]);
+    else if (i % 3 === 1) mcGrass(fx, fz, g);
+    else mcMushroom(fx, fz, g, (i % 2 === 0 ? 0xe74c3c : 0x8e44ad));
+  }
+
+  // 9. Earthly souls — 40 wandering orbs
+  for (let i = 0; i < 40; i++) {
+    const a = (i / 40) * Math.PI * 2, r = 10 + Math.random() * 45;
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), new THREE.MeshBasicMaterial({ color: 0x6090c0, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
+    s.position.set(Math.cos(a) * r, 2 + Math.random() * 3, Math.sin(a) * r);
+    s.userData = { baseY: 2 + Math.random() * 3, phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.4, type: 'earthly' };
+    g.add(s); earthlySouls.push(s);
+  }
+
+  // Sky dome & Fog
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400, 16, 16), new THREE.MeshBasicMaterial({ color: 0x1a3a6a, transparent: true, opacity: 0.2, side: THREE.BackSide })));
+  g.add(new THREE.Fog(0x224488, 40, 180));
 }
 
 function buildD4(g){
-  // Crystal floor — reflective hexagonal
-  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(80,75,4,6),new THREE.MeshStandardMaterial({color:0x0a2a50,roughness:0.05,metalness:0.95,emissive:0x00bfff,emissiveIntensity:0.05}));
-  gnd.position.y=-2;g.add(gnd);
-  // Massive crystal formations — clusters of prisms
-  for(let i=0;i<25;i++){const a=(i/25)*Math.PI*2,r=15+Math.random()*45,h=10+Math.random()*22;
-    const cluster=new THREE.Group();
-    for(let j=0;j<3+Math.floor(Math.random()*4);j++){
-      const ch=h*(0.5+Math.random()*0.6);
-      const c=new THREE.Mesh(new THREE.ConeGeometry(1+Math.random()*2.5,ch,5+Math.floor(Math.random()*3)),stdMat(0x00bfff,0x00ddff,0.6,0.9,0.05));
-      c.position.set((Math.random()-0.5)*4,0,(Math.random()-0.5)*4);
-      c.rotation.set((Math.random()-0.5)*0.4,(Math.random())*Math.PI,(Math.random()-0.5)*0.4);
-      cluster.add(c);}
-    cluster.position.set(Math.cos(a)*r,h/2,Math.sin(a)*r);
-    g.add(cluster);spinners.push({m:cluster,spd:0.001*(Math.random()-0.5)});}
-  // Central massive crystal
-  const ctr=new THREE.Mesh(new THREE.OctahedronGeometry(8,1),stdMat(0x00ddff,0x00ffff,0.9,0.95,0.05));
-  ctr.position.y=15;g.add(ctr);spinners.push({m:ctr,spd:0.005});
-  const ctrGlow=new THREE.Mesh(new THREE.SphereGeometry(14,16,16),new THREE.MeshBasicMaterial({color:0x00ffff,transparent:true,opacity:0.15,blending:THREE.AdditiveBlending}));
-  ctrGlow.position.y=15;g.add(ctrGlow);
-  // Prismatic light beams from above — colored rays splitting
-  const beamColors=[0xff0066,0xff6600,0xffee00,0x00ff66,0x00bfff,0x6600ff];
-  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;
-    const bc=beamColors[i%6];
-    const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.5,100,8,1,true),new THREE.MeshBasicMaterial({color:bc,transparent:true,opacity:0.15,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
-    beam.position.set(Math.cos(a)*20,45,Math.sin(a)*20);beam.rotation.z=0.1;g.add(beam);
-    spinners.push({m:beam,spd:0.002*(i%2?1:-1)});}
+  // Dark stone floor & cavern
+  mcGround(g, 100, [0x1a1a24, 0x12121c]);
+
+  // Cavern Wall and Ceiling Stalactites/Stalagmites
+  const stoneMat = mcMat(0x2d2d3a, 0x1c1c28, 0.15);
+  for (let i = 0; i < 20; i++) {
+    const a = (i / 20) * Math.PI * 2, r = 40 + Math.random() * 10;
+    const wx = Math.cos(a) * r, wz = Math.sin(a) * r;
+    const wall = voxelBlock(wx, 10, wz, 6, 20, 6, stoneMat); g.add(wall);
+    const smH = 3 + Math.floor(Math.random() * 5);
+    for (let y = 0; y < smH; y++) {
+      g.add(voxelBlock(wx * 0.8, y + 0.5, wz * 0.8, Math.max(1, smH - y), 1, Math.max(1, smH - y), stoneMat));
+    }
+  }
+
+  // Ore Veins in walls / ground
+  const oreColors = [
+    { name: 'diamond', col: 0x00ffff, base: 0x2d2d3a },
+    { name: 'gold', col: 0xffd700, base: 0x2d2d3a },
+    { name: 'emerald', col: 0x00ff66, base: 0x2d2d3a },
+    { name: 'redstone', col: 0xff2200, base: 0x2d2d3a },
+    { name: 'lapis', col: 0x1e90ff, base: 0x2d2d3a }
+  ];
+  for (let i = 0; i < 30; i++) {
+    const ore = oreColors[i % oreColors.length];
+    const ox = (Math.random() - 0.5) * 70, oz = (Math.random() - 0.5) * 70;
+    const oreMat = mcMat(ore.col, ore.base, 0.2, { emissive: ore.col, emissiveIntensity: 0.4 });
+    const oreBlock = voxelBlock(ox, 0.5 + (i % 3), oz, 1.2, 1.2, 1.2, oreMat);
+    g.add(oreBlock);
+  }
+
+  // Amethyst formations & Crystal clusters
+  const crystalColors = [0x9b59b6, 0x00bfff, 0x00ffff, 0xe74c3c, 0x2ecc71];
+  for (let i = 0; i < 22; i++) {
+    const cx = (Math.random() - 0.5) * 75, cz = (Math.random() - 0.5) * 75;
+    const cCol = crystalColors[i % crystalColors.length];
+    const cMat = mcMat(cCol, 0xffffff, 0.2, { emissive: cCol, emissiveIntensity: 0.8, roughness: 0.2 });
+    const cluster = new THREE.Group();
+    const count = 3 + Math.floor(Math.random() * 4);
+    for (let j = 0; j < count; j++) {
+      const h = 2 + Math.random() * 5;
+      const crystal = voxelBlock((Math.random() - 0.5) * 2, h / 2, (Math.random() - 0.5) * 2, 0.8, h, 0.8, cMat);
+      cluster.add(crystal);
+    }
+    cluster.position.set(cx, 0.5, cz);
+    g.add(cluster);
+    spinners.push({ m: cluster, spd: 0.002 * (Math.random() - 0.5) });
+    g.add(new THREE.PointLight(cCol, 1.8, 15, cx, 3, cz));
+  }
+
+  // Central Giant Master Crystal Formation
+  const ctrMat = mcMat(0x00ffff, 0xffffff, 0.2, { emissive: 0x00ffff, emissiveIntensity: 0.9, roughness: 0.1 });
+  const ctr = voxelBlock(0, 10, 0, 4, 12, 4, ctrMat);
+  ctr.rotation.y = Math.PI / 4; g.add(ctr); spinners.push({ m: ctr, spd: 0.005 });
+  g.add(new THREE.PointLight(0x00ffff, 4, 40, 0, 10, 0));
+
+  // Lava Pools (glowing orange blocks)
+  const lavaMat = mcMat(0xff4500, 0xffa500, 0.2, { emissive: 0xff3300, emissiveIntensity: 0.9 });
+  const lava = voxelBlock(22, 0.1, -18, 12, 0.6, 10, lavaMat); g.add(lava);
+  const lava2 = voxelBlock(-25, 0.1, 20, 8, 0.6, 12, lavaMat); g.add(lava2);
+  g.add(new THREE.PointLight(0xff4500, 2.5, 20, 22, 2, -18));
+
   // Floating crystal shards
-  for(let i=0;i<60;i++){const sh=new THREE.Mesh(new THREE.OctahedronGeometry(0.3+Math.random()*0.7,0),new THREE.MeshBasicMaterial({color:0x00bfff,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending}));
-    sh.position.set((Math.random()-0.5)*100,5+Math.random()*25,(Math.random()-0.5)*100);
-    sh.userData={baseY:5+Math.random()*25,phase:Math.random()*Math.PI*2,speed:0.5,type:'shard',orbitR:5+Math.random()*40,orbitA:Math.random()*Math.PI*2};
-    g.add(sh);spinners.push({m:sh,spd:0.01*(Math.random()-0.5)});}
+  for (let i = 0; i < 50; i++) {
+    const shMat = new THREE.MeshBasicMaterial({ color: crystalColors[i % 5], transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
+    const sh = voxelBlock((Math.random() - 0.5) * 90, 4 + Math.random() * 20, (Math.random() - 0.5) * 90, 0.5, 0.5, 0.5, shMat);
+    sh.userData = { baseY: sh.position.y, phase: Math.random() * Math.PI * 2, speed: 0.5, type: 'shard', orbitR: 5 + Math.random() * 40, orbitA: Math.random() * Math.PI * 2 };
+    g.add(sh); spinners.push({ m: sh, spd: 0.01 * (Math.random() - 0.5) });
+  }
+
   // Awakening souls
-  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=10+Math.random()*35;
-    const s=new THREE.Mesh(new THREE.SphereGeometry(0.4,10,10),new THREE.MeshBasicMaterial({color:0x00ddff,transparent:true,opacity:0.65,blending:THREE.AdditiveBlending}));
-    s.position.set(Math.cos(a)*r,4+Math.random()*8,Math.sin(a)*r);
-    s.userData={baseY:4+Math.random()*8,phase:Math.random()*Math.PI*2,speed:0.5,type:'awakening',orbitR:r,orbitA:a};
+  for (let i = 0; i < 25; i++) {
+    const a = (i / 25) * Math.PI * 2, r = 10 + Math.random() * 35;
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.4, 10, 10), new THREE.MeshBasicMaterial({ color: 0x00ddff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending }));
+    s.position.set(Math.cos(a) * r, 3 + Math.random() * 6, Math.sin(a) * r);
+    s.userData = { baseY: 3 + Math.random() * 6, phase: Math.random() * Math.PI * 2, speed: 0.5, type: 'awakening', orbitR: r, orbitA: a };
     g.add(s);
-    const sg=new THREE.Mesh(new THREE.SphereGeometry(0.9,8,8),new THREE.MeshBasicMaterial({color:0x00ddff,transparent:true,opacity:0.2,blending:THREE.AdditiveBlending}));
-    sg.position.copy(s.position);s.userData.glow=sg;g.add(sg);}
-  // Crystal particles drifting up
-  for(let i=0;i<100;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(0.08,4,4),new THREE.MeshBasicMaterial({color:0x00ddff,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
-    p.position.set((Math.random()-0.5)*100,Math.random()*30,(Math.random()-0.5)*100);p.userData={baseY:Math.random()*30,phase:Math.random()*Math.PI*2,type:'particle'};g.add(p);}
-  g.add(new THREE.Fog(0x002244,30,150));
+  }
+
+  g.add(new THREE.Fog(0x002244, 30, 150));
 }
 
 function buildD5(g){
-  // Golden ground with flowers
-  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(90,85,4,64),new THREE.MeshStandardMaterial({color:0x5a4a10,roughness:0.3,metalness:0.7,emissive:0xffd700,emissiveIntensity:0.05}));
-  gnd.position.y=-2;g.add(gnd);
-  // Flower fields — hundreds of impossible flowers
-  const fColors=[0xffd700,0xff80c0,0x80ff90,0xff7080,0xc080ff,0xffa500,0x00ffaa];
-  for(let i=0;i<120;i++){const a=Math.random()*Math.PI*2,r=8+Math.random()*70;
-    const bc=fColors[i%7];
-    const stem=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.15,3+Math.random()*3,5),new THREE.MeshStandardMaterial({color:0x4a7a10,roughness:0.6}));
-    stem.position.set(Math.cos(a)*r,1,Math.sin(a)*r);g.add(stem);
-    const bloom=new THREE.Mesh(new THREE.SphereGeometry(0.8+Math.random()*1.2,10,10),stdMat(bc,bc,0.8,0.3,0.3));
-    bloom.material.transparent=true;bloom.material.opacity=0.85;
-    bloom.position.set(Math.cos(a)*r,4+Math.random()*2,Math.sin(a)*r);
-    bloom.userData={type:'flower',phase:Math.random()*Math.PI*2};g.add(bloom);spinners.push({m:bloom,spd:0.01});}
-  // Golden trees with glowing canopies
-  for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2,r=25+Math.random()*50;
-    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,7+Math.random()*5,8),stdMat(0x8B6914,0x4a3000,0.2,0.3,0.8));
-    trunk.position.set(Math.cos(a)*r,3,Math.sin(a)*r);g.add(trunk);
-    for(let j=0;j<3;j++){const leaves=new THREE.Mesh(new THREE.SphereGeometry(3+Math.random()*2,12,12),stdMat(0xffd700,0xffaa00,0.6,0.3,0.7));
-      leaves.material.transparent=true;leaves.material.opacity=0.75;
-      leaves.position.set(Math.cos(a)*r+(Math.random()-0.5)*3,9+j*2,Math.sin(a)*r+(Math.random()-0.5)*3);
-      g.add(leaves);spinners.push({m:leaves,spd:0.003*(Math.random()-0.5)});}}
-  // Waterfalls from floating islands
-  for(let i=0;i<4;i++){const a=(i/4)*Math.PI*2,r=40+Math.random()*20;
-    // Floating island
-    const island=new THREE.Mesh(new THREE.CylinderGeometry(6,4,3,12),new THREE.MeshStandardMaterial({color:0x6a5a20,roughness:0.5}));
-    island.position.set(Math.cos(a)*r,25,Math.sin(a)*r);g.add(island);
-    // Waterfall
-    const wf=new THREE.Mesh(new THREE.PlaneGeometry(3,25),new THREE.MeshBasicMaterial({color:0x80ddff,transparent:true,opacity:0.5,side:THREE.DoubleSide}));
-    wf.position.set(Math.cos(a)*r,12,Math.sin(a)*r);wf.userData={type:'waterfall'};g.add(wf);
-    // Pond at base
-    const pond=new THREE.Mesh(new THREE.CircleGeometry(5,16),new THREE.MeshBasicMaterial({color:0x4099cc,transparent:true,opacity:0.6}));
-    pond.rotation.x=-Math.PI/2;pond.position.set(Math.cos(a)*r,0.5,Math.sin(a)*r);g.add(pond);}
-  // Butterflies — animated wing pairs
-  for(let i=0;i<30;i++){const bf=new THREE.Group();
-    const w1=new THREE.Mesh(new THREE.PlaneGeometry(0.6,0.4),new THREE.MeshBasicMaterial({color:fColors[i%7],transparent:true,opacity:0.7,side:THREE.DoubleSide}));
-    w1.position.x=-0.35;bf.add(w1);
-    const w2=w1.clone();w2.position.x=0.35;bf.add(w2);
-    bf.position.set((Math.random()-0.5)*80,5+Math.random()*10,(Math.random()-0.5)*80);
-    bf.userData={type:'butterfly',wings:[w1,w2],phase:Math.random()*Math.PI*2,speed:0.5+Math.random()*0.5,orbitR:10+Math.random()*30,orbitA:Math.random()*Math.PI*2,baseY:5+Math.random()*10};
-    g.add(bf);}
-  // Golden light rays from above
-  for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2;
-    const ray=new THREE.Mesh(new THREE.CylinderGeometry(0.2,2,80,8,1,true),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.1,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
-    ray.position.set(Math.cos(a)*30,40,Math.sin(a)*30);g.add(ray);}
-  // Falling petals
-  for(let i=0;i<80;i++){const pt=new THREE.Mesh(new THREE.PlaneGeometry(0.2,0.2),new THREE.MeshBasicMaterial({color:fColors[i%7],transparent:true,opacity:0.5,side:THREE.DoubleSide}));
-    pt.position.set((Math.random()-0.5)*100,Math.random()*30,(Math.random()-0.5)*100);
-    pt.userData={baseY:Math.random()*30,phase:Math.random()*Math.PI*2,type:'petal'};g.add(pt);}
+  // Rolling grass ground
+  mcGround(g, 120, [0x55aa22, 0x448811]);
+  mcHill(20, -15, g, 12, 4, 0x55aa22, 0x664422);
+  mcHill(-25, 20, g, 10, 3, 0x55aa22, 0x664422);
+
+  // Varied trees: Oak, Birch, Cherry Blossom
+  for (let i = 0; i < 30; i++) {
+    const a = Math.random() * Math.PI * 2, r = 12 + Math.random() * 45;
+    const tx = Math.cos(a) * r, tz = Math.sin(a) * r;
+    const tType = i % 3;
+    if (tType === 0) mcTree(tx, tz, g, 0x33aa33, 0x5d4037);
+    else if (tType === 1) mcTree(tx, tz, g, 0x55cc55, 0xd0d0d0);
+    else mcTree(tx, tz, g, 0xff99bb, 0x4a2e18);
+  }
+
+  // Water streams & Lily pads
+  mcWater(0, 10, 8, 30, g);
+  mcWater(15, -15, 20, 8, g);
+  const padMat = mcMat(0x11aa33, 0x0e7722, 0.1);
+  for (let i = 0; i < 10; i++) {
+    const pad = voxelBlock((Math.random() - 0.5) * 6, 0.22, 5 + (Math.random() - 0.5) * 15, 1.2, 0.05, 1.2, padMat);
+    g.add(pad);
+  }
+
+  // Pumpkin patches and Melon blocks
+  const pumpkinMat = mcMat(0xff7700, 0xd45500, 0.2, { emissive: 0x331100, emissiveIntensity: 0.2 });
+  const melonMat = mcMat(0x228b22, 0x006400, 0.2);
+  for (let i = 0; i < 12; i++) {
+    const px = 18 + (Math.random() - 0.5) * 8, pz = 18 + (Math.random() - 0.5) * 8;
+    g.add(voxelBlock(px, 0.5, pz, 1, 1, 1, i % 2 === 0 ? pumpkinMat : melonMat));
+  }
+
+  // Flowers
+  const fColors = [0xffd700, 0xff80c0, 0x80ff90, 0xff7080, 0xc080ff, 0xffa500, 0x00ffaa, 0xff3366];
+  for (let i = 0; i < 150; i++) {
+    const fx = (Math.random() - 0.5) * 90, fz = (Math.random() - 0.5) * 90;
+    if (fx * fx + fz * fz > 40) {
+      mcFlower(fx, fz, g, fColors[i % fColors.length]);
+    }
+  }
+
+  // Butterflies
+  for (let i = 0; i < 30; i++) {
+    const bf = new THREE.Group();
+    const w1 = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), new THREE.MeshBasicMaterial({ color: fColors[i % fColors.length], transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
+    w1.position.x = -0.3; bf.add(w1);
+    const w2 = w1.clone(); w2.position.x = 0.3; bf.add(w2);
+    bf.position.set((Math.random() - 0.5) * 80, 3 + Math.random() * 8, (Math.random() - 0.5) * 80);
+    bf.userData = { type: 'butterfly', wings: [w1, w2], phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 0.5, orbitR: 10 + Math.random() * 30, orbitA: Math.random() * Math.PI * 2, baseY: bf.position.y };
+    g.add(bf);
+  }
+
+  // Glowing Fireflies
+  for (let i = 0; i < 60; i++) {
+    const ff = voxelBlock((Math.random() - 0.5) * 80, 1 + Math.random() * 6, (Math.random() - 0.5) * 80, 0.2, 0.2, 0.2, new THREE.MeshBasicMaterial({ color: 0xffff55, transparent: true, opacity: 0.8 }));
+    ff.userData = { baseY: ff.position.y, phase: Math.random() * Math.PI * 2, type: 'particle' };
+    g.add(ff);
+  }
+
   // Light-body souls with halos
-  for(let i=0;i<25;i++){const a=(i/25)*Math.PI*2,r=8+Math.random()*55;
-    const s=new THREE.Mesh(new THREE.SphereGeometry(0.5,12,12),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.85,blending:THREE.AdditiveBlending}));
-    s.position.set(Math.cos(a)*r,4+Math.random()*6,Math.sin(a)*r);
-    s.userData={baseY:4+Math.random()*6,phase:Math.random()*Math.PI*2,speed:0.6,type:'lightbody',orbitR:r,orbitA:a};
+  for (let i = 0; i < 25; i++) {
+    const a = (i / 25) * Math.PI * 2, r = 8 + Math.random() * 50;
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending }));
+    s.position.set(Math.cos(a) * r, 3 + Math.random() * 6, Math.sin(a) * r);
+    s.userData = { baseY: 3 + Math.random() * 6, phase: Math.random() * Math.PI * 2, speed: 0.6, type: 'lightbody', orbitR: r, orbitA: a };
     g.add(s);
-    const halo=new THREE.Mesh(new THREE.TorusGeometry(1,0.08,6,16),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
-    halo.position.copy(s.position);halo.rotation.x=Math.PI/2;s.userData.glow=halo;g.add(halo);}
-  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0xaa8800,transparent:true,opacity:0.12,side:THREE.BackSide})));
-  g.add(new THREE.Fog(0xddbb44,40,180));
+    const halo = new THREE.Mesh(new THREE.TorusGeometry(1, 0.08, 6, 16), new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending }));
+    halo.position.copy(s.position); halo.rotation.x = Math.PI / 2; s.userData.glow = halo; g.add(halo);
+  }
+
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400, 16, 16), new THREE.MeshBasicMaterial({ color: 0xaa8800, transparent: true, opacity: 0.12, side: THREE.BackSide })));
+  g.add(new THREE.Fog(0xddbb44, 40, 180));
 }
 
 function buildD6(g){
-  // Multiple undulating wave planes at different heights
-  const eColors=[0x8a2be2,0x6a0dad,0x9933cc,0xbb44dd,0x7722aa];
-  for(let i=0;i<5;i++){const wg=new THREE.PlaneGeometry(250,250,40,40),wp=wg.attributes.position;
-    for(let j=0;j<wp.count;j++){const x=wp.getX(j),y=wp.getY(j);wp.setZ(j,Math.sin(x*0.05+i)*6+Math.cos(y*0.04+i*1.5)*5);}
-    wg.computeVertexNormals();
-    const w=new THREE.Mesh(wg,new THREE.MeshBasicMaterial({color:eColors[i],transparent:true,opacity:0.06+i*0.02,wireframe:true}));
-    w.rotation.x=-Math.PI/2;w.position.y=i*5-10;g.add(w);spinners.push({m:w,spd:0.001*(i+1)});}
-  // Energy streams — flowing rivers of light
-  for(let i=0;i<20;i++){const pts=[],a0=(i/20)*Math.PI*2,c0=eColors[i%5];
-    for(let j=0;j<30;j++){const t=j/30;pts.push(new THREE.Vector3(
-      Math.cos(a0+t*3)*35*(1-t*0.2),t*25-8+Math.sin(t*5)*3,
-      Math.sin(a0+t*3)*35*(1-t*0.2)));}
-    const curve=new THREE.CatmullRomCurve3(pts);
-    const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,50,0.2,8,false),new THREE.MeshBasicMaterial({color:c0,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending}));
-    g.add(tube);}
-  // Central energy vortex
-  const vortex=new THREE.Mesh(new THREE.CylinderGeometry(0.5,12,30,8,20,true),new THREE.MeshBasicMaterial({color:0x8a2be2,transparent:true,opacity:0.15,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
-  vortex.position.y=10;g.add(vortex);spinners.push({m:vortex,spd:0.01});
-  // Particle fountains erupting upward
-  for(let i=0;i<150;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(0.1,4,4),new THREE.MeshBasicMaterial({color:eColors[i%5],transparent:true,opacity:0.5,blending:THREE.AdditiveBlending}));
-    const a=Math.random()*Math.PI*2,r=Math.random()*40;
-    p.position.set(Math.cos(a)*r,Math.random()*25,Math.sin(a)*r);
-    p.userData={baseY:Math.random()*25,phase:Math.random()*Math.PI*2,type:'particle',speed:0.02+Math.random()*0.04};g.add(p);}
-  // Lightning-like energy arcs
-  for(let i=0;i<6;i++){const pts=[];
-    for(let j=0;j<10;j++){pts.push(new THREE.Vector3((Math.random()-0.5)*80,Math.random()*30,(Math.random()-0.5)*80));}
-    const curve=new THREE.CatmullRomCurve3(pts);
-    const arc=new THREE.Mesh(new THREE.TubeGeometry(curve,20,0.05,4,false),new THREE.MeshBasicMaterial({color:0xcc88ff,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
-    g.add(arc);spinners.push({m:arc,spd:0.05*(Math.random()-0.5)});}
-  // Energy souls
-  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=10+Math.random()*40;
-    const s=new THREE.Mesh(new THREE.SphereGeometry(0.45,10,10),new THREE.MeshBasicMaterial({color:0x8a2be2,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending}));
-    s.position.set(Math.cos(a)*r,Math.random()*18,Math.sin(a)*r);
-    s.userData={baseY:Math.random()*18,phase:Math.random()*Math.PI*2,speed:0.8,type:'energy',orbitR:r,orbitA:a};
-    g.add(s);}
-  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0x2a0a4a,transparent:true,opacity:0.25,side:THREE.BackSide})));
-  g.add(new THREE.Fog(0x330055,40,160));
+  const netherMat = mcMat(0x661111, 0x440000, 0.2);
+  const basaltMat = mcMat(0x2b2b36, 0x1a1a24, 0.15);
+  const glowEnergyMat = mcMat(0x8a2be2, 0xff00ff, 0.2, { emissive: 0x8a2be2, emissiveIntensity: 0.9 });
+  const orangeEnergyMat = mcMat(0xff4500, 0xffa500, 0.2, { emissive: 0xff4500, emissiveIntensity: 0.9 });
+
+  // Floating Block Islands (NO solid continuous ground)
+  const islandCoords = [
+    [0, 0, 0, 16, 3, 16],
+    [-25, 8, -15, 12, 2.5, 12],
+    [30, -5, 20, 14, 3, 10],
+    [-18, -12, 28, 10, 2, 10],
+    [22, 12, -25, 12, 3, 12],
+    [0, 22, -35, 10, 2, 10]
+  ];
+  islandCoords.forEach(([ix, iy, iz, iw, ih, id]) => {
+    const isl = voxelBlock(ix, iy, iz, iw, ih, id, netherMat); g.add(isl);
+    const pillar = voxelBlock(ix, iy - ih - 3, iz, iw * 0.5, 6, id * 0.5, basaltMat); g.add(pillar);
+    const crystal = voxelBlock(ix, iy - ih - 6.5, iz, 1.5, 3, 1.5, glowEnergyMat); g.add(crystal);
+  });
+
+  // Vertical Energy / Lava Falls
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2, r = 25;
+    const fx = Math.cos(angle) * r, fz = Math.sin(angle) * r;
+    const fallMat = (i % 2 === 0) ? glowEnergyMat : orangeEnergyMat;
+    const stream = voxelBlock(fx, 5, fz, 1.5, 30, 1.5, fallMat);
+    stream.userData = { type: 'waterfall' };
+    g.add(stream);
+  }
+
+  // Floating Ghostly & Energy Cubes
+  for (let i = 0; i < 40; i++) {
+    const cx = (Math.random() - 0.5) * 80, cy = -15 + Math.random() * 45, cz = (Math.random() - 0.5) * 80;
+    const cMat = (i % 2 === 0) ? glowEnergyMat : orangeEnergyMat;
+    const cube = voxelBlock(cx, cy, cz, 1 + Math.random() * 1.5, 1 + Math.random() * 1.5, 1 + Math.random() * 1.5, cMat);
+    g.add(cube);
+    spinners.push({ m: cube, spd: 0.008 * (Math.random() - 0.5) });
+  }
+
+  // Energy Souls floating
+  for (let i = 0; i < 30; i++) {
+    const a = (i / 30) * Math.PI * 2, r = 10 + Math.random() * 40;
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.45, 10, 10), new THREE.MeshBasicMaterial({ color: 0x8a2be2, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending }));
+    s.position.set(Math.cos(a) * r, Math.random() * 20, Math.sin(a) * r);
+    s.userData = { baseY: s.position.y, phase: Math.random() * Math.PI * 2, speed: 0.8, type: 'energy', orbitR: r, orbitA: a };
+    g.add(s);
+  }
+
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400, 16, 16), new THREE.MeshBasicMaterial({ color: 0x2a0a4a, transparent: true, opacity: 0.25, side: THREE.BackSide })));
+  g.add(new THREE.Fog(0x330055, 40, 160));
 }
 
 function buildD7(g){
-  // Dense star field — consciousness as stars
-  const sStars=[];
-  for(let i=0;i<500;i++){const st=new THREE.Mesh(new THREE.SphereGeometry(0.06+Math.random()*0.2,6,6),new THREE.MeshBasicMaterial({color:new THREE.Color().setHSL(0.75+Math.random()*0.15,0.8,0.5+Math.random()*0.3),transparent:true,opacity:0.5+Math.random()*0.5}));
-    st.position.set((Math.random()-0.5)*250,Math.random()*90-15,(Math.random()-0.5)*250);
-    st.userData={phase:Math.random()*Math.PI*2,type:'star'};g.add(st);sStars.push(st);}
-  // Neural network — lines connecting thought clusters
-  const nodePos=[];
-  for(let i=0;i<40;i++){nodePos.push(new THREE.Vector3((Math.random()-0.5)*120,Math.random()*40,(Math.random()-0.5)*120));}
-  for(let i=0;i<40;i++){
-    for(let j=i+1;j<40;j++){const d=nodePos[i].distanceTo(nodePos[j]);if(d<25){
-      const geo=new THREE.BufferGeometry().setFromPoints([nodePos[i],nodePos[j]]);
-      const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xda70d6,transparent:true,opacity:0.15,blending:THREE.AdditiveBlending}));
-      g.add(line);}}
+  const endStoneMat = mcMat(0xd8d898, 0xbfbf7f, 0.15);
+  const obsidianMat = mcMat(0x1a1228, 0x0d0818, 0.2);
+  const enderCrystalMat = mcMat(0xda70d6, 0xffffff, 0.2, { emissive: 0xda70d6, emissiveIntensity: 1.0 });
+
+  // Floating End Stone Islands
+  const mainIsland = voxelBlock(0, 0, 0, 36, 4, 36, endStoneMat); g.add(mainIsland);
+  [ [-30, 6, -25, 14, 3, 14], [35, -4, 20, 16, 3, 16], [-20, -8, 30, 12, 3, 12], [28, 10, -30, 12, 3, 12] ].forEach(([ix, iy, iz, iw, ih, id]) => {
+    g.add(voxelBlock(ix, iy, iz, iw, ih, id, endStoneMat));
+  });
+
+  // Tall Obsidian Pillars with Ender Crystals
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2, r = 14;
+    const px = Math.cos(angle) * r, pz = Math.sin(angle) * r;
+    const pH = 12 + i * 2;
+    const pillar = voxelBlock(px, pH / 2 + 2, pz, 2.5, pH, 2.5, obsidianMat); g.add(pillar);
+    const crystal = voxelBlock(px, pH + 3.5, pz, 1.5, 1.5, 1.5, enderCrystalMat);
+    crystal.rotation.y = Math.PI / 4; g.add(crystal);
+    spinners.push({ m: crystal, spd: 0.01 });
+    g.add(new THREE.PointLight(0xda70d6, 2, 15, px, pH + 3.5, pz));
   }
-  // Thought clusters — groups of pulsing nodes
-  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,r=25+Math.random()*30;
-    const cl=new THREE.Group();
-    for(let j=0;j<20;j++){const pt=new THREE.Mesh(new THREE.SphereGeometry(0.15+Math.random()*0.2,6,6),new THREE.MeshBasicMaterial({color:0xff00ff,transparent:true,opacity:0.5+Math.random()*0.3,blending:THREE.AdditiveBlending}));
-      pt.position.set((Math.random()-0.5)*10,Math.random()*10,(Math.random()-0.5)*10);
-      pt.userData={phase:Math.random()*Math.PI*2,type:'thought'};cl.add(pt);}
-    cl.position.set(Math.cos(a)*r,12+Math.random()*20,Math.sin(a)*r);
-    g.add(cl);spinners.push({m:cl,spd:0.003*(Math.random()-0.5)});}
-  // Ripples of awareness — expanding rings
-  for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(1,0.1,6,32),new THREE.MeshBasicMaterial({color:0xda70d6,transparent:true,opacity:0.3,blending:THREE.AdditiveBlending}));
-    ring.position.set((Math.random()-0.5)*80,Math.random()*30,(Math.random()-0.5)*80);
-    ring.userData={type:'ripple',phase:i,baseR:1};g.add(ring);}
+
+  // Chorus Plants
+  const chorusMat = mcMat(0x8a529e, 0x5c336b, 0.15);
+  for (let i = 0; i < 15; i++) {
+    const cx = (Math.random() - 0.5) * 28, cz = (Math.random() - 0.5) * 28;
+    const plant = new THREE.Group();
+    const stemH = 3 + Math.floor(Math.random() * 4);
+    for (let y = 0; y < stemH; y++) plant.add(voxelBlock(0, y + 2, 0, 0.6, 1, 0.6, chorusMat));
+    plant.add(voxelBlock(0.8, stemH + 1, 0, 1, 0.6, 0.6, chorusMat));
+    plant.add(voxelBlock(0.8, stemH + 2, 0, 0.6, 1, 0.6, chorusMat));
+    plant.position.set(cx, 0, cz); g.add(plant);
+  }
+
+  // Star field of thoughts
+  for (let i = 0; i < 150; i++) {
+    const st = voxelBlock((Math.random() - 0.5) * 160, Math.random() * 60, (Math.random() - 0.5) * 160, 0.2, 0.2, 0.2, new THREE.MeshBasicMaterial({ color: 0xda70d6, transparent: true, opacity: 0.8 }));
+    st.userData = { phase: Math.random() * Math.PI * 2, type: 'star' };
+    g.add(st);
+  }
+
   // Consciousness souls
-  for(let i=0;i<30;i++){const a=(i/30)*Math.PI*2,r=15+Math.random()*55;
-    const s=new THREE.Mesh(new THREE.SphereGeometry(0.35,10,10),new THREE.MeshBasicMaterial({color:0xda70d6,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending}));
-    s.position.set(Math.cos(a)*r,Math.random()*35,Math.sin(a)*r);
-    s.userData={baseY:Math.random()*35,phase:Math.random()*Math.PI*2,speed:0.5,type:'consciousness',orbitR:r,orbitA:a};
-    g.add(s);}
-  // Brain-like neural structure at center
-  const brain=new THREE.Mesh(new THREE.IcosahedronGeometry(8,2),new THREE.MeshBasicMaterial({color:0xda70d6,transparent:true,opacity:0.08,wireframe:true}));
-  brain.position.y=15;g.add(brain);spinners.push({m:brain,spd:0.002});
-  g.add(new THREE.Fog(0x2a0a3a,50,180));
+  for (let i = 0; i < 30; i++) {
+    const a = (i / 30) * Math.PI * 2, r = 10 + Math.random() * 45;
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 10), new THREE.MeshBasicMaterial({ color: 0xda70d6, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }));
+    s.position.set(Math.cos(a) * r, 3 + Math.random() * 20, Math.sin(a) * r);
+    s.userData = { baseY: s.position.y, phase: Math.random() * Math.PI * 2, speed: 0.5, type: 'consciousness', orbitR: r, orbitA: a };
+    g.add(s);
+  }
+
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400, 16, 16), new THREE.MeshBasicMaterial({ color: 0x150525, transparent: true, opacity: 0.3, side: THREE.BackSide })));
+  g.add(new THREE.Fog(0x2a0a3a, 50, 180));
 }
 
 function buildD8(g){
-  // Vibrating grid floor — pulsing with data
-  const grid=new THREE.GridHelper(120,30,0x7b68ee,0x2d1a5e);grid.position.y=0;
-  grid.material.transparent=true;grid.material.opacity=0.4;g.add(grid);
-  // Second grid at angle
-  const grid2=new THREE.GridHelper(120,30,0x9988ff,0x3d2a6e);grid2.position.y=0.1;grid2.rotation.y=Math.PI/4;
-  grid2.material.transparent=true;grid2.material.opacity=0.2;g.add(grid2);
-  // Central vibrating icosahedron
-  const gs=new THREE.Mesh(new THREE.IcosahedronGeometry(12,2),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.3,wireframe:true}));
-  gs.position.y=12;g.add(gs);spinners.push({m:gs,spd:0.003});
-  const gsCore=new THREE.Mesh(new THREE.SphereGeometry(4,16,16),new THREE.MeshBasicMaterial({color:0x9988ff,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
-  gsCore.position.y=12;g.add(gsCore);
-  // Resonant rings at multiple angles
-  for(let i=0;i<8;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(18+i*4,0.25,8,64),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.25+i*0.03}));
-    ring.position.y=12;ring.rotation.x=Math.PI/2+i*0.25;ring.rotation.y=i*0.15;
-    g.add(ring);spinners.push({m:ring,spd:0.005*(i%2?1:-1)});}
-  // Frequency wave visualization — sine wave planes
-  for(let i=0;i<3;i++){const wg=new THREE.PlaneGeometry(100,100,60,4),wp=wg.attributes.position;
-    for(let j=0;j<wp.count;j++){const x=wp.getX(j),y=wp.getY(j);wp.setZ(j,Math.sin(x*0.15+i)*3+Math.cos(y*0.1+i)*2);}
-    const wave=new THREE.Mesh(wg,new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.06,wireframe:true}));
-    wave.rotation.x=-Math.PI/2;wave.position.y=i*3;g.add(wave);spinners.push({m:wave,spd:0.002*(i+1)});}
-  // Data streams flowing in grid channels
-  for(let i=0;i<30;i++){const pts=[];
-    for(let j=0;j<15;j++){pts.push(new THREE.Vector3((Math.random()-0.5)*100,Math.random()*20,(Math.random()-0.5)*100));}
-    const curve=new THREE.CatmullRomCurve3(pts);
-    const stream=new THREE.Mesh(new THREE.TubeGeometry(curve,25,0.08,6,false),new THREE.MeshBasicMaterial({color:0x9988ff,transparent:true,opacity:0.3,blending:THREE.AdditiveBlending}));
-    g.add(stream);}
-  // Frequency nodes — 50 resonating
-  for(let i=0;i<50;i++){const a=(i/50)*Math.PI*2,r=20+Math.random()*40;
-    const n=new THREE.Mesh(new THREE.SphereGeometry(0.35,10,10),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending}));
-    n.position.set(Math.cos(a)*r,5+Math.random()*15,Math.sin(a)*r);
-    n.userData={baseY:5+Math.random()*15,phase:Math.random()*Math.PI*2,speed:1.0,type:'frequency',orbitR:r,orbitA:a};
-    g.add(n);
-    const ng=new THREE.Mesh(new THREE.SphereGeometry(0.8,8,8),new THREE.MeshBasicMaterial({color:0x7b68ee,transparent:true,opacity:0.2,blending:THREE.AdditiveBlending}));
-    ng.position.copy(n.position);n.userData.glow=ng;g.add(ng);}
-  // Geometric morphing shapes
-  for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2,r=30+Math.random()*20;
-    const shape=new THREE.Mesh(new THREE.OctahedronGeometry(1.5+Math.random()*1,0),new THREE.MeshBasicMaterial({color:0x9988ff,transparent:true,opacity:0.4,wireframe:true}));
-    shape.position.set(Math.cos(a)*r,8+Math.random()*10,Math.sin(a)*r);
-    g.add(shape);spinners.push({m:shape,spd:0.01*(Math.random()-0.5)});}
-  g.add(new THREE.Fog(0x1a0a3e,40,150));
+  const ironGridMat = mcMat(0x3a3a4a, 0x222230, 0.15);
+  const redstoneLineMat = mcMat(0xff1100, 0xaa0000, 0.2, { emissive: 0xff1100, emissiveIntensity: 0.9 });
+  const commandBlockMat = mcMat(0x8a2be2, 0xc71585, 0.2, { emissive: 0x8a2be2, emissiveIntensity: 0.7 });
+  const diamondBaseMat = mcMat(0x00ffff, 0x00bfff, 0.2, { emissive: 0x00ffff, emissiveIntensity: 0.5 });
+
+  // Grid Base Floor
+  for (let x = -40; x <= 40; x += 8) {
+    for (let z = -40; z <= 40; z += 8) {
+      g.add(voxelBlock(x, 0, z, 7, 0.5, 7, ironGridMat));
+    }
+  }
+
+  // Redstone Lines
+  for (let x = -36; x <= 36; x += 8) {
+    const rLine = voxelBlock(x, 0.3, 0, 1, 0.1, 72, redstoneLineMat); g.add(rLine);
+  }
+  for (let z = -36; z <= 36; z += 8) {
+    const rLine = voxelBlock(0, 0.3, z, 72, 0.1, 1, redstoneLineMat); g.add(rLine);
+  }
+
+  // Command Blocks
+  [ [-16, -16], [16, -16], [-16, 16], [16, 16], [0, 0] ].forEach(([cx, cz]) => {
+    const cmd = voxelBlock(cx, 1, cz, 2, 2, 2, commandBlockMat); g.add(cmd);
+    spinners.push({ m: cmd, spd: 0.005 });
+  });
+
+  // Beacon Beams
+  [ [-24, 24], [24, -24], [-24, -24], [24, 24] ].forEach(([bx, bz]) => {
+    const base = voxelBlock(bx, 1, bz, 3, 2, 3, diamondBaseMat); g.add(base);
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 100, 8, 1, true), new THREE.MeshBasicMaterial({ color: 0x7b68ee, transparent: true, opacity: 0.25, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+    beam.position.set(bx, 50, bz); g.add(beam);
+  });
+
+  // Central Wireframe
+  const gs = new THREE.Mesh(new THREE.IcosahedronGeometry(10, 2), new THREE.MeshBasicMaterial({ color: 0x7b68ee, transparent: true, opacity: 0.4, wireframe: true }));
+  gs.position.y = 12; g.add(gs); spinners.push({ m: gs, spd: 0.003 });
+
+  // Data streams
+  for (let i = 0; i < 40; i++) {
+    const cube = voxelBlock((Math.random() - 0.5) * 80, 2 + Math.random() * 15, (Math.random() - 0.5) * 80, 0.6, 0.6, 0.6, redstoneLineMat);
+    cube.userData = { baseY: cube.position.y, phase: Math.random() * Math.PI * 2, type: 'particle' };
+    g.add(cube);
+  }
+
+  g.add(new THREE.Fog(0x1a0a3a, 40, 160));
 }
 
 function buildHeaven(g){
-  // Celestial golden floor — radiant
-  const gnd=new THREE.Mesh(new THREE.CylinderGeometry(100,95,3,64),new THREE.MeshStandardMaterial({color:0xfffaee,roughness:0.05,metalness:0.95,emissive:0xffd700,emissiveIntensity:0.15}));
-  gnd.position.y=-2;g.add(gnd);
-  // Cloud floor — wisps below
-  for(let i=0;i<20;i++){const cl=new THREE.Mesh(new THREE.SphereGeometry(6+Math.random()*5,8,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.12}));
-    cl.position.set((Math.random()-0.5)*120,-5+Math.random()*3,(Math.random()-0.5)*120);cl.scale.set(3,0.3,3);g.add(cl);}
-  // 16 celestial golden pillars in a circle
-  for(let i=0;i<16;i++){const a=(i/16)*Math.PI*2;
-    const col=new THREE.Mesh(new THREE.CylinderGeometry(1,1.1,25,16),stdMat(0xffd700,0xffd700,0.7,0.9,0.05));
-    col.position.set(Math.cos(a)*45,12,Math.sin(a)*45);g.add(col);
-    const cap=new THREE.Mesh(new THREE.SphereGeometry(2,16,16),stdMat(0xffffff,0xffd700,1.0,0.5,0.1));
-    cap.position.set(Math.cos(a)*45,25.5,Math.sin(a)*45);g.add(cap);
-    pillarGlow.push({m:cap,base:0.8,ph:i*0.5,spd:2.0,amp:0.2});
-    // Light beam from each pillar
-    const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,80,8,1,true),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.12,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
-    beam.position.set(Math.cos(a)*45,65,Math.sin(a)*45);g.add(beam);}
-  // Central light fountain — erupting upward
-  const fountain=new THREE.Mesh(new THREE.CylinderGeometry(0.5,5,80,16,1,true),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.25,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
-  fountain.position.y=38;g.add(fountain);
-  const fountainCore=new THREE.Mesh(new THREE.SphereGeometry(5,16,16),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
-  fountainCore.position.y=0;g.add(fountainCore);
-  // Rose windows / mandalas in the sky
-  for(let i=0;i<4;i++){const a=(i/4)*Math.PI*2;
-    const mandala=new THREE.Mesh(new THREE.RingGeometry(8,12,16),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.15,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
-    mandala.position.set(Math.cos(a)*60,40,Math.sin(a)*60);
-    mandala.lookAt(0,40,0);g.add(mandala);spinners.push({m:mandala,spd:0.005*(i%2?1:-1)});
-    for(let j=0;j<8;j++){const ray=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,6),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.2}));
-      ray.position.set(Math.cos(a)*60,40,Math.sin(a)*60);ray.lookAt(0,40,0);
-      ray.rotateZ(j*Math.PI/4);g.add(ray);}}
-  // Divine light rays from all directions
-  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;
-    const ray=new THREE.Mesh(new THREE.CylinderGeometry(0.3,3,100,8,1,true),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.08,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
-    ray.position.set(Math.cos(a)*50,50,Math.sin(a)*50);ray.rotation.z=0.15*Math.cos(a);g.add(ray);}
-  // Ascended souls — 50 glowing white-gold with halos
-  for(let i=0;i<50;i++){const a=(i/50)*Math.PI*2,r=10+Math.random()*70;
-    const s=new THREE.Mesh(new THREE.SphereGeometry(0.6,12,12),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.9,blending:THREE.AdditiveBlending}));
-    s.position.set(Math.cos(a)*r,3+Math.random()*25,Math.sin(a)*r);
-    s.userData={baseY:3+Math.random()*25,phase:Math.random()*Math.PI*2,speed:0.4,type:'ascended',orbitR:r,orbitA:a};
-    g.add(s);
-    const halo=new THREE.Mesh(new THREE.TorusGeometry(1.2,0.1,6,16),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending}));
-    halo.position.copy(s.position);halo.rotation.x=Math.PI/2;s.userData.glow=halo;g.add(halo);}
-  // 300 angelic golden particles
-  for(let i=0;i<300;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(0.06+Math.random()*0.08,4,4),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.5+Math.random()*0.3,blending:THREE.AdditiveBlending}));
-    p.position.set((Math.random()-0.5)*180,Math.random()*50,(Math.random()-0.5)*180);
-    p.userData={baseY:Math.random()*50,phase:Math.random()*Math.PI*2,type:'particle'};g.add(p);}
-  // Choir of light — concentric golden rings
-  for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(15+i*10,0.15,8,64),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.2-i*0.03,blending:THREE.AdditiveBlending}));
-    ring.position.y=20;ring.rotation.x=Math.PI/2;g.add(ring);spinners.push({m:ring,spd:0.003*(i%2?1:-1)});}
-  g.add(new THREE.PointLight(0xffffff,8,250,0,30,0));
-  g.add(new THREE.PointLight(0xffd700,3,100,0,0,0));
-  g.add(new THREE.Mesh(new THREE.SphereGeometry(400,16,16),new THREE.MeshBasicMaterial({color:0xfff8dd,transparent:true,opacity:0.12,side:THREE.BackSide})));
-  g.add(new THREE.Fog(0xffeecc,50,200));
-}
+  const goldBlockMat = mcMat(0xffd700, 0xb8860b, 0.15, { emissive: 0xffd700, emissiveIntensity: 0.2 });
+  const quartzBlockMat = mcMat(0xfff8ee, 0xe6e0d4, 0.1);
 
+  // Golden & Quartz Terrain
+  mcGround(g, 120, [0xffd700, 0xe6c200]);
+  [ [-25, 8, -25, 16, 3, 16], [28, -4, 22, 18, 3, 18], [-20, -6, 28, 14, 3, 14] ].forEach(([ix, iy, iz, iw, ih, id]) => {
+    const isl = voxelBlock(ix, iy, iz, iw, ih, id, quartzBlockMat); g.add(isl);
+    const wf = voxelBlock(ix + iw / 2, iy - 6, iz, 1.5, 12, 1.5, new THREE.MeshStandardMaterial({ map: makePixelTex(0x00ffff, 0x80ffff, 0.1), transparent: true, opacity: 0.7 }));
+    wf.userData = { type: 'waterfall' }; g.add(wf);
+  });
+
+  // White Quartz Greek-style Pillars
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2, r = 40;
+    const px = Math.cos(angle) * r, pz = Math.sin(angle) * r;
+    const pillar = voxelBlock(px, 10, pz, 2, 20, 2, quartzBlockMat); g.add(pillar);
+    const cap = voxelBlock(px, 21, pz, 2.8, 1.5, 2.8, goldBlockMat); g.add(cap);
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 80, 8, 1, true), new THREE.MeshBasicMaterial({ color: 0xffffd0, transparent: true, opacity: 0.2, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+    beam.position.set(px, 50, pz); g.add(beam);
+  }
+
+  // Golden Trees with White Leaf Cubes
+  for (let i = 0; i < 20; i++) {
+    const a = Math.random() * Math.PI * 2, r = 10 + Math.random() * 45;
+    mcTree(Math.cos(a) * r, Math.sin(a) * r, g, 0xffffff, 0xffd700);
+  }
+
+  // Rainbow Bridges
+  const rainbowCols = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x8b00ff];
+  for (let t = 0; t <= 1; t += 0.05) {
+    const bx = THREE.MathUtils.lerp(-25, 0, t);
+    const bz = THREE.MathUtils.lerp(-25, 0, t);
+    const by = Math.sin(t * Math.PI) * 6 + 4;
+    const rMat = new THREE.MeshBasicMaterial({ color: rainbowCols[Math.floor(t * 100) % 6], transparent: true, opacity: 0.7 });
+    g.add(voxelBlock(bx, by, bz, 1.2, 0.3, 1.2, rMat));
+  }
+
+  // Crystal clear water streams
+  mcWater(0, 15, 12, 25, g);
+
+  // 50 Ascended Soul NPCs
+  for (let i = 0; i < 50; i++) {
+    const a = (i / 50) * Math.PI * 2, r = 10 + Math.random() * 65;
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.6, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }));
+    s.position.set(Math.cos(a) * r, 3 + Math.random() * 20, Math.sin(a) * r);
+    s.userData = { baseY: s.position.y, phase: Math.random() * Math.PI * 2, speed: 0.4, type: 'ascended', orbitR: r, orbitA: a };
+    g.add(s);
+    const halo = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.1, 6, 16), new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending }));
+    halo.position.copy(s.position); halo.rotation.x = Math.PI / 2; s.userData.glow = halo; g.add(halo);
+  }
+
+  // Angelic golden particles
+  for (let i = 0; i < 150; i++) {
+    const p = voxelBlock((Math.random() - 0.5) * 120, Math.random() * 40, (Math.random() - 0.5) * 120, 0.2, 0.2, 0.2, new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.7 }));
+    p.userData = { baseY: p.position.y, phase: Math.random() * Math.PI * 2, type: 'particle' };
+    g.add(p);
+  }
+
+  g.add(new THREE.PointLight(0xffffff, 6, 200, 0, 30, 0));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(400, 16, 16), new THREE.MeshBasicMaterial({ color: 0xfff8dd, transparent: true, opacity: 0.12, side: THREE.BackSide })));
+  g.add(new THREE.Fog(0xffeecc, 50, 200));
+}
 function checkPortals(t){
   if(curDim!==0||transitioning) return;
   if(t-lastZoneT<0.4) return;lastZoneT=t;
@@ -1086,13 +1521,15 @@ function setDimMusic(dimId){
 function toggleSnd(){
   if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
   sndOn=!sndOn;
-  document.getElementById('sndb').textContent='♪ AMBIENCE: '+(sndOn?'ON':'OFF');
+  document.getElementById('sndb').textContent='♪ MUSIC: '+(sndOn?'ON':'OFF');
   if(sndOn){
     startMusic(dimFreq);
+    ytPlay();
     document.getElementById('sndb').style.color='#ffd700';
     document.getElementById('sndb').style.borderColor='rgba(212,175,55,.5)';
   } else {
     stopMusic();
+    ytPause();
     document.getElementById('sndb').style.color='#a09cb0';
     document.getElementById('sndb').style.borderColor='rgba(212,175,55,.2)';
   }
@@ -1125,6 +1562,42 @@ function animate(){
   updateScent(t,dt);
   renderer.render(scene,cam);
 }
+</script>
+
+<!-- YouTube Ambient Music Player (Ancient Greek Bath Playlist) -->
+<div id="ytPlayerWrap" style="position:fixed;bottom:-200px;right:-200px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1;">
+  <div id="ytPlayer"></div>
+</div>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+let ytPlayer = null;
+let ytReady = false;
+function onYouTubeIframeAPIReady(){
+  ytPlayer = new YT.Player('ytPlayer', {
+    videoId: 'BgkwdodiIDA',
+    listType: 'playlist',
+    playlist: 'BgkwdodiIDA',
+    loop: 1,
+    playerVars: {
+      'autoplay': 0,
+      'controls': 0,
+      'disablekb': 1,
+      'fs': 0,
+      'modestbranding': 1,
+      'rel': 0,
+      'showinfo': 0,
+      'iv_load_policy': 3,
+      'start_radio': 1
+    },
+    events: {
+      'onReady': function(e){ ytReady = true; e.target.setVolume(60); },
+      'onStateChange': function(e){ if(e.data === YT.PlayerState.ENDED){ e.target.playVideo(); } }
+    }
+  });
+}
+function ytPlay(){ if(ytReady && ytPlayer){ ytPlayer.playVideo(); ytPlayer.setVolume(60); } }
+function ytPause(){ if(ytReady && ytPlayer){ ytPlayer.pauseVideo(); } }
+function ytSetVol(v){ if(ytReady && ytPlayer){ ytPlayer.setVolume(v); } }
 </script>
 </body>
 </html>
