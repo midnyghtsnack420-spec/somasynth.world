@@ -464,11 +464,11 @@ function updateAvatar(t, moving){
 function buildLights(){
   scene.add(new THREE.AmbientLight(0xc0b8e0,1.1));
   const sun=new THREE.DirectionalLight(0xfff8e8,2.4); sun.position.set(60,120,40); sun.castShadow=true; scene.add(sun);
-  scene.add(Object.assign(new THREE.PointLight(0xd4af37,4,280),{position:new THREE.Vector3(0,40,0)}));
-  scene.add(Object.assign(new THREE.PointLight(0x7b68ee,2.5,350),{position:new THREE.Vector3(-90,50,-90)}));
-  scene.add(Object.assign(new THREE.PointLight(0x4060ff,2,180),{position:new THREE.Vector3(60,18,-60)}));
-  scene.add(Object.assign(new THREE.PointLight(0x40cc50,1.6,140),{position:new THREE.Vector3(0,18,80)}));
-  scene.add(Object.assign(new THREE.PointLight(0x88ccff,2.5,220),{position:new THREE.Vector3(0,70,0)}));
+  (function(){const _pl_3784=new THREE.PointLight(0xd4af37,4,280);_pl_3784.position.set(0,40,0);scene.add(_pl_3784); })();
+  (function(){const _pl_8971=new THREE.PointLight(0x7b68ee,2.5,350);_pl_8971.position.set(-90,50,-90);scene.add(_pl_8971); })();
+  (function(){const _pl_9785=new THREE.PointLight(0x4060ff,2,180);_pl_9785.position.set(60,18,-60);scene.add(_pl_9785); })();
+  (function(){const _pl_8395=new THREE.PointLight(0x40cc50,1.6,140);_pl_8395.position.set(0,18,80);scene.add(_pl_8395); })();
+  (function(){const _pl_1101=new THREE.PointLight(0x88ccff,2.5,220);_pl_1101.position.set(0,70,0);scene.add(_pl_1101); })();
 }
 
 // ── STARS + NEBULA + DRIFT ────────────────────────────────────
