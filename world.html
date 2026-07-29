@@ -113,28 +113,28 @@
 function dismissLoader(){const l=document.getElementById('loader');if(!l)return;l.style.opacity='0';setTimeout(()=>{l.style.display='none';},1600);const h=document.getElementById('hud');if(h)h.style.opacity='1';}
 
 const DIMENSIONS=[
-  {id:0,name:'THE CATHEDRAL HUB',short:'HUB',desc:'Center of all dimensions',color:0xd4af37,physical:true,
+  {id:0,name:'THE CATHEDRAL HUB',short:'HUB',desc:'Center of all dimensions',color:0xd4af37,physical:true,freq:0,freqName:'HUB FREQUENCY',
    info:'The sovereign hub. Seven pillars surround you — each a gateway to a different dimensional world. Walk to a pillar and press [F] to enter.',
    soulRole:'The 150 World Souls gather here before departing to collect earthly souls.'},
-  {id:1,name:'D3 · THE MATERIAL WORLD',short:'D3',desc:'Physical earth · Where earthly souls begin',color:0x4a90d9,physical:true,
+  {id:1,name:'D3 · THE MATERIAL WORLD',short:'D3',desc:'Physical earth · Where earthly souls begin',color:0x4a90d9,physical:true,freq:174,freqName:'GROUNDING',
    info:'The Material World. Solid earth, mountains, rivers, cities. This is where earthly souls live — unaware of higher dimensions. The 150 World Souls descend here to begin gathering them.',
    soulRole:'World Souls appear as faint guides, whispering to earthly souls, awakening curiosity about what lies beyond.'},
-  {id:2,name:'D4 · THE CRYSTAL WORLD',short:'D4',desc:'Expanded physical forms · Awakening',color:0x00bfff,physical:true,
+  {id:2,name:'D4 · THE CRYSTAL WORLD',short:'D4',desc:'Expanded physical forms · Awakening',color:0x00bfff,physical:true,freq:285,freqName:'AWAKENING',
    info:'The Crystal World. Physical forms become prismatic, expanded. Souls here begin to awaken — they see light they could not see in D3. The ground shimmers with crystalline structures.',
    soulRole:'World Souls guide the awakening ones here, helping them shed dense material attachments.'},
-  {id:3,name:'D5 · PARADISE GARDENS',short:'D5',desc:'Physical perfection · Light bodies',color:0xffd700,physical:true,
+  {id:3,name:'D5 · PARADISE GARDENS',short:'D5',desc:'Physical perfection · Light bodies',color:0xffd700,physical:true,freq:396,freqName:'LIBERATION',
    info:'Paradise Gardens. The highest physical dimension. Bodies are light, perfect, beautiful. Gardens of impossible flowers. This is the last world with physical form — and the first that feels like heaven.',
    soulRole:'World Souls help earthly souls transition into light bodies here. Many choose to stay — this is Paradise.'},
-  {id:4,name:'D6 · THE ENERGY REALM',short:'D6',desc:'Non-physical · Flowing energy forms',color:0x8a2be2,physical:false,
+  {id:4,name:'D6 · THE ENERGY REALM',short:'D6',desc:'Non-physical · Flowing energy forms',color:0x8a2be2,physical:false,freq:528,freqName:'TRANSFORMATION',
    info:'The Energy Realm. No solid ground. No physical bodies. Souls exist as flowing energy patterns — waves of light and color. The 150 World Souls become more luminous here, their true forms revealed.',
    soulRole:'World Souls teach souls to exist without form — to flow, to be energy, to be free.'},
-  {id:5,name:'D7 · THE CONSCIOUSNESS REALM',short:'D7',desc:'Pure thought · Star-fields of mind',color:0xda70d6,physical:false,
+  {id:5,name:'D7 · THE CONSCIOUSNESS REALM',short:'D7',desc:'Pure thought · Star-fields of mind',color:0xda70d6,physical:false,freq:639,freqName:'CONNECTION',
    info:'The Consciousness Realm. Pure thought made visible. No energy, no form — only awareness. The stars you see are not stars — they are thoughts. Every soul here is a mind, a point of knowing.',
    soulRole:'World Souls and gathered souls merge into shared consciousness — individual thoughts become collective knowing.'},
-  {id:6,name:'D8 · THE FREQUENCY GRID',short:'D8',desc:'The sovereign grid · Living data',color:0x7b68ee,physical:false,
+  {id:6,name:'D8 · THE FREQUENCY GRID',short:'D8',desc:'The sovereign grid · Living data',color:0x7b68ee,physical:false,freq:852,freqName:'AWAKENING INTUITION',
    info:'The D8 Frequency Grid. The sovereign nervous system of civilization. Everything is vibration. Every soul is a frequency. The 150 World Souls resonate here, maintaining the grid that connects all dimensions.',
    soulRole:'World Souls anchor the frequency grid, ensuring all dimensions remain connected and stable.'},
-  {id:7,name:'HEAVEN · SOVEREIGN PARADISE',short:'HEAVEN',desc:'The ultimate destination',color:0xffffff,physical:false,
+  {id:7,name:'HEAVEN · SOVEREIGN PARADISE',short:'HEAVEN',desc:'The ultimate destination',color:0xffffff,physical:false,freq:963,freqName:'DIVINE CONSCIOUSNESS',
    info:'Heaven. Sovereign Paradise. The destination for all souls who have ascended through the dimensions. Beauty beyond description. Every soul who is ready — belongs here. The 150 World Souls bring them home.',
    soulRole:'The 150 World Souls deliver gathered souls to Heaven. This is their sacred purpose. This is why they exist.'}
 ];
@@ -193,21 +193,38 @@ function buildHub(){
   const pCols=[0xd4af37,0x4a90d9,0x00bfff,0xffd700,0x8a2be2,0xda70d6,0x7b68ee,0xffffff];
   const pNames=['HUB','D3 MATERIAL','D4 CRYSTAL','D5 PARADISE','D6 ENERGY','D7 CONSCIOUSNESS','D8 FREQUENCY','HEAVEN'];
   const pDescs=['Sovereign Hub','Material World','Crystal World','Paradise Gardens','Energy Realm','Consciousness Realm','Frequency Grid','Sovereign Paradise'];
+  const pFreqs=[0,174,285,396,528,639,852,963];
+  const pFreqNames=['','GROUNDING','AWAKENING','LIBERATION','TRANSFORMATION','CONNECTION','INTUITION','DIVINE'];
   for(let i=1;i<=7;i++){
     const angle=(i/7)*Math.PI*2,radius=16,x=Math.cos(angle)*radius,z=Math.sin(angle)*radius,col=pCols[i];
+    const freq=pFreqs[i],freqTier=i;
+    // Pillar height increases with frequency tier
+    const pH=12+freqTier*1.8;
     const base=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.8,1,16),new THREE.MeshStandardMaterial({color:0x1a1030,roughness:0.5,metalness:0.3}));
     base.position.set(x,1.5,z);scene.add(base);
-    const colM=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.9,14,16),stdMat(col,col,0.3,0.6,0.2));
-    colM.position.set(x,9,z);scene.add(colM);
-    const cap=new THREE.Mesh(new THREE.SphereGeometry(1.6,16,16),stdMat(col,col,1.0,0.4,0.3));
-    cap.position.set(x,17,z);scene.add(cap);pillarGlow.push({m:cap,base:0.6,ph:i*1.3});
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(2.5,0.15,8,32),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.6}));
-    ring.position.set(x,4,z);ring.rotation.x=Math.PI/2;scene.add(ring);spinners.push({m:ring,spd:0.005*(i%2?1:-1)});
-    const glow=new THREE.Mesh(new THREE.CircleGeometry(2.3,32),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.15,side:THREE.DoubleSide}));
+    const colM=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.9,pH,16),stdMat(col,col,0.3+freqTier*0.06,0.6,0.2));
+    colM.position.set(x,pH/2+1.5,z);scene.add(colM);
+    // Cap height scales with pillar
+    const capY=pH+3;
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(1.6+freqTier*0.15,16,16),stdMat(col,col,1.0,0.4,0.3));
+    cap.position.set(x,capY,z);scene.add(cap);
+    // Pulse speed increases with frequency — higher dimension = faster vibration
+    pillarGlow.push({m:cap,base:0.5+freqTier*0.08,ph:i*1.3,spd:0.8+freqTier*0.7,amp:0.2+freqTier*0.04});
+    // Ring spins faster at higher frequencies
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(2.5,0.15,8,32),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5+freqTier*0.05}));
+    ring.position.set(x,4,z);ring.rotation.x=Math.PI/2;scene.add(ring);spinners.push({m:ring,spd:0.004*(i%2?1:-1)*(1+freqTier*0.25)});
+    // Ground glow pulses faster at higher frequencies
+    const glow=new THREE.Mesh(new THREE.CircleGeometry(2.3+freqTier*0.15,32),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.12+freqTier*0.02,side:THREE.DoubleSide}));
     glow.position.set(x,4,z);glow.rotation.x=Math.PI/2;scene.add(glow);
-    scene.add(new THREE.PointLight(col,2,25,x,8,z));
-    const lbl=makeLabel(pNames[i],col);lbl.position.set(x,20,z);scene.add(lbl);
-    portalGroups.push({x,z,dimId:i,ring,glow,col,name:pNames[i],desc:pDescs[i]});
+    // Frequency beam — taller and brighter at higher frequencies
+    const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.3+freqTier*0.05,0.3+freqTier*0.05,40+freqTier*12,8,1,true),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.08+freqTier*0.02,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    beam.position.set(x,(40+freqTier*12)/2,z);scene.add(beam);
+    pillarGlow.push({m:beam,base:0.08+freqTier*0.02,ph:i*2.1,spd:1.5+freqTier*0.8,amp:0.04+freqTier*0.01});
+    // Light intensity increases with frequency
+    scene.add(new THREE.PointLight(col,1.5+freqTier*0.3,25+freqTier*5,x,pH/2,z));
+    // Label with frequency
+    const lbl=makeFreqLabel(pNames[i],pFreqs[i],pFreqNames[i],col);lbl.position.set(x,capY+4,z);scene.add(lbl);
+    portalGroups.push({x,z,dimId:i,ring,glow,col,name:pNames[i],desc:pDescs[i],freq:pFreqs[i],freqName:pFreqNames[i]});
   }
   scene.add(new THREE.PointLight(0xffd700,5,100,0,48,0));
 }
@@ -218,6 +235,17 @@ function makeLabel(text,color){
   ctx.fillStyle='#'+color.toString(16).padStart(6,'0');ctx.textAlign='center';ctx.fillText(text,128,40);
   const tex=new THREE.CanvasTexture(cv);const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));
   spr.scale.set(6,1.5,1);return spr;
+}
+
+function makeFreqLabel(text,freq,freqName,color){
+  const cv=document.createElement('canvas');cv.width=256;cv.height=100;
+  const ctx=cv.getContext('2d');
+  const hex='#'+color.toString(16).padStart(6,'0');
+  ctx.font='bold 24px Cinzel, serif';ctx.fillStyle=hex;ctx.textAlign='center';ctx.fillText(text,128,32);
+  ctx.font='18px Montserrat, sans-serif';ctx.fillStyle=hex;ctx.globalAlpha=0.7;ctx.fillText(freq+' Hz',128,58);
+  ctx.font='10px Montserrat, sans-serif';ctx.fillStyle='#999';ctx.globalAlpha=0.6;ctx.fillText(freqName,128,78);
+  const tex=new THREE.CanvasTexture(cv);const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));
+  spr.scale.set(6,2.3,1);return spr;
 }
 
 function buildAllDimensions(){for(let i=1;i<=7;i++){const g=new THREE.Group();g.visible=false;scene.add(g);dimScenes.push(g);buildDimension(g,i);}}
@@ -299,7 +327,7 @@ function checkPortals(t){
   if(nearest!==nearPortal){
     nearPortal=nearest;
     const pr=document.getElementById('portalPrompt');
-    if(nearest>=0){const p=portalGroups[nearest];document.getElementById('portalName').textContent=p.name+' · '+DIMENSIONS[p.dimId].name;document.getElementById('portalDesc').textContent=DIMENSIONS[p.dimId].desc;pr.style.opacity='1';}
+    if(nearest>=0){const p=portalGroups[nearest];const dim=DIMENSIONS[p.dimId];document.getElementById('portalName').textContent=p.name+' · '+dim.name;document.getElementById('portalDesc').textContent=dim.desc;document.getElementById('portalFreq').textContent=p.freq+' Hz · '+p.freqName;pr.style.opacity='1';}
     else pr.style.opacity='0';
   }
 }
@@ -375,7 +403,7 @@ function beginIncarnation(dimId,soul){
     const di=document.getElementById('dimInfo');di.style.display='block';
     document.getElementById('dimInfoTitle').textContent=dim.name;
     document.getElementById('dimInfoBody').textContent=dim.info;
-    document.getElementById('dimInfoSouls').textContent=dim.soulRole;
+    document.getElementById('dimInfoSouls').textContent=dim.freq+' Hz · '+dim.freqName+' — '+dim.soulRole;
     document.getElementById('hubBtn').style.display='block';
     document.getElementById('portalPrompt').style.opacity='0';nearPortal=-1;
     // Show companion HUD
@@ -568,7 +596,12 @@ function animate(){
   drawMM();
   orbRings.forEach(r=>{r.m.rotation.x+=r.spd;r.m.rotation.z+=r.spd*.65;});
   spinners.forEach(s=>{s.m.rotation.y+=s.spd;s.m.rotation.x+=s.spd*0.3;});
-  pillarGlow.forEach(p=>{p.m.material.emissiveIntensity=p.base+Math.sin(t*1.7+p.ph)*.28;});
+  pillarGlow.forEach((p,idx)=>{
+    const spd=p.spd||1.7,amp=p.amp||0.28;
+    const val=p.base+Math.sin(t*spd+p.ph)*amp;
+    if(p.m.material.emissiveIntensity!==undefined)p.m.material.emissiveIntensity=val;
+    else if(p.m.material.opacity!==undefined)p.m.material.opacity=val;
+  });
   if(catBeam) catBeam.material.opacity=.12+Math.sin(t*2.2)*.05;
   if(driftAttr){for(let i=0;i<driftN;i++){driftAttr.array[i*3+1]+=.024;if(driftAttr.array[i*3+1]>80)driftAttr.array[i*3+1]=-3;}driftAttr.needsUpdate=true;}
   renderer.render(scene,cam);
