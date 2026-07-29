@@ -46,7 +46,7 @@
   <div style="position:absolute;top:76px;right:22px;display:flex;flex-direction:column;gap:5px;pointer-events:all;">
     <button id="fpb" onclick="setPOV('fp')" style="background:rgba(212,175,55,.18);border:1px solid #ffd700;padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#ffd700;letter-spacing:.18em;cursor:pointer;text-transform:uppercase;">⊙ FIRST PERSON</button>
     <button id="tpb" onclick="setPOV('tp')" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.28);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#d4af37;letter-spacing:.18em;cursor:pointer;text-transform:uppercase;">◎ THIRD PERSON</button>
-    <button onclick="toggleSnd()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a09cb0;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;" id="sndb">♪ AMBIENCE: OFF</button>
+    <button onclick="toggleSnd()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a09cb0;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;" id="sndb" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);color:#a09cb0;">♪ AMBIENCE: OFF</button>
     <button id="hvb" onclick="toggleHover()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.25);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a0c0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;">⊕ HOVER: OFF</button>
     <button id="hubBtn" onclick="returnToHub()" style="background:rgba(123,104,238,.15);border:1px solid rgba(123,104,238,.4);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#b0a0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;display:none;">↩ RETURN TO HUB</button>
     <button onclick="window.open('akashic','_blank')" style="background:rgba(0,0,0,.82);border:1px solid rgba(123,104,238,.3);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#b0a0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;">📚 AKASHIC LIBRARY</button>
@@ -107,14 +107,22 @@
   <div id="compMessage" style="font-size:.58rem;color:#7b68ee;font-style:italic;line-height:1.5;"></div>
 </div>
 
-<style>@keyframes lspin{to{transform:rotate(360deg);}}</style>
+<style>@keyframes lspin{to{transform:rotate(360deg);}}
+/* Aesthetic overlays — soft dreamy texture */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:5;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(20,10,30,0.25) 100%);
+  mix-blend-mode:multiply;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:4;
+  background:linear-gradient(135deg,rgba(255,228,181,0.04),rgba(218,112,214,0.03),rgba(135,206,235,0.03));
+  mix-blend-mode:overlay;}
+</style>
 
 <script>
 (function(){
   let pct=0;const lbar=document.getElementById('lbar');
   const barTick=setInterval(()=>{pct=Math.min(pct+(Math.random()*3),85);if(lbar)lbar.style.width=pct+'%';},80);
   const s=document.createElement('script');
-  s.src='three.min.js?v=2';
+  s.src='three.min.js';
   s.onload=function(){clearInterval(barTick);if(lbar)lbar.style.width='100%';setTimeout(function(){try{initWorld();}catch(e){showErr(e.message);}},300);};
   s.onerror=function(){clearInterval(barTick);showErr('Failed to load 3D engine.');};
   document.head.appendChild(s);
@@ -153,7 +161,18 @@ let renderer,scene,fpCam,tpCam,cam,clock,pivot,avatar,catBeam;
 let velF=0,velR=0,velY=0,yaw=0,pitch=0,lmb=0,rmb=0,mx=0,my=0,keys={};
 let pov='fp',orbRings=[],spinners=[],pillarGlow=[];
 let curDim=0,lastZoneT=0,freqV=4.2;
-let hoverMode=false,hoverAlt=5,sndOn=false,audioCtx=null,masterGain=null;
+let hoverMode=false,hoverAlt=5,sndOn=false,audioCtx=null,masterGain=null,reverbNode=null,musicOscs=[],chimeTimer=null,dimFreq=432;
+let scentGroup=null,scentParticles=[],dustMotes=null,dustAttr=null,dustN=0;
+const SCENT_COLORS={
+  1:[0xff69b4,0xffb6c1,0xdda0dd,0xffe4e1],
+  2:[0x87ceeb,0xb0e0e6,0xe0ffff,0xe6e6fa],
+  3:[0xffb6c1,0xffcba4,0xfafad2,0xffe4b5],
+  4:[0xffa07a,0xffd700,0xff8c00,0xffe4c4],
+  5:[0xe6e6fa,0xdda0dd,0xf0e6ff,0xd8bfd8],
+  6:[0x9370db,0x8a2be2,0xe0b0ff,0xdda0dd],
+  7:[0xffd700,0xfff8dc,0xffefdb,0xffe4b5]
+};
+const DIM_FREQS={0:432,1:174,2:285,3:396,4:528,5:639,6:852,7:963};
 let driftAttr=null,driftN=0,soulNPCs=[],earthlySouls=[];
 let portalGroups=[],nearPortal=-1,dimScenes=[],transitioning=false;
 
@@ -166,11 +185,12 @@ function initWorld(){
   tpCam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,2000);cam=fpCam;
   pivot=new THREE.Group();scene.add(pivot);pivot.position.set(0,5,40);
   pivot.add(fpCam);fpCam.position.set(0,0,0);scene.add(tpCam);
-  scene.add(new THREE.AmbientLight(0x4030a0,0.4));
-  const dl=new THREE.DirectionalLight(0xffd700,0.6);dl.position.set(50,80,50);scene.add(dl);
+  scene.add(new THREE.AmbientLight(0x4a3a8a,0.5));
+  scene.add(new THREE.HemisphereLight(0xffe4b5,0x1a0a2e,0.35));
+  const dl=new THREE.DirectionalLight(0xffd700,0.5);dl.position.set(50,80,50);dl.intensity=0.45;scene.add(dl);
   scene.add(new THREE.PointLight(0x7b68ee,2,200,-40,30,-40));
   scene.add(new THREE.PointLight(0xd4af37,1.5,150,40,20,40));
-  buildStars();buildDrift();buildHub();buildAllDimensions();buildAvatar();loadSoulNPCs();
+  buildStars();buildDrift();buildScentSystem();buildHub();buildAllDimensions();buildAvatar();loadSoulNPCs();
   addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);fpCam.aspect=tpCam.aspect=innerWidth/innerHeight;fpCam.updateProjectionMatrix();tpCam.updateProjectionMatrix();});
   const cv=renderer.domElement;
   cv.addEventListener('mousedown',e=>{if(e.button===0)lmb=1;if(e.button===2)rmb=1;});
@@ -185,6 +205,87 @@ function initWorld(){
 }
 
 function stdMat(col,em,emI,met,rou){return new THREE.MeshStandardMaterial({color:col,emissive:em||col,emissiveIntensity:emI||0,metalness:met||0.5,roughness:rou||0.4});}
+
+
+// === SWEET SCENT PARTICLE SYSTEM ===
+function buildScentSystem(){
+  scentGroup=new THREE.Group();scene.add(scentGroup);
+  // Global dust motes — floating everywhere, catching light
+  const dustGeo=new THREE.BufferGeometry();const N=500;
+  const pos=new Float32Array(N*3),col=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    pos[i*3]=(Math.random()-0.5)*200;pos[i*3+1]=Math.random()*80;pos[i*3+2]=(Math.random()-0.5)*200;
+    const c=new THREE.Color(0xffe4b5);c.lerp(new THREE.Color(0xfff8dc),Math.random());
+    col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;
+  }
+  dustGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  dustGeo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const dustMat=new THREE.PointsMaterial({size:0.15,vertexColors:true,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false});
+  dustMotes=new THREE.Points(dustGeo,dustMat);scene.add(dustMotes);
+  dustAttr=dustGeo.attributes.position;dustN=N;
+}
+function spawnScent(dimId){
+  // Clear old scent particles
+  scentParticles.forEach(p=>scentGroup.remove(p.mesh));scentParticles=[];
+  const colors=SCENT_COLORS[dimId];if(!colors)return;
+  for(let i=0;i<120;i++){
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    const sz=0.08+Math.random()*0.22;
+    const mesh=new THREE.Mesh(
+      new THREE.SphereGeometry(sz,8,8),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false})
+    );
+    mesh.position.set((Math.random()-0.5)*80,Math.random()*40,(Math.random()-0.5)*80);
+    scentGroup.add(mesh);
+    scentParticles.push({
+      mesh:mesh,
+      vy:0.008+Math.random()*0.012,
+      vx:(Math.random()-0.5)*0.005,
+      vz:(Math.random()-0.5)*0.005,
+      phase:Math.random()*Math.PI*2,
+      swayAmt:0.5+Math.random()*1.5,
+      life:Math.random()*10,
+      maxLife:6+Math.random()*8,
+      baseScale:sz
+    });
+  }
+}
+function clearScent(){
+  scentParticles.forEach(p=>scentGroup.remove(p.mesh));scentParticles=[];
+}
+function updateScent(t,dt){
+  scentParticles.forEach(p=>{
+    p.life+=dt;
+    p.mesh.position.y+=p.vy;
+    p.mesh.position.x+=Math.sin(t*0.5+p.phase)*p.vx*p.swayAmt;
+    p.mesh.position.z+=Math.cos(t*0.3+p.phase)*p.vz*p.swayAmt;
+    p.mesh.rotation.x+=0.01;p.mesh.rotation.y+=0.008;
+    // Fade in/out based on life
+    const lifeRatio=p.life/p.maxLife;
+    let alpha=0;
+    if(lifeRatio<0.15)alpha=lifeRatio/0.15;
+    else if(lifeRatio>0.7)alpha=Math.max(0,(1-lifeRatio)/0.3);
+    else alpha=1;
+    p.mesh.material.opacity=alpha*0.5;
+    // Pulse glow
+    const pulse=1+Math.sin(t*2+p.phase)*0.15;
+    p.mesh.scale.setScalar(pulse);
+    // Respawn when expired
+    if(p.life>=p.maxLife){
+      p.life=0;
+      p.mesh.position.set((Math.random()-0.5)*80,Math.random()*5,(Math.random()-0.5)*80);
+    }
+  });
+  // Dust motes drift slowly upward
+  if(dustAttr){
+    for(let i=0;i<dustN;i++){
+      dustAttr.array[i*3+1]+=0.008;
+      dustAttr.array[i*3]+=Math.sin(t*0.2+i)*0.003;
+      if(dustAttr.array[i*3+1]>80)dustAttr.array[i*3+1]=-2;
+    }
+    dustAttr.needsUpdate=true;
+  }
+}
 
 function buildHub(){
   const gnd=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshStandardMaterial({color:0x06041a,roughness:0.9,metalness:0.05}));
@@ -748,6 +849,8 @@ function beginIncarnation(dimId,soul){
     } else {
       document.getElementById('companionHUD').style.display='none';
     }
+    setDimMusic(dimId);spawnScent(dimId);
+    clearScent();setDimMusic(0);
     ov.style.opacity='0';setTimeout(()=>ov.remove(),600);transitioning=false;
   },600);
 }
@@ -915,7 +1018,85 @@ function drawMM(){
   mmCtx.beginPath();mmCtx.moveTo(px,py);mmCtx.lineTo(px+Math.sin(yaw)*8,py+Math.cos(yaw)*8);mmCtx.strokeStyle='#fff';mmCtx.lineWidth=1.5;mmCtx.stroke();
 }
 
-function toggleSnd(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();sndOn=!sndOn;document.getElementById('sndb').textContent='♪ AMBIENCE: '+(sndOn?'ON':'OFF');if(sndOn){masterGain=audioCtx.createGain();masterGain.gain.value=0;masterGain.connect(audioCtx.destination);masterGain.gain.setTargetAtTime(.07,audioCtx.currentTime,2.5);[108,216,432].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();g.gain.value=.035/(i+1);o.type='sine';o.frequency.value=f;o.connect(g);g.connect(masterGain);o.start();});const p=audioCtx.createOscillator(),pg=audioCtx.createGain();pg.gain.value=.016;p.type='triangle';p.frequency.value=54;p.connect(pg);pg.connect(masterGain);p.start();}else if(masterGain){masterGain.gain.setTargetAtTime(0,audioCtx.currentTime,.6);}}
+function createReverb(ctx){
+  const conv=ctx.createConvolver();
+  const sr=ctx.sampleRate,len=sr*3,imp=ctx.createBuffer(2,len,sr);
+  for(let c=0;c<2;c++){const d=imp.getChannelData(c);for(let i=0;i<len;i++){d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.5)*0.5;}}
+  conv.buffer=imp;return conv;
+}
+function stopMusic(){
+  if(chimeTimer){clearInterval(chimeTimer);chimeTimer=null;}
+  musicOscs.forEach(o=>{try{o.osc.stop();}catch(e){}});musicOscs=[];
+  if(masterGain){masterGain.gain.setTargetAtTime(0,audioCtx.currentTime,0.8);setTimeout(()=>{try{masterGain.disconnect();}catch(e){}},1500);masterGain=null;}
+}
+function startMusic(freq){
+  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  stopMusic();
+  masterGain=audioCtx.createGain();masterGain.gain.value=0;masterGain.connect(audioCtx.destination);
+  masterGain.gain.setTargetAtTime(0.06,audioCtx.currentTime,3);
+  // Reverb
+  reverbNode=createReverb(audioCtx);const revGain=audioCtx.createGain();revGain.gain.value=0.35;
+  reverbNode.connect(revGain);revGain.connect(masterGain);
+  // Base drone — root + fifth + octave
+  const intervals=[1,1.5,2,3]; // root, fifth, octave, perfect fifth+octave
+  intervals.forEach((mul,i)=>{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    g.gain.value=0;g.gain.setTargetAtTime(0.03/(i+1),audioCtx.currentTime,4+i*2);
+    o.type=i===0?'sine':'sine';o.frequency.value=freq*mul;
+    // Slow detune for warmth
+    const lfo=audioCtx.createOscillator(),lfoGain=audioCtx.createGain();
+    lfo.frequency.value=0.1+i*0.05;lfoGain.gain.value=freq*mul*0.003;
+    lfo.connect(lfoGain);lfoGain.connect(o.frequency);lfo.start();
+    o.connect(g);g.connect(masterGain);g.connect(reverbNode);o.start();
+    musicOscs.push({osc:o,gain:g,lfo:lfo});
+  });
+  // Sub bass
+  const sub=audioCtx.createOscillator(),subG=audioCtx.createGain();
+  subG.gain.value=0;subG.gain.setTargetAtTime(0.012,audioCtx.currentTime,5);
+  sub.type='sine';sub.frequency.value=freq*0.5;sub.connect(subG);subG.connect(masterGain);sub.start();
+  musicOscs.push({osc:sub,gain:subG,lfo:null});
+  // Chime system — gentle bell tones every 8-15 seconds
+  function playChime(){
+    if(!sndOn||!audioCtx)return;
+    const scale=[freq,freq*1.25,freq*1.5,freq*2,freq*2.5,freq*3]; // pentatonic-ish
+    const note=scale[Math.floor(Math.random()*scale.length)];
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    g.gain.value=0;o.type='sine';o.frequency.value=note;
+    g.gain.setTargetAtTime(0.025,audioCtx.currentTime,0.1);
+    g.gain.setTargetAtTime(0,audioCtx.currentTime+0.3,1.5);
+    o.connect(g);g.connect(reverbNode);g.connect(masterGain);
+    o.start();o.stop(audioCtx.currentTime+4);
+    // Occasionally add a harmony note
+    if(Math.random()>0.5){
+      const h=audioCtx.createOscillator(),hg=audioCtx.createGain();
+      hg.gain.value=0;h.type='sine';h.frequency.value=note*1.5;
+      hg.gain.setTargetAtTime(0.015,audioCtx.currentTime,0.15);
+      hg.gain.setTargetAtTime(0,audioCtx.currentTime+0.5,1.2);
+      h.connect(hg);hg.connect(reverbNode);h.start();h.stop(audioCtx.currentTime+4);
+    }
+  }
+  chimeTimer=setInterval(()=>{if(sndOn&&Math.random()>0.3)playChime();},8000+Math.random()*4000);
+  // First chime after 3 seconds
+  setTimeout(()=>{if(sndOn)playChime();},3000);
+}
+function setDimMusic(dimId){
+  dimFreq=DIM_FREQS[dimId]||432;
+  if(sndOn)startMusic(dimFreq);
+}
+function toggleSnd(){
+  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  sndOn=!sndOn;
+  document.getElementById('sndb').textContent='♪ AMBIENCE: '+(sndOn?'ON':'OFF');
+  if(sndOn){
+    startMusic(dimFreq);
+    document.getElementById('sndb').style.color='#ffd700';
+    document.getElementById('sndb').style.borderColor='rgba(212,175,55,.5)';
+  } else {
+    stopMusic();
+    document.getElementById('sndb').style.color='#a09cb0';
+    document.getElementById('sndb').style.borderColor='rgba(212,175,55,.2)';
+  }
+}
 
 function toggleHover(){hoverMode=!hoverMode;if(hoverMode)hoverAlt=pivot.position.y;const b=document.getElementById('hvb');if(!b)return;if(hoverMode){b.textContent='⊕ HOVER: ON';b.style.background='rgba(100,160,255,.22)';b.style.borderColor='#a0d0ff';b.style.color='#c8e8ff';}else{b.textContent='⊕ HOVER: OFF';b.style.background='rgba(0,0,0,.82)';b.style.borderColor='rgba(212,175,55,.25)';b.style.color='#a0c0ff';}}
 
@@ -941,6 +1122,7 @@ function animate(){
   });
   if(catBeam) catBeam.material.opacity=.12+Math.sin(t*2.2)*.05;
   if(driftAttr){for(let i=0;i<driftN;i++){driftAttr.array[i*3+1]+=.024;if(driftAttr.array[i*3+1]>80)driftAttr.array[i*3+1]=-3;}driftAttr.needsUpdate=true;}
+  updateScent(t,dt);
   renderer.render(scene,cam);
 }
 </script>
