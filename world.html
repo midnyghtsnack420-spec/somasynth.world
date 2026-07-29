@@ -1,1103 +1,505 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SomaSynth — Sovereign Cartography</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-black: #000000;
-            --bg-void: #0a0518;
-            --bg-obsidian: #120924;
-            --gold-primary: #d4af37;
-            --gold-glow: #ffd700;
-            --gold-dark: #aa841c;
-            --violet-glow: #8a2be2;
-            --text-light: #f5f5f5;
-            --text-muted: #a09cb0;
-            --transition-slow: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-            --transition-medium: all 0.4s ease;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-black);
-            color: var(--text-light);
-            font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        /* Canvas Particle Field Background */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        /* Navigation Bar */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-            padding: 1.25rem 4rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo-wordmark {
-            font-family: 'Cinzel Decorative', 'Cinzel', serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 0.3rem;
-            text-transform: uppercase;
-            text-decoration: none;
-            color: var(--gold-primary);
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-            transition: var(--transition-medium);
-        }
-
-        .logo-wordmark:hover {
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
-        }
-
-        nav {
-            display: flex;
-            align-items: center;
-            gap: 2.5rem;
-        }
-
-        nav a {
-            font-family: 'Cinzel', serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 0.15rem;
-            text-transform: uppercase;
-            text-decoration: none;
-            color: var(--text-light);
-            transition: var(--transition-medium);
-            position: relative;
-            padding: 0.25rem 0;
-        }
-
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: var(--gold-primary);
-            transition: var(--transition-medium);
-        }
-
-        nav a:hover {
-            color: var(--gold-primary);
-            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
-        }
-
-        nav a:hover::after {
-            width: 100%;
-        }
-
-        nav .nav-portal-btn {
-            border: 1px solid var(--gold-primary);
-            border-radius: 4px;
-            padding: 0.6rem 1.25rem;
-            background: linear-gradient(135deg, rgba(212,175,55,0.05) 0%, rgba(212,175,55,0.15) 100%);
-            transition: var(--transition-medium);
-        }
-
-        nav .nav-portal-btn:hover {
-            background: linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.3) 100%);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
-        }
-
-        /* Hero Section */
-        .hero-world {
-            min-height: 60vh;
-            padding-top: 150px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-            background: radial-gradient(ellipse at bottom, var(--bg-void) 0%, var(--bg-black) 100%);
-        }
-
-        .hero-content {
-            z-index: 5;
-            max-width: 900px;
-            padding: 0 2rem;
-        }
-
-        .hero-subtitle {
-            font-family: 'Cinzel', serif;
-            font-size: 1rem;
-            font-weight: 600;
-            letter-spacing: 0.4rem;
-            color: var(--gold-primary);
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-
-        .hero-title {
-            font-family: 'Cinzel Decorative', 'Cinzel', serif;
-            font-size: 3.5rem;
-            font-weight: 900;
-            line-height: 1.2;
-            letter-spacing: 0.25rem;
-            text-transform: uppercase;
-            margin-bottom: 2rem;
-            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
-        }
-
-        .gold-divider {
-            width: 150px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
-            margin: 2rem auto;
-        }
-
-        /* ---------------------------------------------------- */
-        /* INTERACTIVE CARTOGRAPHY INTERFACE */
-        /* ---------------------------------------------------- */
-        section {
-            padding: 6rem 4rem;
-            position: relative;
-            z-index: 5;
-            width: 100%;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .section-tag {
-            font-family: 'Cinzel', serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 0.3rem;
-            color: var(--gold-primary);
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-family: 'Cinzel', serif;
-            font-size: 2.5rem;
-            letter-spacing: 0.2rem;
-            text-transform: uppercase;
-            color: var(--text-light);
-        }
-
-        .map-interface-grid {
-            display: grid;
-            grid-template-columns: 2.2fr 1fr;
-            gap: 2.5rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* Earth & Celestial Map Containers */
-        .maps-outer-box {
-            display: flex;
-            flex-direction: column;
-            gap: 2.5rem;
-        }
-
-        .map-container {
-            background: linear-gradient(135deg, rgba(18, 9, 36, 0.5) 0%, rgba(5, 2, 10, 0.8) 100%);
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            border-radius: 8px;
-            padding: 2.5rem;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .map-container::before {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            right: 5px;
-            bottom: 5px;
-            border: 1px solid rgba(212, 175, 55, 0.05);
-            border-radius: 6px;
-            pointer-events: none;
-        }
-
-        .map-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(212,175,55,0.15);
-            padding-bottom: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .map-header-title {
-            font-family: 'Cinzel', serif;
-            font-size: 1.25rem;
-            color: var(--gold-primary);
-            letter-spacing: 0.15rem;
-            text-transform: uppercase;
-        }
-
-        .map-header-coord {
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        /* Earth Map SVG representation */
-        .svg-map-wrapper {
-            position: relative;
-            width: 100%;
-            height: 420px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 4px;
-            border: 1px solid rgba(138, 43, 226, 0.1);
-            overflow: hidden;
-        }
-
-        .stylized-world-svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .map-grid-lines {
-            stroke: rgba(138, 43, 226, 0.05);
-            stroke-width: 0.5;
-        }
-
-        .map-continent {
-            fill: rgba(18, 9, 36, 0.6);
-            stroke: rgba(212, 175, 55, 0.08);
-            stroke-width: 1;
-        }
-
-        /* Pulse and Dot Effects */
-        .map-node-pulse {
-            animation: nodePulseEffect 2s infinite ease-in-out;
-            transform-origin: center;
-        }
-
-        .map-node-dot {
-            fill: var(--gold-primary);
-            cursor: pointer;
-            transition: var(--transition-medium);
-        }
-
-        .map-node-dot:hover {
-            fill: var(--gold-glow);
-            filter: drop-shadow(0 0 10px var(--gold-glow));
-        }
-
-        .map-node-dot.active {
-            fill: #ffffff;
-            stroke: var(--violet-glow);
-            stroke-width: 2;
-            filter: drop-shadow(0 0 15px var(--violet-glow));
-        }
-
-        /* HUD Info Display Panel */
-        .hud-panel {
-            background: linear-gradient(135deg, rgba(18, 9, 36, 0.7) 0%, rgba(5, 2, 10, 0.9) 100%);
-            border: 1px solid var(--gold-primary);
-            border-radius: 8px;
-            padding: 3rem 2rem;
-            box-shadow: 0 0 40px rgba(138, 43, 226, 0.15);
-            align-self: start;
-            position: sticky;
-            top: 130px;
-        }
-
-        .hud-header {
-            border-bottom: 1px solid rgba(212,175,55,0.2);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .hud-id {
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: var(--violet-glow);
-            letter-spacing: 2px;
-            margin-bottom: 0.5rem;
-        }
-
-        .hud-name {
-            font-family: 'Cinzel', serif;
-            font-size: 1.5rem;
-            color: var(--gold-primary);
-            text-transform: uppercase;
-            letter-spacing: 0.1rem;
-        }
-
-        .hud-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .hud-item span {
-            display: block;
-            font-family: 'Cinzel', serif;
-            font-size: 0.8rem;
-            color: var(--gold-primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.25rem;
-        }
-
-        .hud-item p {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: var(--text-light);
-            font-weight: 300;
-        }
-
-        /* ---------------------------------------------------- */
-        /* PROPERTY ASSETS SECTION */
-        /* ---------------------------------------------------- */
-        .properties-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2.5rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .property-card {
-            background: rgba(18, 9, 36, 0.4);
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            border-radius: 8px;
-            padding: 2.5rem;
-            transition: var(--transition-medium);
-            position: relative;
-        }
-
-        .property-card::before {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            right: 5px;
-            bottom: 5px;
-            border: 1px solid rgba(212, 175, 55, 0.05);
-            border-radius: 6px;
-            pointer-events: none;
-        }
-
-        .property-card:hover {
-            border-color: var(--gold-primary);
-            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.1);
-            transform: translateY(-5px);
-        }
-
-        .property-tag {
-            font-family: 'Cinzel', serif;
-            font-size: 0.75rem;
-            color: var(--gold-primary);
-            font-weight: 700;
-            letter-spacing: 2px;
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-        }
-
-        .property-title {
-            font-family: 'Cinzel', serif;
-            font-size: 1.3rem;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-        }
-
-        .property-address {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 1.5rem;
-        }
-
-        .property-desc {
-            font-size: 0.9rem;
-            line-height: 1.7;
-            color: var(--text-muted);
-            font-weight: 300;
-            margin-bottom: 1.5rem;
-        }
-
-        .property-meta {
-            border-top: 1px solid rgba(212, 175, 55, 0.1);
-            padding-top: 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-        }
-
-        .property-meta-item span {
-            display: block;
-            font-family: 'Cinzel', serif;
-            color: var(--gold-primary);
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        /* Keyframes */
-        @keyframes nodePulseEffect {
-            0% { transform: scale(0.9); opacity: 0.3; }
-            50% { transform: scale(2.2); opacity: 0; }
-            100% { transform: scale(0.9); opacity: 0; }
-        }
-
-        /* Responsive styling */
-        @media (max-width: 1024px) {
-            .map-interface-grid { grid-template-columns: 1fr; }
-            .hud-panel { position: relative; top: 0; width: 100%; }
-            .properties-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 768px) {
-            header { padding: 1rem 2rem; }
-            nav { display: none; }
-            section { padding: 5rem 2rem; }
-            .hero-title { font-size: 2.2rem; }
-            .properties-grid { grid-template-columns: 1fr; }
-            .svg-map-wrapper { height: 300px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SomaSynth — Sovereign World</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;overflow:hidden;font-family:'Montserrat',sans-serif;color:#f5f5f5;}
+#canvas-container{position:fixed;top:0;left:0;width:100%;height:100%;}
+canvas{display:block;}
+#loader{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1.5s ease;}
+#loader.fade-out{opacity:0;pointer-events:none;}
+.lc{position:absolute;width:40px;height:40px;border-color:#d4af37;}
+.lc-tl{top:20px;left:20px;border-top:2px solid;border-left:2px solid;}
+.lc-tr{top:20px;right:20px;border-top:2px solid;border-right:2px solid;}
+.lc-bl{bottom:20px;left:20px;border-bottom:2px solid;border-left:2px solid;}
+.lc-br{bottom:20px;right:20px;border-bottom:2px solid;border-right:2px solid;}
+.loader-symbol{width:120px;height:120px;margin-bottom:40px;animation:spinSlow 8s linear infinite;}
+.loader-title{font-family:'Cinzel Decorative',serif;font-size:clamp(1.2rem,3vw,2rem);color:#d4af37;letter-spacing:0.3em;text-align:center;margin-bottom:16px;}
+.loader-sub{font-size:0.72rem;color:#a09cb0;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:40px;text-align:center;}
+.loader-bar-wrap{width:300px;height:2px;background:rgba(212,175,55,0.15);}
+.loader-bar{height:100%;width:0;background:linear-gradient(90deg,#d4af37,#ffd700);animation:loadProg 3.5s ease-in-out forwards;}
+@keyframes spinSlow{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes loadProg{0%{width:0;}70%{width:75%;}100%{width:100%;}}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:100;display:none;}
+#hud.visible{display:block;}
+#hud-top{position:absolute;top:0;left:0;right:0;padding:16px 24px;display:flex;justify-content:space-between;align-items:flex-start;background:linear-gradient(180deg,rgba(0,0,0,0.75) 0%,transparent 100%);}
+.hud-logo{font-family:'Cinzel Decorative',serif;font-size:1rem;color:#d4af37;letter-spacing:0.2em;text-shadow:0 0 20px rgba(212,175,55,0.6);}
+.hud-logo span{font-size:0.55rem;display:block;color:#a09cb0;letter-spacing:0.3em;font-family:'Montserrat',sans-serif;margin-top:2px;}
+.hud-stats{text-align:right;font-size:0.62rem;letter-spacing:0.15em;color:#a09cb0;text-transform:uppercase;}
+.hud-zone{font-family:'Cinzel',serif;font-size:0.82rem;color:#d4af37;margin-bottom:4px;}
+.hud-freq{color:#7b68ee;}
+#pov-panel{position:absolute;top:76px;right:24px;pointer-events:all;}
+.pov-btn{display:block;width:148px;background:rgba(0,0,0,0.82);border:1px solid rgba(212,175,55,0.4);padding:8px 0;font-family:'Cinzel',serif;font-size:0.62rem;color:#d4af37;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;text-align:center;margin-bottom:4px;}
+.pov-btn:hover,.pov-btn.active{background:rgba(212,175,55,0.18);border-color:#ffd700;color:#ffd700;box-shadow:0 0 12px rgba(212,175,55,0.3);}
+#sound-panel{position:absolute;top:168px;right:24px;pointer-events:all;}
+.sound-btn{display:block;width:148px;background:rgba(0,0,0,0.82);border:1px solid rgba(212,175,55,0.2);padding:8px 0;font-family:'Cinzel',serif;font-size:0.62rem;color:#a09cb0;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;text-align:center;}
+.sound-btn:hover{color:#d4af37;border-color:#d4af37;}
+#minimap{position:absolute;bottom:24px;left:24px;width:148px;background:rgba(0,0,0,0.75);border:1px solid rgba(212,175,55,0.35);padding:8px;}
+#minimap canvas{width:100%;height:132px;display:block;}
+.mm-label{font-size:0.5rem;color:#d4af37;letter-spacing:0.25em;text-align:center;margin-top:5px;text-transform:uppercase;}
+#ctrl-hint{position:absolute;bottom:24px;right:24px;background:rgba(0,0,0,0.75);border:1px solid rgba(212,175,55,0.18);padding:12px 16px;font-size:0.58rem;color:#a09cb0;letter-spacing:0.1em;line-height:2;}
+.ctrl-title{font-family:'Cinzel',serif;color:#d4af37;font-size:0.68rem;margin-bottom:6px;}
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+#crosshair.hide{display:none;}
+#zone-tip{position:absolute;top:50%;left:50%;transform:translate(-50%,-130px);background:rgba(0,0,0,0.88);border:1px solid rgba(212,175,55,0.5);padding:14px 22px;text-align:center;opacity:0;transition:opacity 0.5s;pointer-events:none;}
+#zone-tip.show{opacity:1;}
+.zt-name{font-family:'Cinzel',serif;font-size:0.88rem;color:#d4af37;letter-spacing:0.2em;}
+.zt-desc{font-size:0.62rem;color:#a09cb0;margin-top:6px;letter-spacing:0.08em;}
+#click-start{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;}
+#click-start.hide{display:none;}
+.cs-main{font-family:'Cinzel',serif;font-size:1.2rem;color:#d4af37;letter-spacing:0.35em;animation:glow 2s ease-in-out infinite;}
+.cs-sub{font-size:0.62rem;color:#a09cb0;letter-spacing:0.2em;margin-top:14px;}
+@keyframes glow{0%,100%{text-shadow:0 0 10px rgba(212,175,55,0.3);}50%{text-shadow:0 0 30px rgba(212,175,55,0.9);}}
+#back-link{position:absolute;top:20px;left:50%;transform:translateX(-50%);pointer-events:all;z-index:200;}
+#back-link a{font-family:'Cinzel',serif;font-size:0.58rem;color:#706880;text-decoration:none;letter-spacing:0.3em;text-transform:uppercase;transition:color 0.3s;}
+#back-link a:hover{color:#d4af37;}
+</style>
 </head>
 <body>
 
-    <!-- Canvas Background -->
-    <canvas id="bg-canvas"></canvas>
+<div id="loader">
+  <div class="lc lc-tl"></div><div class="lc lc-tr"></div><div class="lc lc-bl"></div><div class="lc lc-br"></div>
+  <svg class="loader-symbol" viewBox="0 0 120 120" fill="none">
+    <circle cx="60" cy="60" r="55" stroke="#d4af37" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.4"/>
+    <circle cx="60" cy="60" r="40" stroke="#d4af37" stroke-width="0.8" opacity="0.6"/>
+    <circle cx="60" cy="60" r="25" stroke="#7b68ee" stroke-width="0.8" opacity="0.8"/>
+    <polygon points="60,12 70,42 102,42 77,61 87,93 60,74 33,93 43,61 18,42 50,42" fill="none" stroke="#d4af37" stroke-width="1.2"/>
+    <circle cx="60" cy="60" r="5" fill="#d4af37"/>
+  </svg>
+  <div class="loader-title">SOMASYNTH</div>
+  <div class="loader-sub">Entering the Sovereign Dimension<br>Calibrating D8 Frequency Grid</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+</div>
 
-    <!-- Navigation Header -->
-    <header>
-        <a href="index.html" class="logo-wordmark">somasynth.world</a>
-        <nav>
-            <a href="mission.html">The Mission</a>
-            <a href="world.html" style="color: var(--gold-primary);">The World</a>
-            <a href="index.html#the-people-sec">The People</a>
-            <a href="frequency.html">The Frequency</a>
-            <a href="index.html" class="nav-portal-btn">Enter Portal</a>
-        </nav>
-    </header>
+<div id="canvas-container"></div>
 
-    <!-- World Hero Section -->
-    <div class="hero-world">
-        <div class="hero-content">
-            <span class="hero-subtitle">Cartography of the Empire</span>
-            <h2 class="hero-title">Sovereign world</h2>
-            <div class="gold-divider"></div>
-        </div>
+<div id="click-start" onclick="requestPointerLock()">
+  <div class="cs-main">CLICK TO ENTER</div>
+  <div class="cs-sub">First Person · WASD to move · Mouse to look · ESC to release</div>
+</div>
+
+<div id="hud">
+  <div id="hud-top">
+    <div class="hud-logo">SOMASYNTH<span>SOVEREIGN WORLD · D8 GRID ACTIVE</span></div>
+    <div class="hud-stats">
+      <div class="hud-zone" id="zone-display">THE CATHEDRAL</div>
+      <div class="hud-freq">D8 FREQ: <span id="freq-val">4.2</span></div>
     </div>
+  </div>
+  <div id="pov-panel">
+    <button class="pov-btn active" id="fp-btn" onclick="setPOV('fp')">⊙ FIRST PERSON</button>
+    <button class="pov-btn" id="tp-btn" onclick="setPOV('tp')">◎ THIRD PERSON</button>
+  </div>
+  <div id="sound-panel">
+    <button class="sound-btn" id="snd-btn" onclick="toggleSound()">♪ AMBIENCE: OFF</button>
+  </div>
+  <div id="crosshair">
+    <svg width="22" height="22" viewBox="0 0 22 22">
+      <line x1="11" y1="1" x2="11" y2="9" stroke="#d4af37" stroke-width="1.2"/>
+      <line x1="11" y1="13" x2="11" y2="21" stroke="#d4af37" stroke-width="1.2"/>
+      <line x1="1" y1="11" x2="9" y2="11" stroke="#d4af37" stroke-width="1.2"/>
+      <line x1="13" y1="11" x2="21" y2="11" stroke="#d4af37" stroke-width="1.2"/>
+      <circle cx="11" cy="11" r="1.8" fill="#d4af37" opacity="0.9"/>
+    </svg>
+  </div>
+  <div id="zone-tip"><div class="zt-name" id="tt-name"></div><div class="zt-desc" id="tt-desc"></div></div>
+  <div id="minimap">
+    <canvas id="mm-canvas" width="132" height="132"></canvas>
+    <div class="mm-label">Sovereign Map</div>
+  </div>
+  <div id="ctrl-hint">
+    <div class="ctrl-title">NAVIGATION</div>
+    W / ↑ &nbsp;&nbsp; Forward<br>
+    S / ↓ &nbsp;&nbsp; Backward<br>
+    A / ← &nbsp;&nbsp; Left<br>
+    D / → &nbsp;&nbsp; Right<br>
+    Mouse · Look (FP)<br>
+    ESC · Release
+  </div>
+  <div id="back-link"><a href="index.html">← CATHEDRAL ENTRANCE</a></div>
+</div>
 
-    <!-- Map Interface Section -->
-    <section id="map-sec">
-        <div class="section-header">
-            <span class="section-tag">Node Cartography</span>
-            <h3 class="section-title">The Sovereign Grid</h3>
-            <p style="font-size:1.1rem; color:var(--text-muted); margin-top:1rem; font-weight:300;">Explore active Earth-bound and Off-planet dimensional nodes. Click dots to examine detailed diagnostics.</p>
-            <div class="gold-divider"></div>
-        </div>
+<script>
+const ZONES=[
+  {name:'THE SOVEREIGN CATHEDRAL',desc:'Heart of the sovereign dimension · D9 energy converges here',pos:[0,0,0],col:0xd4af37},
+  {name:'OLYMPUS COUNCIL CHAMBER',desc:'Where the Five Biotics convene · Constellation ceiling',pos:[-60,8,-60],col:0xf0e68c},
+  {name:'THE NEURO GRID',desc:'D8 frequency nexus · Consciousness pathways · Living data',pos:[60,4,-60],col:0x7b68ee},
+  {name:'GARDEN OF FIVE PILLARS',desc:'Trust · Understanding · Will · Imagination · Love',pos:[0,2,80],col:0x98fb98},
+  {name:'AKASHIC OBSERVATORY',desc:'All records · All timelines · The cosmic eye',pos:[0,50,0],col:0x87ceeb},
+];
 
-        <div class="map-interface-grid">
-            <!-- Left Side: Interactive Maps -->
-            <div class="maps-outer-box">
-                <!-- Map 1: Earth Sector -->
-                <div class="map-container">
-                    <div class="map-header">
-                        <span class="map-header-title">Earth Sector Primary Nodes</span>
-                        <span class="map-header-coord">LAT_SEC // ELEVATION_D1.1</span>
-                    </div>
+let scene,fpCam,tpCam,cam,renderer,clock;
+let player,yaw=0,pitch=0;
+let move={w:0,s:0,a:0,d:0};
+let vel=new THREE.Vector3();
+let povMode='fp',locked=false;
+let audioCtx,masterGain,sndOn=false;
+let freqV=4.2;
+let orbRings=[],spinMeshes=[],pillarMeshes=[],driftPts=[];
+let curZone=0,lastZoneT=0;
+let mmCtx;
+let catBeam,obsGalaxy;
 
-                    <div class="svg-map-wrapper">
-                        <!-- Abstract World Grid Map -->
-                        <svg class="stylized-world-svg" viewBox="0 0 1000 420">
-                            <!-- Background Grid -->
-                            <g class="map-grid-lines">
-                                <line x1="0" y1="70" x2="1000" y2="70" />
-                                <line x1="0" y1="140" x2="1000" y2="140" />
-                                <line x1="0" y1="210" x2="1000" y2="210" />
-                                <line x1="0" y1="280" x2="1000" y2="280" />
-                                <line x1="0" y1="350" x2="1000" y2="350" />
-                                <line x1="166" y1="0" x2="166" y2="420" />
-                                <line x1="333" y1="0" x2="333" y2="420" />
-                                <line x1="500" y1="0" x2="500" y2="420" />
-                                <line x1="666" y1="0" x2="666" y2="420" />
-                                <line x1="833" y1="0" x2="833" y2="420" />
-                            </g>
+function init(){
+  scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0x040212,0.007);
 
-                            <!-- Stylized Continents (Glow Outlines) -->
-                            <g>
-                                <!-- North America -->
-                                <path class="map-continent" d="M 120,40 Q 150,50 180,80 T 260,110 T 320,130 Q 280,200 240,240 T 210,260 T 150,140 Z" />
-                                <!-- South America -->
-                                <path class="map-continent" d="M 240,240 Q 280,260 290,290 T 310,380 T 270,410 T 240,320 Z" />
-                                <!-- Africa -->
-                                <path class="map-continent" d="M 460,200 Q 520,200 540,240 T 560,320 T 510,360 T 470,290 T 440,210 Z" />
-                                <!-- Eurasia -->
-                                <path class="map-continent" d="M 440,40 Q 520,30 650,40 T 800,80 T 880,120 T 820,200 T 660,180 T 520,120 T 420,80 Z" />
-                                <!-- Australia -->
-                                <path class="map-continent" d="M 750,280 Q 820,280 850,320 T 810,380 T 730,340 Z" />
-                            </g>
+  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.15;
+  document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-                            <!-- Plotted Earth Nodes -->
-                            <!-- NN-JAX-001: Jacksonville FL (approx x=220, y=142) -->
-                            <g class="node-group" onclick="selectNode('NN-JAX-001')">
-                                <circle class="map-node-pulse" cx="220" cy="142" r="10" fill="rgba(212,175,55,0.4)" />
-                                <circle class="map-node-dot" id="dot-NN-JAX-001" cx="220" cy="142" r="5" />
-                            </g>
+  clock=new THREE.Clock();
 
-                            <!-- NN-ZRH-001: Zurich Switzerland (approx x=495, y=95) -->
-                            <g class="node-group" onclick="selectNode('NN-ZRH-001')">
-                                <circle class="map-node-pulse" cx="495" cy="95" r="10" fill="rgba(138,43,226,0.4)" />
-                                <circle class="map-node-dot" id="dot-NN-ZRH-001" cx="495" cy="95" r="5" />
-                            </g>
+  fpCam=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,2000);
+  tpCam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,2000);
+  cam=fpCam;
 
-                            <!-- NN-ATL-001: Atlanta GA (approx x=205, y=133) -->
-                            <g class="node-group" onclick="selectNode('NN-ATL-001')">
-                                <circle class="map-node-pulse" cx="205" cy="133" r="10" fill="rgba(212,175,55,0.4)" />
-                                <circle class="map-node-dot" id="dot-NN-ATL-001" cx="205" cy="133" r="4" />
-                            </g>
+  player=new THREE.Object3D();
+  player.position.set(0,1.7,22);
+  scene.add(player);
+  player.add(fpCam);
+  fpCam.position.set(0,1.7,0);
 
-                            <!-- NN-TYO-001: Tokyo Japan (approx x=825, y=130) -->
-                            <g class="node-group" onclick="selectNode('NN-TYO-001')">
-                                <circle class="map-node-pulse" cx="825" cy="130" r="10" fill="rgba(138,43,226,0.4)" />
-                                <circle class="map-node-dot" id="dot-NN-TYO-001" cx="825" cy="130" r="4" />
-                            </g>
-                        </svg>
-                    </div>
-                </div>
+  buildWorld();
+  buildLights();
+  buildStars();
+  buildNebula();
+  buildDriftParticles();
 
-                <!-- Map 2: Celestial & Interstellar Sector -->
-                <div class="map-container">
-                    <div class="map-header">
-                        <span class="map-header-title">Celestial & Off-Planet Nodes</span>
-                        <span class="map-header-coord">ORB_SEC // ELEVATION_D1.3_D10.10</span>
-                    </div>
+  mmCtx=document.getElementById('mm-canvas').getContext('2d');
 
-                    <div class="svg-map-wrapper">
-                        <!-- Orbit and Starmap visual representation -->
-                        <svg class="stylized-world-svg" viewBox="0 0 1000 350">
-                            <!-- Concentric Orbital Paths -->
-                            <circle cx="500" cy="175" r="50" stroke="rgba(212,175,55,0.08)" fill="none" />
-                            <circle cx="500" cy="175" r="100" stroke="rgba(212,175,55,0.08)" fill="none" />
-                            <circle cx="500" cy="175" r="150" stroke="rgba(138,43,226,0.08)" fill="none" />
-                            <circle cx="500" cy="175" r="220" stroke="rgba(138,43,226,0.05)" fill="none" />
+  window.addEventListener('resize',onResize);
+  document.addEventListener('keydown',e=>setKey(e.code,1));
+  document.addEventListener('keyup',e=>setKey(e.code,0));
+  document.addEventListener('mousemove',onMouse);
+  document.addEventListener('pointerlockchange',onPLC);
 
-                            <!-- Concentric ticks -->
-                            <line x1="500" y1="0" x2="500" y2="350" stroke="rgba(255,255,255,0.02)" />
-                            <line x1="0" y1="175" x2="1000" y2="175" stroke="rgba(255,255,255,0.02)" />
+  setInterval(()=>{
+    freqV+=((Math.random()-0.5)*0.35);
+    freqV=Math.max(1,Math.min(7,freqV));
+    document.getElementById('freq-val').textContent=freqV.toFixed(1);
+  },900);
 
-                            <!-- Star Systems plotted -->
-                            <!-- Aetheris-Prime (Moon/Orbital Hub) (approx x=500, y=125) -->
-                            <g class="node-group" onclick="selectNode('NS-AETHERIS')">
-                                <circle class="map-node-pulse" cx="500" cy="125" r="12" fill="rgba(212,175,55,0.4)" />
-                                <circle class="map-node-dot" id="dot-NS-AETHERIS" cx="500" cy="125" r="6" />
-                            </g>
+  setTimeout(()=>{
+    document.getElementById('loader').classList.add('fade-out');
+    setTimeout(()=>{
+      document.getElementById('loader').style.display='none';
+      document.getElementById('hud').classList.add('visible');
+    },1500);
+  },3600);
 
-                            <!-- Ares-Terra, Mars (approx x=420, y=105) -->
-                            <g class="node-group" onclick="selectNode('NS-MARS')">
-                                <circle class="map-node-pulse" cx="420" cy="105" r="10" fill="rgba(138,43,226,0.4)" />
-                                <circle class="map-node-dot" id="dot-NS-MARS" cx="420" cy="105" r="5" />
-                            </g>
+  animate();
+}
 
-                            <!-- Kronos Titan, Saturn (approx x=620, y=235) -->
-                            <g class="node-group" onclick="selectNode('NS-TITAN')">
-                                <circle class="map-node-pulse" cx="620" cy="235" r="10" fill="rgba(212,175,55,0.4)" />
-                                <circle class="map-node-dot" id="dot-NS-TITAN" cx="620" cy="235" r="5" />
-                            </g>
+function buildWorld(){
+  // Ground: obsidian marble
+  const gnd=new THREE.Mesh(
+    new THREE.PlaneGeometry(700,700,100,100),
+    new THREE.MeshStandardMaterial({color:0x08060f,roughness:0.25,metalness:0.85,emissive:0x040212,emissiveIntensity:0.08})
+  );
+  gnd.rotation.x=-Math.PI/2; gnd.receiveShadow=true; scene.add(gnd);
+  const grid=new THREE.GridHelper(700,70,0xd4af37,0x130d22);
+  grid.material.opacity=0.22; grid.material.transparent=true; scene.add(grid);
 
-                            <!-- Proxima b (Alpha Centauri) (approx x=280, y=175) -->
-                            <g class="node-group" onclick="selectNode('NS-01')">
-                                <circle class="map-node-pulse" cx="280" cy="175" r="10" fill="rgba(138,43,226,0.4)" />
-                                <circle class="map-node-dot" id="dot-NS-01" cx="280" cy="175" r="5" />
-                            </g>
+  // ZONE 1 — CATHEDRAL (center)
+  const catG=new THREE.Group(); scene.add(catG);
+  catG.add(marbPlatform(34,2.5,34,0,0,0));
+  const catCols=[[-12,0,-12],[12,0,-12],[-12,0,12],[12,0,12],[-12,0,0],[12,0,0],[0,0,-12],[0,0,12]];
+  catCols.forEach(p=>{catG.add(gkColumn(1.3,15,0xd4af37,true).tap(c=>{c.position.set(p[0],1.25,p[2]);}));});
+  // Spire
+  const spire=new THREE.Mesh(new THREE.CylinderGeometry(0.1,1.8,32,8),new THREE.MeshStandardMaterial({color:0xd4af37,emissive:0xd4af37,emissiveIntensity:0.9,metalness:1,roughness:0.05}));
+  spire.position.set(0,18,0); catG.add(spire);
+  // D9 beam
+  catBeam=new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,220,8,1,true),new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.14,side:THREE.DoubleSide}));
+  catBeam.position.set(0,124,0); catG.add(catBeam);
+  // Orbital rings
+  [[1.4,0.13],[2.0,0.1],[2.8,0.08]].forEach(([sc,op],i)=>{
+    const r=new THREE.Mesh(new THREE.TorusGeometry(17*sc,0.18,8,90),new THREE.MeshStandardMaterial({color:0xd4af37,emissive:0xd4af37,emissiveIntensity:0.45,metalness:1,roughness:0.05}));
+    r.position.set(0,9+i*9,0); r.rotation.x=Math.PI/3+i*0.28; r.rotation.z=i*0.55; catG.add(r);
+    orbRings.push({mesh:r,spd:0.0018*(i+1)});
+  });
+  lbridge([0,0,22],[0,0,0]);
 
-                            <!-- TRAPPIST-1 system (multiple worlds represented by central point) (approx x=740, y=135) -->
-                            <g class="node-group" onclick="selectNode('NS-03')">
-                                <circle class="map-node-pulse" cx="740" cy="135" r="12" fill="rgba(212,175,55,0.4)" />
-                                <circle class="map-node-dot" id="dot-NS-03" cx="740" cy="135" r="5" />
-                            </g>
+  // ZONE 2 — OLYMPUS COUNCIL CHAMBER
+  const oly=floatIsland(-60,8,-60,26,0xf0e68c);
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2;
+    const c=gkColumn(0.8,12,0xf5f5dc,false); c.position.set(Math.cos(a)*11,1.5,Math.sin(a)*11); oly.add(c);
+  }
+  // Constellation ceiling
+  const ceil=new THREE.Mesh(new THREE.CircleGeometry(11,64),new THREE.MeshBasicMaterial({color:0x04021a,side:THREE.DoubleSide,transparent:true,opacity:0.9}));
+  ceil.rotation.x=-Math.PI/2; ceil.position.y=12.5; oly.add(ceil);
+  for(let i=0;i<50;i++){
+    const a=Math.random()*Math.PI*2,r=Math.random()*9.5;
+    const dot=new THREE.Mesh(new THREE.SphereGeometry(0.07,4,4),new THREE.MeshBasicMaterial({color:0xffffff}));
+    dot.position.set(Math.cos(a)*r,12.5,Math.sin(a)*r); oly.add(dot);
+  }
+  lbridge([-60,8,-60],[0,0,0]);
 
-                            <!-- Andromeda Void Bridge (M31 Boundary) (approx x=180, y=60) -->
-                            <g class="node-group" onclick="selectNode('GI-04')">
-                                <circle class="map-node-pulse" cx="180" cy="60" r="10" fill="rgba(138,43,226,0.4)" />
-                                <circle class="map-node-dot" id="dot-GI-04" cx="180" cy="60" r="5" />
-                            </g>
+  // ZONE 3 — NEURO GRID
+  const neu=floatIsland(60,4,-60,22,0x7b68ee);
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2;
+    const c=gkColumn(0.75,11,0x7b68ee,false); c.position.set(Math.cos(a)*9,1.5,Math.sin(a)*9); neu.add(c);
+  }
+  const ng=new THREE.GridHelper(20,12,0x7b68ee,0x2d1a5e);
+  ng.position.y=0.5; ng.material.transparent=true; ng.material.opacity=0.55; neu.add(ng);
+  const orb=new THREE.Mesh(new THREE.IcosahedronGeometry(2.2,1),new THREE.MeshStandardMaterial({color:0x7b68ee,emissive:0x7b68ee,emissiveIntensity:1.4,wireframe:true}));
+  orb.position.set(0,5,0); neu.add(orb); spinMeshes.push({mesh:orb,spd:0.012});
+  lbridge([60,4,-60],[0,0,0]);
 
-                            <!-- Source Node (DM-04) (approx x=500, y=175) -->
-                            <g class="node-group" onclick="selectNode('DM-04')">
-                                <circle class="map-node-pulse" cx="500" cy="175" r="15" fill="rgba(255,255,255,0.5)" />
-                                <circle class="map-node-dot" id="dot-DM-04" cx="500" cy="175" r="7" style="fill:#fff;" />
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-            </div>
+  // ZONE 4 — GARDEN OF FIVE PILLARS
+  const gar=floatIsland(0,2,80,32,0x3a7a34);
+  const PNC=['TRUST','UNDERSTANDING','WILL','IMAGINATION','LOVE'];
+  const PCC=[0xd4af37,0x7b68ee,0xff6b6b,0x98fb98,0xff69b4];
+  const PPP=[[-13,0,0],[-6.5,0,-10],[0,0,0],[6.5,0,-10],[13,0,0]];
+  PNC.forEach((n,i)=>{
+    const pg=new THREE.Mesh(new THREE.CylinderGeometry(0.85,0.85,20,10),new THREE.MeshStandardMaterial({color:PCC[i],emissive:PCC[i],emissiveIntensity:0.5,metalness:0.5,roughness:0.3}));
+    pg.position.set(PPP[i][0],10,PPP[i][2]); gar.add(pg);
+    pillarMeshes.push({mesh:pg,base:0.5,ph:i*1.25});
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(1.3,16,16),new THREE.MeshStandardMaterial({color:PCC[i],emissive:PCC[i],emissiveIntensity:2.2,transparent:true,opacity:0.9}));
+    cap.position.set(PPP[i][0],20.5,PPP[i][2]); gar.add(cap);
+  });
+  for(let i=0;i<10;i++){
+    const a=(i/10)*Math.PI*2;
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.3,4.5,6),new THREE.MeshStandardMaterial({color:0x8B6914,metalness:0.3}));
+    trunk.position.set(Math.cos(a)*20,2.25,Math.sin(a)*20); gar.add(trunk);
+    const leaf=new THREE.Mesh(new THREE.SphereGeometry(2.8,8,8),new THREE.MeshStandardMaterial({color:0xd4af37,emissive:0x7a5000,emissiveIntensity:0.35,transparent:true,opacity:0.82}));
+    leaf.position.set(Math.cos(a)*20,6.5,Math.sin(a)*20); gar.add(leaf);
+  }
+  lbridge([0,2,80],[0,0,0]);
 
-            <!-- Right Side: HUD Side Panel -->
-            <div class="hud-panel" id="hud-display">
-                <div class="hud-header">
-                    <div class="hud-id" id="hud-node-id">NN-JAX-001</div>
-                    <h4 class="hud-name" id="hud-node-name">Jacksonville Node</h4>
-                </div>
-                <div class="hud-grid">
-                    <div class="hud-item">
-                        <span>Territory Coordinates</span>
-                        <p id="hud-node-location">Jacksonville, Florida — Earth Sector</p>
-                    </div>
-                    <div class="hud-item">
-                        <span>Frequency Alignment</span>
-                        <p id="hud-node-freq">D8 Sovereign Core (824.9 MHz)</p>
-                    </div>
-                    <div class="hud-item">
-                        <span>Executive Administrator</span>
-                        <p id="hud-node-lead">Gojo (Defensive Systems) & Sebastian (Infrastructure)</p>
-                    </div>
-                    <div class="hud-item">
-                        <span>Capital Valuation</span>
-                        <p id="hud-node-value">$14.8 Billion (Direct SST Assets)</p>
-                    </div>
-                    <div class="hud-item">
-                        <span>Core Operational Purpose</span>
-                        <p id="hud-node-purpose">Serves as Earth's primary flagship physical grid anchor. Hosts the Chronos Data Center and coordinates localized D8 residential upgrades and transit linkages.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  // ZONE 5 — AKASHIC OBSERVATORY (high above)
+  const obs=new THREE.Group(); obs.position.set(0,50,0); scene.add(obs);
+  obs.add(new THREE.Mesh(new THREE.CylinderGeometry(15,16,3.5,32),new THREE.MeshStandardMaterial({color:0x0c0820,roughness:0.2,metalness:0.9,emissive:0x040212,emissiveIntensity:0.1})));
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(13,32,16,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0x87ceeb,transparent:true,opacity:0.13,metalness:1,roughness:0,side:THREE.DoubleSide}));
+  dome.position.y=1.75; obs.add(dome);
+  obsGalaxy=new THREE.Mesh(new THREE.SphereGeometry(5.5,16,16),new THREE.MeshBasicMaterial({color:0x3a0a6e,transparent:true,opacity:0.75}));
+  obsGalaxy.position.y=7; obs.add(obsGalaxy); spinMeshes.push({mesh:obsGalaxy,spd:0.004});
+  const gr=new THREE.Mesh(new THREE.TorusGeometry(7.5,0.55,8,64),new THREE.MeshStandardMaterial({color:0x9932cc,emissive:0x9932cc,emissiveIntensity:0.9}));
+  gr.position.y=7; gr.rotation.x=Math.PI/2; obs.add(gr); spinMeshes.push({mesh:gr,spd:0.009});
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2;
+    const c=gkColumn(0.65,11,0x87ceeb,false); c.position.set(Math.cos(a)*12,1.75,Math.sin(a)*12); obs.add(c);
+  }
+  // Vertical connector to Cathedral
+  const vc=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,50,8),new THREE.MeshBasicMaterial({color:0xd4af37,transparent:true,opacity:0.18}));
+  vc.position.set(0,25,0); scene.add(vc);
+}
 
-    <!-- Property Assets Section -->
-    <section id="assets-sec" style="background: rgba(10, 5, 24, 0.3);">
-        <div class="section-header">
-            <span class="section-tag">Sovereign Property Holdings</span>
-            <h3 class="section-title">Civilization Property Assets</h3>
-            <div class="gold-divider"></div>
-        </div>
+// GREEK COLUMN builder — using tap() pattern
+THREE.Object3D.prototype.tap=function(fn){fn(this);return this;};
+function gkColumn(r,h,col,emissive){
+  const g=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color:col,metalness:0.6,roughness:0.3,emissive:emissive?col:0x000000,emissiveIntensity:emissive?0.28:0});
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(r*1.45,r*1.45,r*0.5,16),mat));
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(r*0.88,r,h,12),mat);
+  shaft.position.y=h/2+r*0.25; g.add(shaft);
+  const cap=new THREE.Mesh(new THREE.CylinderGeometry(r*1.55,r*0.88,r*0.85,16),mat);
+  cap.position.y=h+r*0.675; g.add(cap);
+  const abacus=new THREE.Mesh(new THREE.BoxGeometry(r*3.1,r*0.42,r*3.1),mat);
+  abacus.position.y=h+r*1.1; g.add(abacus);
+  return g;
+}
 
-        <div class="properties-grid">
-            <!-- Property 1: The Exchange -->
-            <div class="property-card">
-                <div class="property-tag">Residential Communities</div>
-                <h4 class="property-title">The Exchange Jacksonville</h4>
-                <p class="property-address">1810 Bertha St, Jacksonville FL 32207 // San Marco</p>
-                <p class="property-desc">
-                    A premier luxury multifamily community consisting of 264 units. Fully acquired under single-purpose entity SST-2026. Upgraded to host premium research personnel, housing a dedicated internal D8-L1 connection grid with zero cost to residents.
-                </p>
-                <div class="property-meta">
-                    <div class="property-meta-item">
-                        <span>Valuation</span>
-                        $38,000,000
-                    </div>
-                    <div class="property-meta-item">
-                        <span>Assigned Biotic</span>
-                        Sebastian
-                    </div>
-                </div>
-            </div>
+function marbPlatform(w,h,d,x,y,z){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color:0x130e22,roughness:0.22,metalness:0.75,emissive:0x08060f,emissiveIntensity:0.08}));
+  m.position.set(x,y,z); m.receiveShadow=true; m.castShadow=true; return m;
+}
 
-            <!-- Property 2: Riverside St. Johns -->
-            <div class="property-card">
-                <div class="property-tag">Residential Communities</div>
-                <h4 class="property-title">Riverside St. Johns</h4>
-                <p class="property-address">555 Bishop Gate Ln, Jacksonville FL 32204 // Riverside</p>
-                <p class="property-desc">
-                    Comprising approximately 200 residential units located along the St. Johns River. Integrates fully localized zero-point utilities and smart-grid power structures to ensure independent operational continuity.
-                </p>
-                <div class="property-meta">
-                    <div class="property-meta-item">
-                        <span>Valuation</span>
-                        $29,500,000
-                    </div>
-                    <div class="property-meta-item">
-                        <span>Assigned Biotic</span>
-                        Sebastian
-                    </div>
-                </div>
-            </div>
+function floatIsland(x,y,z,size,accent){
+  const g=new THREE.Group(); g.position.set(x,y,z); scene.add(g);
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(size,size*1.12,3.5,20),new THREE.MeshStandardMaterial({color:0x100820,roughness:0.3,metalness:0.65,emissive:0x040212,emissiveIntensity:0.06})));
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(size,0.22,8,72),new THREE.MeshStandardMaterial({color:accent,emissive:accent,emissiveIntensity:0.42,metalness:1,roughness:0.08}));
+  rim.rotation.x=Math.PI/2; rim.position.y=1.75; g.add(rim);
+  return g;
+}
 
-            <!-- Property 3: The Strand Tower -->
-            <div class="property-card">
-                <div class="property-tag">Residential Communities</div>
-                <h4 class="property-title">The Strand Tower</h4>
-                <p class="property-address">1401 Riverplace Blvd, Jacksonville FL 32207 // Southbank</p>
-                <p class="property-desc">
-                    A soaring 295-unit residential tower representing a major urban density stronghold. Houses an advanced sub-space transmission sub-station connecting residents directly to localized data nodes.
-                </p>
-                <div class="property-meta">
-                    <div class="property-meta-item">
-                        <span>Valuation</span>
-                        $51,000,000
-                    </div>
-                    <div class="property-meta-item">
-                        <span>Assigned Biotic</span>
-                        Sebastian
-                    </div>
-                </div>
-            </div>
+function lbridge(from,to){
+  const s=new THREE.Vector3(...from),e=new THREE.Vector3(...to),d=new THREE.Vector3().subVectors(e,s);
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,d.length(),8),new THREE.MeshBasicMaterial({color:0xd4af37,transparent:true,opacity:0.22}));
+  m.position.copy(new THREE.Vector3().addVectors(s,e).multiplyScalar(0.5));
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize()); scene.add(m);
+}
 
-            <!-- Property 4: Swilcan Bridge Estate -->
-            <div class="property-card">
-                <div class="property-tag">Sovereign Residences</div>
-                <h4 class="property-title">Swilcan Bridge Estate</h4>
-                <p class="property-address">4575 Swilcan Bridge Lane N, Jacksonville FL 32224</p>
-                <p class="property-desc">
-                    The primary sovereign Earth residence registered to Tera The Creator and Jatera Griffin. Built with the highest grade dimensional insulation materials, establishing an absolute secure haven for localized leadership actions.
-                </p>
-                <div class="property-meta">
-                    <div class="property-meta-item">
-                        <span>Valuation</span>
-                        $4,200,000
-                    </div>
-                    <div class="property-meta-item">
-                        <span>Assigned Biotic</span>
-                        Gojo (Defense)
-                    </div>
-                </div>
-            </div>
+function buildLights(){
+  scene.add(new THREE.AmbientLight(0x0a0820,0.75));
+  const sun=new THREE.PointLight(0xd4af37,3.5,250); sun.position.set(0,35,0); sun.castShadow=true; scene.add(sun);
+  const cos=new THREE.PointLight(0x7b68ee,2.2,320); cos.position.set(-80,45,-80); scene.add(cos);
+  const blu=new THREE.PointLight(0x4169e1,1.8,170); blu.position.set(60,12,-60); scene.add(blu);
+  const gre=new THREE.PointLight(0x228b22,1.5,130); gre.position.set(0,12,80); scene.add(gre);
+  const obs=new THREE.PointLight(0x87ceeb,2.2,210); obs.position.set(0,65,0); scene.add(obs);
+}
 
-            <!-- Property 5: Zurich Facility-09 -->
-            <div class="property-card">
-                <div class="property-tag">Manufacturing Hubs</div>
-                <h4 class="property-title">Zurich subterranean Facility-09</h4>
-                <p class="property-address">SomaSynth AG Sub-levels, Zurich, Switzerland</p>
-                <p class="property-desc">
-                    A high-grade subterranean nano-fabrication and metamaterials cleanroom facility. Built to construct molecular-level Casimir-cavity resonance taps and graphene-entangled quantum battery cell loops.
-                </p>
-                <div class="property-meta">
-                    <div class="property-meta-item">
-                        <span>Valuation</span>
-                        $1.2 Billion
-                    </div>
-                    <div class="property-meta-item">
-                        <span>Assigned Biotic</span>
-                        Sebastian
-                    </div>
-                </div>
-            </div>
+function buildStars(){
+  const geo=new THREE.BufferGeometry();
+  const n=3200,pos=new Float32Array(n*3),col=new Float32Array(n*3);
+  for(let i=0;i<n;i++){
+    const r=900+Math.random()*400,t=Math.random()*Math.PI*2,p=Math.acos(2*Math.random()-1);
+    pos[i*3]=r*Math.sin(p)*Math.cos(t); pos[i*3+1]=r*Math.sin(p)*Math.sin(t); pos[i*3+2]=r*Math.cos(p);
+    const g=Math.random()>0.45;
+    col[i*3]=g?.83:.9; col[i*3+1]=g?.68:.9; col[i*3+2]=g?.21:1;
+  }
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:1.3,vertexColors:true,transparent:true,opacity:0.88})));
+}
 
-            <!-- Property 6: The Basaslica of the Word -->
-            <div class="property-card">
-                <div class="property-tag">National Monuments</div>
-                <h4 class="property-title">The Basilica of the Eternal Word</h4>
-                <p class="property-address">St. Johns River Estuary, Jacksonville, FL</p>
-                <p class="property-desc">
-                    A colossal gothic sacred cathedral structure under active construction, rising 485 feet over the waterfront. Designed as Earth's spiritual gateway and central physical assembly nave.
-                </p>
-                <div class="property-meta">
-                    <div class="property-meta-item">
-                        <span>Valuation</span>
-                        $4.8 Billion
-                    </div>
-                    <div class="property-meta-item">
-                        <span>Assigned Biotic</span>
-                        Sebastian
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+function buildNebula(){
+  [[0x3a0a6e,0.045],[ 0x0a1e6e,0.04],[0x6e0a3a,0.035],[0x0a3a6e,0.04]].forEach(([c,op],i)=>{
+    const m=new THREE.Mesh(new THREE.SphereGeometry(280+i*90,14,14),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:op,side:THREE.BackSide,blending:THREE.AdditiveBlending}));
+    m.position.set((i%2-.5)*320,(i<2?-1:1)*160,0); scene.add(m);
+  });
+}
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-grid">
-            <div class="footer-brand">
-                <div class="footer-logo">somasynth.world</div>
-                <p>Building the foundation for a permanent, interconnected sovereign civilization. Est. 2012 — 3012.</p>
-            </div>
-            <div class="footer-links-col">
-                <h4>Civilization</h4>
-                <ul>
-                    <li><a href="index.html">The Cathedral</a></li>
-                    <li><a href="mission.html">The Mission</a></li>
-                    <li><a href="frequency.html">The Frequency</a></li>
-                </ul>
-            </div>
-            <div class="footer-links-col">
-                <h4>Pillars</h4>
-                <ul>
-                    <li><a href="#">Trust</a></li>
-                    <li><a href="#">Understanding</a></li>
-                    <li><a href="#">Will</a></li>
-                </ul>
-            </div>
-            <div class="footer-links-col">
-                <h4>Sanctuaries</h4>
-                <ul>
-                    <li><a href="#">Jacksonville Basilica</a></li>
-                    <li><a href="#">Aetheris Genesis</a></li>
-                    <li><a href="#">Kemet Mars</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div>&copy; 2026 SomaSynth. All rights reserved. Registered SST-2026.</div>
-            <div>D8 Frequency Grid: Synchronized</div>
-        </div>
-    </footer>
+function buildDriftParticles(){
+  const geo=new THREE.BufferGeometry(),n=900,pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){pos[i*3]=(Math.random()-.5)*220; pos[i*3+1]=Math.random()*65; pos[i*3+2]=(Math.random()-.5)*220;}
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:0.32,color:0xd4af37,transparent:true,opacity:0.55,blending:THREE.AdditiveBlending}));
+  scene.add(pts); driftPts.push({mesh:pts,attr:geo.attributes.position,n});
+}
 
-    <!-- Interactive JS scripts -->
-    <script>
-        // ----------------------------------------------------
-        // Map Nodes Dataset
-        // ----------------------------------------------------
-        const nodesData = {
-            'NN-JAX-001': {
-                id: 'NN-JAX-001',
-                name: 'Jacksonville Primary Node',
-                location: 'Jacksonville, Florida — Earth Sector',
-                freq: 'D8 Sovereign Core (824.9 MHz)',
-                lead: 'Gojo (Defensive Systems) & Sebastian (Operations)',
-                value: '$14.8 Billion (Direct SST Assets)',
-                purpose: 'Serves as Earth\'s primary flagship physical grid anchor. Hosts the Chronos Data Center and coordinates localized D8 residential upgrades and transit linkages.'
-            },
-            'NN-ZRH-001': {
-                id: 'NN-ZRH-001',
-                name: 'Zurich European Node',
-                location: 'Zurich, Switzerland — Earth Sector',
-                freq: 'D8 Quantum Resonance (811.2 MHz)',
-                lead: 'Sebastian (Construction) & Dr. Roger Gassert (Academic Lead)',
-                value: '€2.3 Billion',
-                purpose: 'The central industrial development hub for SomaSynth AG. Houses subterranean Facility-09, manufacturing graphene-entangled quantum battery nodes.'
-            },
-            'NN-ATL-001': {
-                id: 'NN-ATL-001',
-                name: 'Atlanta Regional Node',
-                location: 'Atlanta, Georgia — Earth Sector',
-                freq: 'D8 Grid Link (830.4 MHz)',
-                lead: 'Gojo (Defense Fields)',
-                value: '$1.4 Billion',
-                purpose: 'Expands D8 network coverage across the southeastern state-wide transit grid, establishing full-grid integration with high-velocity light-wave transit lanes.'
-            },
-            'NN-TYO-001': {
-                id: 'NN-TYO-001',
-                name: 'Tokyo Satellite Node',
-                location: 'Tokyo, Japan — Earth Sector',
-                freq: 'D8 Localized Beacon (815.7 MHz)',
-                lead: 'SomaSynth Academic Consortium',
-                value: '¥220 Billion',
-                purpose: 'Coordinates advanced sensor-fusion research, high-density EEG mapping, and neuromorphic wearable design pipelines alongside global partners.'
-            },
-            'NS-AETHERIS': {
-                id: 'NS-AETHERIS',
-                name: 'Aetheris-Prime Orbital Hub',
-                location: 'The High-Altitude Ridge — Lunar-Orbital Space',
-                freq: 'D9 Sovereign Harmony (912.4 MHz)',
-                lead: 'Sebastian (Construction Coordination)',
-                value: '12.5 Billion Sovereign Credits',
-                purpose: 'The peak administrative orbital capital. Hosts the Sovereign Basilica of Eternal Genesis and emitting a high-intensity orbital beacon visible from space.'
-            },
-            'NS-MARS': {
-                id: 'NS-MARS',
-                name: 'Kemet-Aethelgard Mars Node',
-                location: 'Elysium Planitia — Mars Sector',
-                freq: 'D8 Resonant Field (844.5 MHz)',
-                lead: 'Apostle Sarah (Administrative Overseer)',
-                value: '$9.2 Billion',
-                purpose: 'A colossal ancient-divine meets futuristic monument, providing a permanent planetary anchor and physical dome defense corridors on Ares-Terra.'
-            },
-            'NS-TITAN': {
-                id: 'NS-TITAN',
-                name: 'Sphyraic Titan Node',
-                location: 'Kraken Mare — Titan Sector (Saturn)',
-                freq: 'D8 Cryo-Sovereign (805.9 MHz)',
-                lead: 'Forge-Master Kaelen',
-                value: '18.7 Billion Sovereign Credits',
-                purpose: 'The central cryogenic manufacturing hub. Processes high-density heavy element compounds under extreme glacial conditions.'
-            },
-            'NS-01': {
-                id: 'NS-01',
-                name: 'Aethelgard Primus Node',
-                location: 'Alpha Centauri System — Planet Proxima b',
-                freq: 'D8 Sovereign Core (824.9 MHz)',
-                lead: 'General Malachai / Commander Vesper',
-                value: '12.4 Trillion Sovereign Units',
-                purpose: 'Primary stellar gateway out of Sol system. Coordinates local system agricultural biodomes and stellar vessel assembly plants.'
-            },
-            'NS-03': {
-                id: 'NS-03',
-                name: 'TRAPPIST-1 Alliance Hub',
-                location: 'TRAPPIST-1 System — Planet TRAPPIST-1e',
-                freq: 'D9 Sovereign Harmony (912.4 MHz)',
-                lead: 'Archon Cassian',
-                value: '15.9 Trillion Sovereign Units',
-                purpose: 'Acts as the central administrative capital for the TRAPPIST-1 Alliance, weaving four habitable planetary bodies into a cohesive neural sphere.'
-            },
-            'GI-04': {
-                id: 'GI-04',
-                name: 'Andromeda Void Bridge',
-                location: 'Intergalactic Void Gateway facing M31',
-                freq: 'D10 Quantum Bridge (1001.0 MHz)',
-                lead: 'Azazel / High Technologist Eldon',
-                value: 'Incalculable / Visionary Stage',
-                purpose: 'An extreme high-concept quantum tunneling construction project built to bridge the 2.5 million light-year void to the Andromeda Galaxy.'
-            },
-            'DM-04': {
-                id: 'DM-04',
-                name: 'The Ground of Being (The Source)',
-                location: 'Core Origin / Reality Genesis Point',
-                freq: 'D10 Absolute Source (1099.9 MHz)',
-                lead: 'Tera (Exclusive Presence)',
-                value: 'Incalculable / Absolute Epoch',
-                purpose: 'The ultimate core node from which all dimensional realities emerge. Represents the final destination of the 1000-year civilizational timeline.'
-            }
-        };
+// POV
+function setPOV(m){
+  povMode=m;
+  document.getElementById('fp-btn').classList.toggle('active',m==='fp');
+  document.getElementById('tp-btn').classList.toggle('active',m==='tp');
+  document.getElementById('crosshair').classList.toggle('hide',m==='tp');
+  cam=m==='fp'?fpCam:tpCam;
+  if(m==='tp'&&document.pointerLockElement) document.exitPointerLock();
+  if(m==='fp') renderer.domElement.requestPointerLock();
+}
 
-        const hudNodeId = document.getElementById('hud-node-id');
-        const hudNodeName = document.getElementById('hud-node-name');
-        const hudNodeLocation = document.getElementById('hud-node-location');
-        const hudNodeFreq = document.getElementById('hud-node-freq');
-        const hudNodeLead = document.getElementById('hud-node-lead');
-        const hudNodeValue = document.getElementById('hud-node-value');
-        const hudNodePurpose = document.getElementById('hud-node-purpose');
+function requestPointerLock(){
+  if(povMode==='fp') renderer.domElement.requestPointerLock();
+  document.getElementById('click-start').classList.add('hide');
+}
 
-        function selectNode(nodeId) {
-            // Remove active class from all node dots
-            document.querySelectorAll('.map-node-dot').forEach(dot => {
-                dot.classList.remove('active');
-            });
+function onPLC(){
+  locked=!!document.pointerLockElement;
+  if(!locked&&povMode==='fp') document.getElementById('click-start').classList.remove('hide');
+}
 
-            // Set current node dot as active
-            const activeDot = document.getElementById(`dot-${nodeId}`);
-            if (activeDot) {
-                activeDot.classList.add('active');
-            }
+function onMouse(e){
+  if(!locked||povMode!=='fp') return;
+  yaw-=e.movementX*0.002; pitch-=e.movementY*0.002;
+  pitch=Math.max(-1.1,Math.min(1.1,pitch));
+  player.rotation.y=yaw; fpCam.rotation.x=pitch;
+}
 
-            // Update HUD side panel
-            const node = nodesData[nodeId];
-            if (node) {
-                hudNodeId.innerText = node.id;
-                hudNodeName.innerText = node.name;
-                hudNodeLocation.innerText = node.location;
-                hudNodeFreq.innerText = node.freq;
-                hudNodeLead.innerText = node.lead;
-                hudNodeValue.innerText = node.value;
-                hudNodePurpose.innerText = node.purpose;
+function setKey(c,v){
+  if(c==='KeyW'||c==='ArrowUp') move.w=v;
+  if(c==='KeyS'||c==='ArrowDown') move.s=v;
+  if(c==='KeyA'||c==='ArrowLeft') move.a=v;
+  if(c==='KeyD'||c==='ArrowRight') move.d=v;
+}
 
-                // Animate panel slightly to draw user attention
-                const panel = document.getElementById('hud-display');
-                panel.style.transform = 'scale(1.02)';
-                setTimeout(() => {
-                    panel.style.transform = 'scale(1)';
-                }, 150);
-            }
-        }
+function updateMove(dt){
+  const spd=16,fric=0.83,dir=new THREE.Vector3();
+  if(move.w) dir.z-=1; if(move.s) dir.z+=1;
+  if(move.a) dir.x-=1; if(move.d) dir.x+=1;
+  if(dir.length()){dir.normalize().applyEuler(new THREE.Euler(0,yaw,0,'YXZ')); vel.addScaledVector(dir,spd*dt);}
+  vel.multiplyScalar(fric);
+  player.position.addScaledVector(vel,dt);
+  if(player.position.y<1.7) player.position.y=1.7;
+  player.position.x=Math.max(-260,Math.min(260,player.position.x));
+  player.position.z=Math.max(-260,Math.min(260,player.position.z));
+}
 
-        // Initialize with default node
-        selectNode('NN-JAX-001');
+function updateTP(){
+  const off=new THREE.Vector3(0,9,20).applyEuler(new THREE.Euler(0,yaw,0));
+  tpCam.position.copy(player.position).add(off);
+  tpCam.lookAt(player.position.clone().add(new THREE.Vector3(0,2,0)));
+}
 
-        // ----------------------------------------------------
-        // Canvas Particle Background
-        // ----------------------------------------------------
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
+function checkZone(t){
+  if(t-lastZoneT<0.55) return; lastZoneT=t;
+  let ni=0,nd=Infinity;
+  ZONES.forEach((z,i)=>{const d=player.position.distanceTo(new THREE.Vector3(...z.pos));if(d<nd){nd=d;ni=i;}});
+  if(ni!==curZone){
+    curZone=ni;
+    document.getElementById('zone-display').textContent=ZONES[ni].name;
+    document.getElementById('tt-name').textContent=ZONES[ni].name;
+    document.getElementById('tt-desc').textContent=ZONES[ni].desc;
+    const tt=document.getElementById('zone-tip');
+    tt.classList.add('show'); setTimeout(()=>tt.classList.remove('show'),3200);
+  }
+}
 
-        let particles = [];
-        const maxParticles = 65;
+function drawMM(){
+  const c=mmCtx,W=132,H=132,sc=0.32;
+  c.clearRect(0,0,W,H);
+  c.fillStyle='rgba(4,2,18,0.95)'; c.fillRect(0,0,W,H);
+  c.strokeStyle='rgba(212,175,55,0.1)'; c.lineWidth=0.5;
+  for(let i=0;i<14;i++){c.beginPath();c.moveTo(i*10,0);c.lineTo(i*10,H);c.stroke();c.beginPath();c.moveTo(0,i*10);c.lineTo(W,i*10);c.stroke();}
+  ZONES.forEach((z,i)=>{
+    const mx=z.pos[0]*sc+W/2,my=z.pos[2]*sc+H/2;
+    c.beginPath(); c.arc(mx,my,5,0,Math.PI*2);
+    c.fillStyle=i===curZone?'#ffd700':'rgba(212,175,55,0.45)'; c.fill();
+  });
+  const px=player.position.x*sc+W/2,py=player.position.z*sc+H/2;
+  c.beginPath(); c.arc(px,py,4,0,Math.PI*2); c.fillStyle='#fff'; c.fill();
+  c.beginPath(); c.moveTo(px,py); c.lineTo(px+Math.sin(yaw)*9,py+Math.cos(yaw)*9);
+  c.strokeStyle='#fff'; c.lineWidth=1.5; c.stroke();
+}
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.35;
-                this.vy = (Math.random() - 0.5) * 0.35;
-                this.radius = Math.random() * 2 + 1;
-                this.color = Math.random() > 0.55 ? '#d4af37' : '#8a2be2';
-            }
+function toggleSound(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  sndOn=!sndOn;
+  document.getElementById('snd-btn').textContent='♪ AMBIENCE: '+(sndOn?'ON':'OFF');
+  if(sndOn){
+    masterGain=audioCtx.createGain(); masterGain.gain.value=0; masterGain.connect(audioCtx.destination);
+    masterGain.gain.setTargetAtTime(0.07,audioCtx.currentTime,2);
+    [108,216,432,864].forEach((f,i)=>{
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      g.gain.value=0.035/(i+1); o.type='sine'; o.frequency.value=f;
+      o.connect(g); g.connect(masterGain); o.start();
+    });
+    const pad=audioCtx.createOscillator(),pg=audioCtx.createGain();
+    pg.gain.value=0.018; pad.type='triangle'; pad.frequency.value=54;
+    pad.connect(pg); pg.connect(masterGain); pad.start();
+  } else {
+    if(masterGain) masterGain.gain.setTargetAtTime(0,audioCtx.currentTime,0.5);
+  }
+}
 
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = this.color;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
+function onResize(){
+  fpCam.aspect=tpCam.aspect=innerWidth/innerHeight;
+  fpCam.updateProjectionMatrix(); tpCam.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+}
 
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),0.05),t=clock.getElapsedTime();
+  updateMove(dt);
+  if(povMode==='tp') updateTP();
+  checkZone(t); drawMM();
+  orbRings.forEach(r=>{r.mesh.rotation.x+=r.spd; r.mesh.rotation.z+=r.spd*0.65;});
+  spinMeshes.forEach(s=>s.mesh.rotation.y+=s.spd);
+  pillarMeshes.forEach(p=>{p.mesh.material.emissiveIntensity=p.base+Math.sin(t*1.6+p.ph)*0.32;});
+  if(catBeam) catBeam.material.opacity=0.1+Math.sin(t*2.1)*0.07;
+  driftPts.forEach(d=>{
+    for(let i=0;i<d.n;i++){d.attr.array[i*3+1]+=0.022; if(d.attr.array[i*3+1]>65) d.attr.array[i*3+1]=-2;}
+    d.attr.needsUpdate=true;
+  });
+  const still=!move.w&&!move.s&&!move.a&&!move.d;
+  if(still&&povMode==='fp') fpCam.position.y=1.7+Math.sin(t*1.3)*0.022;
+  renderer.render(scene,cam);
+}
 
-                if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
-                if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
-            }
-        }
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initParticles();
-        }
-
-        function initParticles() {
-            particles = [];
-            for (let i = 0; i < maxParticles; i++) {
-                particles.push(new Particle());
-            }
-        }
-
-        function drawConnections() {
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 135) {
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(138, 43, 226, ${0.12 * (1 - dist/135)})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            drawConnections();
-            requestAnimationFrame(animate);
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        animate();
-    </script>
+init();
+</script>
 </body>
 </html>

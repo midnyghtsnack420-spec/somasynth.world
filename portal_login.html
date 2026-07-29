@@ -1,905 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Portal — Citizens Only | somasynth.world</title>
-    <!-- Google Fonts for Sacred / Sovereign Aesthetic -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --color-bg: #070509;
-            --color-surface: #120e1a;
-            --color-surface-hover: #1b1527;
-            --color-gold: #d4af37;
-            --color-gold-bright: #f3e5ab;
-            --color-gold-dark: #8c6f23;
-            --color-violet: #2b1842;
-            --color-text-primary: #f5f5f7;
-            --color-text-secondary: #a19da8;
-            --color-glow: rgba(212, 175, 55, 0.15);
-            --color-glow-intense: rgba(212, 175, 55, 0.4);
-            --font-display: 'Cinzel', Georgia, serif;
-            --font-body: 'Montserrat', sans-serif;
-            --transition-speed: 0.4s;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-            font-family: var(--font-body);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Sacred Geometry Background */
-        .background-geometry {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px;
-            height: 800px;
-            opacity: 0.05;
-            pointer-events: none;
-            z-index: 0;
-            animation: slowRotate 120s linear infinite;
-        }
-
-        @keyframes slowRotate {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        /* Subtle glowing nebulas */
-        .nebula {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .nebula-1 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(43, 24, 66, 0.6) 0%, rgba(0,0,0,0) 70%);
-            top: -100px;
-            right: -100px;
-        }
-
-        .nebula-2 {
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, rgba(0,0,0,0) 70%);
-            bottom: -150px;
-            left: -150px;
-        }
-
-        /* Login Container */
-        .login-wrapper {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
-        }
-
-        .login-card {
-            background: rgba(18, 14, 26, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(212, 175, 55, 0.18);
-            border-radius: 12px;
-            padding: 48px 40px;
-            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6), 
-                        0 0 40px rgba(43, 24, 66, 0.3),
-                        inset 0 0 15px rgba(212, 175, 55, 0.03);
-            text-align: center;
-            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
-        }
-
-        .login-card:hover {
-            border-color: rgba(212, 175, 55, 0.35);
-            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7), 
-                        0 0 50px rgba(43, 24, 66, 0.4),
-                        inset 0 0 20px rgba(212, 175, 55, 0.05);
-        }
-
-        /* Logo & Branding */
-        .logo-container {
-            margin-bottom: 24px;
-        }
-
-        .logo-text {
-            font-family: var(--font-display);
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 6px;
-            color: var(--color-gold);
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-            text-transform: lowercase;
-            text-decoration: none;
-            display: inline-block;
-            transition: text-shadow 0.3s;
-        }
-
-        .logo-text:hover {
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
-        }
-
-        .logo-dot {
-            color: var(--color-text-primary);
-        }
-
-        .portal-title {
-            font-family: var(--font-display);
-            font-size: 1.6rem;
-            font-weight: 600;
-            letter-spacing: 2px;
-            color: var(--color-text-primary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .portal-subtitle {
-            font-size: 0.85rem;
-            color: var(--color-text-secondary);
-            font-weight: 300;
-            margin-bottom: 36px;
-            letter-spacing: 1px;
-        }
-
-        /* Form Controls */
-        .form-group {
-            position: relative;
-            margin-bottom: 24px;
-            text-align: left;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--color-gold);
-            margin-bottom: 8px;
-            padding-left: 2px;
-            transition: color var(--transition-speed);
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-field {
-            width: 100%;
-            background-color: rgba(7, 5, 9, 0.7);
-            border: 1px solid rgba(212, 175, 55, 0.25);
-            border-radius: 6px;
-            padding: 14px 16px;
-            padding-left: 42px;
-            color: var(--color-text-primary);
-            font-family: var(--font-body);
-            font-size: 0.95rem;
-            font-weight: 300;
-            letter-spacing: 1px;
-            outline: none;
-            transition: border-color var(--transition-speed), box-shadow var(--transition-speed), background-color var(--transition-speed);
-        }
-
-        .input-field:focus {
-            border-color: var(--color-gold);
-            box-shadow: 0 0 12px var(--color-glow-intense), inset 0 0 8px rgba(0,0,0,0.8);
-            background-color: rgba(7, 5, 9, 0.9);
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
-            fill: var(--color-text-secondary);
-            transition: fill var(--transition-speed);
-            pointer-events: none;
-        }
-
-        .input-field:focus + .input-icon {
-            fill: var(--color-gold);
-        }
-
-        /* Eye Icon for Password Hide/Show */
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-            fill: var(--color-text-secondary);
-            transition: fill 0.3s;
-        }
-
-        .toggle-password:hover {
-            fill: var(--color-gold);
-        }
-
-        /* Actions */
-        .remember-forgot {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 30px;
-        }
-
-        .forgot-link {
-            font-size: 0.8rem;
-            color: var(--color-text-secondary);
-            text-decoration: none;
-            transition: color 0.3s, text-shadow 0.3s;
-            letter-spacing: 0.5px;
-        }
-
-        .forgot-link:hover {
-            color: var(--color-gold);
-            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4);
-        }
-
-        /* Buttons */
-        .submit-btn {
-            width: 100%;
-            background: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold) 50%, var(--color-gold-bright) 100%);
-            color: var(--color-bg);
-            border: none;
-            border-radius: 6px;
-            padding: 16px 24px;
-            font-family: var(--font-display);
-            font-size: 0.95rem;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
-            transition: transform 0.2s, box-shadow 0.3s, filter 0.3s;
-            position: relative;
-            overflow: hidden;
-            outline: none;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
-            filter: brightness(1.1);
-        }
-
-        .submit-btn:active {
-            transform: translateY(1px);
-            box-shadow: 0 3px 10px rgba(212, 175, 55, 0.3);
-        }
-
-        /* Divider */
-        .divider {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 28px 0;
-            color: rgba(212, 175, 55, 0.2);
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
-            margin: 0 10px;
-        }
-
-        /* Biometric Login Options */
-        .biometric-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .biometric-btn {
-            background: transparent;
-            border: 1px dashed rgba(212, 175, 55, 0.4);
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            position: relative;
-            outline: none;
-        }
-
-        .biometric-btn::before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: -4px;
-            right: -4px;
-            bottom: -4px;
-            border: 1px solid transparent;
-            border-radius: 50%;
-            transition: all var(--transition-speed);
-        }
-
-        .biometric-btn:hover {
-            background: rgba(212, 175, 55, 0.05);
-            border-color: var(--color-gold);
-            box-shadow: 0 0 20px var(--color-glow-intense);
-        }
-
-        .biometric-btn:hover::before {
-            border-color: rgba(212, 175, 55, 0.2);
-            transform: scale(1.08);
-        }
-
-        .biometric-icon {
-            width: 32px;
-            height: 32px;
-            fill: var(--color-gold);
-            transition: transform 0.3s, fill 0.3s;
-        }
-
-        .biometric-btn:hover .biometric-icon {
-            transform: scale(1.05);
-            fill: var(--color-gold-bright);
-        }
-
-        .biometric-label {
-            font-size: 0.75rem;
-            color: var(--color-text-secondary);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* Footer Link */
-        .not-citizen-container {
-            margin-top: 12px;
-        }
-
-        .not-citizen-link {
-            font-size: 0.8rem;
-            color: var(--color-text-secondary);
-            text-decoration: none;
-            transition: color var(--transition-speed);
-            display: inline-block;
-            letter-spacing: 1px;
-        }
-
-        .not-citizen-link strong {
-            color: var(--color-gold);
-            font-weight: 500;
-            transition: text-shadow 0.3s, color 0.3s;
-        }
-
-        .not-citizen-link:hover {
-            color: var(--color-text-primary);
-        }
-
-        .not-citizen-link:hover strong {
-            color: var(--color-gold-bright);
-            text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
-        }
-
-        /* Biometric Scanning Overlay Simulation */
-        .scanner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(7, 5, 9, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        .scanner-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .scan-target {
-            position: relative;
-            width: 240px;
-            height: 240px;
-            border: 2px solid rgba(212, 175, 55, 0.15);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 40px;
-            box-shadow: 0 0 50px rgba(43, 24, 66, 0.4);
-        }
-
-        .scan-target::before {
-            content: '';
-            position: absolute;
-            width: 260px;
-            height: 260px;
-            border: 1px dashed rgba(212, 175, 55, 0.4);
-            border-radius: 50%;
-            animation: slowRotate 20s linear infinite;
-        }
-
-        .scan-fingerprint {
-            width: 120px;
-            height: 120px;
-            fill: var(--color-gold);
-            opacity: 0.3;
-            transition: all 0.3s;
-        }
-
-        .scanner-overlay.active .scan-fingerprint {
-            opacity: 0.85;
-            animation: pulseFp 2s ease-in-out infinite;
-        }
-
-        @keyframes pulseFp {
-            0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.3)); }
-            50% { transform: scale(1.05); filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.8)); }
-            100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.3)); }
-        }
-
-        .laser-line {
-            position: absolute;
-            left: 10%;
-            width: 80%;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
-            box-shadow: 0 0 15px var(--color-gold);
-            top: 15%;
-            border-radius: 50%;
-            opacity: 0;
-        }
-
-        .scanner-overlay.active .laser-line {
-            opacity: 1;
-            animation: scanAnimation 3s ease-in-out infinite;
-        }
-
-        @keyframes scanAnimation {
-            0% { top: 15%; }
-            50% { top: 80%; }
-            100% { top: 15%; }
-        }
-
-        .scan-text {
-            font-family: var(--font-display);
-            font-size: 1.2rem;
-            letter-spacing: 4px;
-            color: var(--color-gold);
-            text-transform: uppercase;
-            text-align: center;
-            margin-bottom: 12px;
-            height: 24px;
-        }
-
-        .scan-subtext {
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            color: var(--color-text-secondary);
-            text-align: center;
-            text-transform: uppercase;
-            max-width: 320px;
-        }
-
-        .scan-close {
-            position: absolute;
-            top: 40px;
-            right: 40px;
-            background: transparent;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            color: var(--color-gold);
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            font-size: 1.1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .scan-close:hover {
-            border-color: var(--color-gold);
-            background: rgba(212, 175, 55, 0.1);
-            color: var(--color-gold-bright);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
-        }
-
-        /* Concierge Modal Simulation */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(7, 5, 9, 0.9);
-            backdrop-filter: blur(10px);
-            z-index: 1001;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        .modal.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal-content {
-            background: var(--color-surface);
-            border: 1px solid var(--color-gold);
-            border-radius: 12px;
-            padding: 40px;
-            max-width: 480px;
-            width: 90%;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
-        }
-
-        .modal-title {
-            font-family: var(--font-display);
-            color: var(--color-gold);
-            font-size: 1.4rem;
-            letter-spacing: 2px;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-        }
-
-        .modal-desc {
-            font-size: 0.9rem;
-            color: var(--color-text-secondary);
-            line-height: 1.6;
-            margin-bottom: 28px;
-        }
-
-        .concierge-card {
-            background: rgba(7, 5, 9, 0.6);
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            border-radius: 8px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            text-align: left;
-            margin-bottom: 24px;
-        }
-
-        .concierge-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: 1px solid var(--color-gold);
-            background: var(--color-violet);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-display);
-            font-weight: bold;
-            color: var(--color-gold);
-        }
-
-        .concierge-details h4 {
-            font-size: 0.9rem;
-            color: var(--color-text-primary);
-            margin-bottom: 2px;
-            letter-spacing: 0.5px;
-        }
-
-        .concierge-details p {
-            font-size: 0.75rem;
-            color: var(--color-gold);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .concierge-action-btn {
-            background: transparent;
-            color: var(--color-gold);
-            border: 1px solid var(--color-gold);
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: var(--font-display);
-            font-size: 0.85rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: all 0.3s;
-            width: 100%;
-        }
-
-        .concierge-action-btn:hover {
-            background: var(--color-gold);
-            color: var(--color-bg);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
-        }
-
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(18, 14, 26, 0.95);
-            border: 1px solid var(--color-gold);
-            border-radius: 6px;
-            padding: 16px 24px;
-            color: var(--color-text-primary);
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            z-index: 1005;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(212, 175, 55, 0.1);
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sovereign Portal — Citizens Only</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{min-height:100vh;background:#04020f;overflow-x:hidden;font-family:'Montserrat',sans-serif;color:#f5f5f5;display:flex;align-items:center;justify-content:center;}
+/* Animated nebula bg */
+.nebula-bg{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 20% 30%,rgba(58,10,110,0.45) 0%,transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(10,30,110,0.4) 0%,transparent 60%),radial-gradient(ellipse at 50% 90%,rgba(110,10,58,0.3) 0%,transparent 60%),#04020f;animation:nebPulse 12s ease-in-out infinite alternate;}
+@keyframes nebPulse{from{filter:hue-rotate(0deg);}to{filter:hue-rotate(20deg);}}
+/* Stars */
+.stars{position:fixed;inset:0;z-index:1;pointer-events:none;}
+.stars canvas{width:100%;height:100%;display:block;}
+/* Greek pillars */
+.pillar{position:fixed;top:0;bottom:0;width:60px;z-index:2;display:flex;flex-direction:column;align-items:center;opacity:0.18;}
+.pillar-l{left:40px;}.pillar-r{right:40px;}
+.pillar-cap{width:50px;height:8px;background:linear-gradient(180deg,#d4af37,#8c6f23);}
+.pillar-shaft{flex:1;width:30px;background:repeating-linear-gradient(180deg,rgba(212,175,55,0.6) 0px,rgba(212,175,55,0.2) 4px,rgba(212,175,55,0.6) 8px);}
+.pillar-base{width:50px;height:12px;background:linear-gradient(0deg,#d4af37,#8c6f23);}
+/* Meander border (top/bottom decoration) */
+.meander-top,.meander-bottom{position:fixed;left:0;right:0;z-index:3;height:16px;background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(212,175,55,0.3) 8px,rgba(212,175,55,0.3) 9px),repeating-linear-gradient(0deg,transparent,transparent 8px,rgba(212,175,55,0.3) 8px,rgba(212,175,55,0.3) 9px);opacity:0.4;}
+.meander-top{top:0;}.meander-bottom{bottom:0;}
+/* Login card */
+.card-wrap{position:relative;z-index:10;width:100%;max-width:460px;padding:24px;}
+.card{background:rgba(8,5,22,0.92);border:1px solid rgba(212,175,55,0.35);padding:48px 40px;position:relative;backdrop-filter:blur(12px);}
+.card::before,.card::after{content:'';position:absolute;width:28px;height:28px;border-color:#d4af37;}
+.card::before{top:-1px;left:-1px;border-top:2px solid;border-left:2px solid;}
+.card::after{bottom:-1px;right:-1px;border-bottom:2px solid;border-right:2px solid;}
+.card-corner-tr,.card-corner-bl{position:absolute;width:28px;height:28px;border-color:#d4af37;}
+.card-corner-tr{top:-1px;right:-1px;border-top:2px solid;border-right:2px solid;}
+.card-corner-bl{bottom:-1px;left:-1px;border-bottom:2px solid;border-left:2px solid;}
+/* Symbol */
+.symbol{text-align:center;margin-bottom:32px;}
+.symbol svg{animation:slowSpin 20s linear infinite;}
+@keyframes slowSpin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+/* Title */
+.card-title{font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:#d4af37;letter-spacing:0.3em;text-align:center;margin-bottom:6px;text-shadow:0 0 20px rgba(212,175,55,0.5);}
+.card-sub{font-size:0.62rem;color:#706880;letter-spacing:0.3em;text-align:center;text-transform:uppercase;margin-bottom:40px;}
+/* Fields */
+.field-wrap{margin-bottom:22px;}
+.field-label{font-size:0.58rem;color:#d4af37;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:8px;display:block;}
+.field-input{width:100%;background:rgba(212,175,55,0.04);border:1px solid rgba(212,175,55,0.2);padding:13px 16px;color:#f5f5f5;font-family:'Montserrat',sans-serif;font-size:0.85rem;letter-spacing:0.05em;outline:none;transition:all 0.4s;position:relative;}
+.field-input:focus{border-color:#d4af37;background:rgba(212,175,55,0.08);box-shadow:0 0 20px rgba(212,175,55,0.2),inset 0 0 10px rgba(212,175,55,0.05);}
+.field-input.pulsing{animation:inputPulse 0.6s ease-out;}
+@keyframes inputPulse{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0);}50%{box-shadow:0 0 25px rgba(212,175,55,0.5),inset 0 0 15px rgba(212,175,55,0.1);}}
+/* Freq slider */
+.freq-wrap{position:relative;margin-bottom:32px;}
+.freq-track{height:3px;background:rgba(212,175,55,0.15);position:relative;margin:16px 0 8px;}
+.freq-fill{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,#3a0a6e,#d4af37);transition:width 0.2s;}
+.freq-slider{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:transparent;position:absolute;top:0;left:0;cursor:pointer;outline:none;}
+.freq-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,#ffd700,#d4af37);border:2px solid rgba(0,0,0,0.5);box-shadow:0 0 12px rgba(212,175,55,0.8);cursor:pointer;}
+.freq-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,#ffd700,#d4af37);border:2px solid rgba(0,0,0,0.5);box-shadow:0 0 12px rgba(212,175,55,0.8);cursor:pointer;}
+.freq-labels{display:flex;justify-content:space-between;font-size:0.52rem;color:#706880;letter-spacing:0.1em;}
+.freq-val-display{text-align:center;font-family:'Cinzel',serif;font-size:1rem;color:#d4af37;margin-top:8px;letter-spacing:0.2em;transition:all 0.3s;}
+.freq-val-display.d9{color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.8);}
+/* Submit */
+.submit-btn{width:100%;padding:16px;background:linear-gradient(135deg,rgba(212,175,55,0.15),rgba(212,175,55,0.05));border:1px solid rgba(212,175,55,0.5);color:#d4af37;font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:0.35em;text-transform:uppercase;cursor:pointer;transition:all 0.4s;margin-top:8px;}
+.submit-btn:hover{background:linear-gradient(135deg,rgba(212,175,55,0.28),rgba(212,175,55,0.12));border-color:#ffd700;color:#ffd700;box-shadow:0 0 25px rgba(212,175,55,0.35);}
+.submit-btn:active{transform:scale(0.99);}
+/* Success burst */
+#success-burst{position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0;background:radial-gradient(circle at center,rgba(212,175,55,0.95) 0%,rgba(255,215,0,0.6) 30%,rgba(58,10,110,0.8) 70%,transparent 100%);transition:opacity 0.5s;}
+#success-burst.show{opacity:1;}
+.back-link{text-align:center;margin-top:24px;font-size:0.58rem;color:#706880;letter-spacing:0.2em;}
+.back-link a{color:#706880;text-decoration:none;transition:color 0.3s;}
+.back-link a:hover{color:#d4af37;}
+</style>
 </head>
 <body>
+<div class="nebula-bg"></div>
+<canvas id="star-canvas" class="stars" style="position:fixed;inset:0;z-index:1;pointer-events:none;"></canvas>
+<div class="pillar pillar-l"><div class="pillar-cap"></div><div class="pillar-shaft"></div><div class="pillar-base"></div></div>
+<div class="pillar pillar-r"><div class="pillar-cap"></div><div class="pillar-shaft"></div><div class="pillar-base"></div></div>
+<div class="meander-top"></div>
+<div class="meander-bottom"></div>
+<div id="success-burst"></div>
 
-    <!-- Sacred Geometry Background Layer (Metatron's Cube Style SVG) -->
-    <svg class="background-geometry" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="45" fill="none" stroke="#d4af37" stroke-width="0.15" />
-        <circle cx="50" cy="50" r="30" fill="none" stroke="#d4af37" stroke-width="0.1" />
-        <circle cx="50" cy="50" r="15" fill="none" stroke="#d4af37" stroke-width="0.1" />
-        <!-- Intersecting circles forming flower of life -->
-        <path d="M 50,20 A 30,30 0 0,0 20,50 A 30,30 0 0,0 50,80 A 30,30 0 0,0 80,50 A 30,30 0 0,0 50,20 Z" fill="none" stroke="#d4af37" stroke-width="0.1" />
-        <polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#d4af37" stroke-width="0.08" />
-        <polygon points="50,12.5 87.5,50 50,87.5 12.5,50" fill="none" stroke="#d4af37" stroke-width="0.08" />
-        <line x1="50" y1="5" x2="50" y2="95" stroke="#d4af37" stroke-width="0.05" />
-        <line x1="5" y1="50" x2="95" y2="50" stroke="#d4af37" stroke-width="0.05" />
-        <line x1="18.2" y1="18.2" x2="81.8" y2="81.8" stroke="#d4af37" stroke-width="0.05" />
-        <line x1="18.2" y1="81.8" x2="81.8" y2="18.2" stroke="#d4af37" stroke-width="0.05" />
-    </svg>
+<div class="card-wrap">
+  <div class="card">
+    <div class="card-corner-tr"></div><div class="card-corner-bl"></div>
+    <div class="symbol">
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="29" stroke="#d4af37" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>
+        <circle cx="32" cy="32" r="20" stroke="#d4af37" stroke-width="0.8" opacity="0.7"/>
+        <polygon points="32,8 37,25 55,25 41,35 47,52 32,42 17,52 23,35 9,25 27,25" fill="none" stroke="#d4af37" stroke-width="1.1"/>
+        <circle cx="32" cy="32" r="3.5" fill="#d4af37"/>
+      </svg>
+    </div>
+    <div class="card-title">SOMASYNTH</div>
+    <div class="card-sub">Sovereign Portal · Citizens Only</div>
 
-    <!-- Glowing Nebulas -->
-    <div class="nebula nebula-1"></div>
-    <div class="nebula nebula-2"></div>
-
-    <div class="login-wrapper">
-        <div class="login-card">
-            <div class="logo-container">
-                <a href="#" class="logo-text">somasynth<span class="logo-dot">.</span>world</a>
-            </div>
-            
-            <h1 class="portal-title">Sovereign Portal</h1>
-            <p class="portal-subtitle">Citizens Only</p>
-
-            <form id="loginForm" onsubmit="handleLoginSubmit(event)">
-                <!-- Email Group -->
-                <div class="form-group">
-                    <label for="email" class="form-label">Sovereign Email</label>
-                    <div class="input-wrapper">
-                        <input type="email" id="email" class="input-field" placeholder="citizen@somasynth.world" required autocomplete="email">
-                        <!-- Envelope Icon -->
-                        <svg class="input-icon" viewBox="0 0 24 24">
-                            <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0-2-.9-2-2V6zm-2 0l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- Password Group -->
-                <div class="form-group">
-                    <label for="password" class="form-label">Access Key</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="password" class="input-field" placeholder="••••••••••••" required autocomplete="current-password">
-                        <!-- Key Icon -->
-                        <svg class="input-icon" viewBox="0 0 24 24">
-                            <path d="M12.63 2a10 10 0 0 0-7.9 16.14l-3.43 3.44a1 1 0 0 0 1.42 1.42l3.44-3.43A10 10 0 1 0 12.63 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm4.18-12.18a3 3 0 1 0 0 4.24 3 3 0 0 0 0-4.24zm-1.42 2.82a1 1 0 1 1 0-1.42 1 1 0 0 1 0 1.42z"/>
-                        </svg>
-                        <!-- Eye Icon for Toggle -->
-                        <svg class="toggle-password" id="togglePasswordIcon" viewBox="0 0 24 24" onclick="togglePasswordVisibility()">
-                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="remember-forgot">
-                    <a href="#" class="forgot-link" onclick="openConciergeModal(event)">Contact your Sovereign Concierge</a>
-                </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">Enter the Realm</button>
-            </form>
-
-            <div class="divider">or authenticate via resonance</div>
-
-            <!-- Biometric Login Container -->
-            <div class="biometric-container">
-                <button type="button" class="biometric-btn" onclick="startBiometricScan()" aria-label="Biometric Login">
-                    <!-- Fingerprint SVG Icon -->
-                    <svg class="biometric-icon" viewBox="0 0 24 24">
-                        <path d="M12 1c-5.11 0-9 3.12-9 7.42a1 1 0 0 0 2 0c0-3.32 3.12-5.42 7-5.42s7 2.1 7 5.42a1 1 0 0 0 2 0c0-4.3-3.89-7.42-9-7.42zm0 3c-4.11 0-7 2.45-7 5.42 0 3.01 2.39 5.08 5.79 7.1a1 1 0 0 0 1-1.73C8.75 12.98 7 11.45 7 9.42c0-2.14 2.14-3.42 5-3.42s5 1.28 5 3.42c0 1.24-.46 2.52-1.38 3.8a1 1 0 1 0 1.64 1.15C18.3 12.83 19 11.16 19 9.42c0-3-2.89-5.42-7-5.42zm0 6c-1.1 0-2 .9-2 2v5a1 1 0 0 0 2 0v-5c0-1.1-.9-2-2-2zm-3.11 3.51a1 1 0 0 0-1.25.64c-1.04 3.32-.4 6 1 7.37a1 1 0 0 0 1.42-1.41c-.93-.93-1.35-3.03-.53-5.35a1 1 0 0 0-.64-1.25zM12 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5-3.5a1 1 0 0 0-1 1c0 2.22-1 4-2.5 5a1 1 0 1 0 1 1.73c2.11-1.39 3.5-3.79 3.5-6.73a1 1 0 0 0-1-1z"/>
-                    </svg>
-                </button>
-                <span class="biometric-label">NeuroCitizenLink Scan</span>
-            </div>
-
-            <div class="not-citizen-container">
-                <a href="https://somasynth.world/membership" target="_blank" class="not-citizen-link">
-                    Not yet a citizen? <strong>Learn about membership</strong>
-                </a>
-            </div>
-        </div>
+    <div class="field-wrap">
+      <label class="field-label">Sovereign Identity</label>
+      <input class="field-input" id="identity" type="text" placeholder="Tera The Creator" autocomplete="off" spellcheck="false">
     </div>
 
-    <!-- Biometric Simulation Screen overlay -->
-    <div class="scanner-overlay" id="scannerOverlay">
-        <button class="scan-close" onclick="cancelBiometricScan()">&times;</button>
-        <div class="scan-target">
-            <!-- Large Fingerprint SVG -->
-            <svg class="scan-fingerprint" viewBox="0 0 24 24">
-                <path d="M12 1c-5.11 0-9 3.12-9 7.42a1 1 0 0 0 2 0c0-3.32 3.12-5.42 7-5.42s7 2.1 7 5.42a1 1 0 0 0 2 0c0-4.3-3.89-7.42-9-7.42zm0 3c-4.11 0-7 2.45-7 5.42 0 3.01 2.39 5.08 5.79 7.1a1 1 0 0 0 1-1.73C8.75 12.98 7 11.45 7 9.42c0-2.14 2.14-3.42 5-3.42s5 1.28 5 3.42c0 1.24-.46 2.52-1.38 3.8a1 1 0 1 0 1.64 1.15C18.3 12.83 19 11.16 19 9.42c0-3-2.89-5.42-7-5.42zm0 6c-1.1 0-2 .9-2 2v5a1 1 0 0 0 2 0v-5c0-1.1-.9-2-2-2zm-3.11 3.51a1 1 0 0 0-1.25.64c-1.04 3.32-.4 6 1 7.37a1 1 0 0 0 1.42-1.41c-.93-.93-1.35-3.03-.53-5.35a1 1 0 0 0-.64-1.25zM12 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5-3.5a1 1 0 0 0-1 1c0 2.22-1 4-2.5 5a1 1 0 1 0 1 1.73c2.11-1.39 3.5-3.79 3.5-6.73a1 1 0 0 0-1-1z"/>
-            </svg>
-            <div class="laser-line"></div>
-        </div>
-        <div class="scan-text" id="scanText">Initializing Sensor...</div>
-        <div class="scan-subtext" id="scanSubtext">Place your index finger on your device biometric sensor or align your eyes with the camera for retinal resonance scan.</div>
+    <div class="field-wrap">
+      <label class="field-label">D9 Resonance Key</label>
+      <input class="field-input" id="resKey" type="password" placeholder="••••••••••••" autocomplete="off" id="res-key">
     </div>
 
-    <!-- Concierge Modal Dialog -->
-    <div class="modal" id="conciergeModal">
-        <div class="modal-content">
-            <h3 class="modal-title">Sovereign Concierge</h3>
-            <p class="modal-desc">Citizens of the Somasynth realm hold access to private cryptographic assistance. If you have misplaced your access credentials, request a secure ledger reset from your personal attendant.</p>
-            
-            <div class="concierge-card">
-                <div class="concierge-avatar">IV</div>
-                <div class="concierge-details">
-                    <h4>Lady Isabella Vance</h4>
-                    <p>Assigned Concierge - Tier Alpha</p>
-                </div>
-            </div>
-
-            <button type="button" class="concierge-action-btn" onclick="requestConciergeReset()">Establish Secure Comm Link</button>
-            <button type="button" class="forgot-link" style="margin-top: 15px; display: block; border: none; background: transparent; cursor: pointer; width: 100%; text-align: center;" onclick="closeConciergeModal()">Dismiss</button>
-        </div>
+    <div class="freq-wrap">
+      <label class="field-label">Frequency Alignment</label>
+      <div class="freq-track">
+        <div class="freq-fill" id="freq-fill" style="width:88.8%"></div>
+        <input class="freq-slider" id="freq-slider" type="range" min="1" max="9" step="0.1" value="8">
+      </div>
+      <div class="freq-labels"><span>D1</span><span>D3</span><span>D5</span><span>D7</span><span>D9</span></div>
+      <div class="freq-val-display" id="freq-disp">D8.0</div>
     </div>
 
-    <!-- Toast Alert Container -->
-    <div class="toast" id="toastMessage">Secure Comm Link Request Sent.</div>
+    <button class="submit-btn" onclick="attemptEntry()">Initiate Sovereign Entry</button>
+    <div class="back-link"><a href="index.html">← Return to Cathedral</a></div>
+  </div>
+</div>
 
-    <script>
-        // Password visibility toggler
-        function togglePasswordVisibility() {
-            const passwordInput = document.getElementById('password');
-            const icon = document.getElementById('togglePasswordIcon');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                icon.style.fill = '#d4af37';
-            } else {
-                passwordInput.type = 'password';
-                icon.style.fill = '#a19da8';
-            }
-        }
+<script>
+// Star canvas
+(function(){
+  const cv=document.getElementById('star-canvas');
+  cv.width=innerWidth; cv.height=innerHeight;
+  const ctx=cv.getContext('2d');
+  const stars=Array.from({length:200},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.2+0.2,t:Math.random()*Math.PI*2}));
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    stars.forEach(s=>{
+      s.t+=0.01; const a=0.4+Math.sin(s.t)*0.35;
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(212,175,55,${a})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+  window.addEventListener('resize',()=>{cv.width=innerWidth;cv.height=innerHeight;});
+})();
 
-        // Handle Login Submission
-        function handleLoginSubmit(event) {
-            event.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            const email = document.getElementById('email').value;
-            
-            submitBtn.textContent = "Decrypting Access Codes...";
-            submitBtn.disabled = true;
+// Freq slider
+const slider=document.getElementById('freq-slider');
+const fill=document.getElementById('freq-fill');
+const disp=document.getElementById('freq-disp');
+slider.addEventListener('input',()=>{
+  const v=parseFloat(slider.value);
+  fill.style.width=((v-1)/8*100)+'%';
+  disp.textContent='D'+v.toFixed(1);
+  disp.classList.toggle('d9',v>=8.9);
+});
 
-            setTimeout(() => {
-                showToast("Access Authorized. Welcome home.");
-                setTimeout(() => {
-                    // Redirect to dashboard
-                    window.location.href = "portal_dashboard.html";
-                }, 1000);
-            }, 1800);
-        }
+// Pulse on password type
+document.getElementById('resKey').addEventListener('input',function(){
+  this.classList.remove('pulsing');
+  void this.offsetWidth;
+  this.classList.add('pulsing');
+});
 
-        // Biometric Scan Simulation
-        let scanTimeout1, scanTimeout2, scanTimeout3;
-        function startBiometricScan() {
-            const overlay = document.getElementById('scannerOverlay');
-            overlay.classList.add('active');
-            
-            const scanText = document.getElementById('scanText');
-            const scanSubtext = document.getElementById('scanSubtext');
-            
-            scanText.textContent = "Scanning Biometric Resonance...";
-            scanSubtext.textContent = "Synchronizing D8 frequency layers. Keep your contact static.";
-            
-            scanTimeout1 = setTimeout(() => {
-                scanText.textContent = "Verifying Sovereign Signature...";
-                scanSubtext.textContent = "Cross-referencing blockchain ledger and DNA-hash.";
-            }, 1500);
-
-            scanTimeout2 = setTimeout(() => {
-                scanText.style.color = "#10B981";
-                scanText.textContent = "Signature Match: Aurelius Vance";
-                scanSubtext.textContent = "Sync complete. Redirecting to Aetheris-Prime central node.";
-            }, 3000);
-
-            scanTimeout3 = setTimeout(() => {
-                overlay.classList.remove('active');
-                window.location.href = "portal_dashboard.html";
-            }, 4200);
-        }
-
-        function cancelBiometricScan() {
-            document.getElementById('scannerOverlay').classList.remove('active');
-            // Clear any active scan timeouts
-            clearTimeout(scanTimeout1);
-            clearTimeout(scanTimeout2);
-            clearTimeout(scanTimeout3);
-            
-            // Reset text colors/content
-            const scanText = document.getElementById('scanText');
-            scanText.style.color = "var(--color-gold)";
-        }
-
-        // Concierge Modal Actions
-        function openConciergeModal(event) {
-            event.preventDefault();
-            document.getElementById('conciergeModal').classList.add('active');
-        }
-
-        function closeConciergeModal() {
-            document.getElementById('conciergeModal').classList.remove('active');
-        }
-
-        function requestConciergeReset() {
-            closeConciergeModal();
-            showToast("Concierge notified. A secure encrypted text has been sent to your primary device.");
-        }
-
-        // Toast Helper
-        function showToast(message) {
-            const toast = document.getElementById('toastMessage');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 4000);
-        }
-    </script>
+function attemptEntry(){
+  const burst=document.getElementById('success-burst');
+  burst.classList.add('show');
+  setTimeout(()=>{ window.location.href='portal_dashboard.html'; },1800);
+}
+</script>
 </body>
 </html>
