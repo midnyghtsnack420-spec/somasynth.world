@@ -98,29 +98,42 @@
 
 <!-- Load Three.js then run the world -->
 <script>
-// Progress bar animation while Three.js loads
-let pct = 0;
-const lbar = document.getElementById('lbar');
-const barTick = setInterval(()=>{
-  pct = Math.min(pct + (Math.random()*3), 85);
-  lbar.style.width = pct + '%';
-}, 80);
+// ── Load Three.js dynamically then boot ──────────────────────
+(function(){
+  // Progress bar
+  let pct=0;
+  const lbar=document.getElementById('lbar');
+  const barTick=setInterval(()=>{
+    pct=Math.min(pct+(Math.random()*3),85);
+    if(lbar) lbar.style.width=pct+'%';
+  },80);
 
-function onTHREELoaded(){
-  clearInterval(barTick);
-  lbar.style.width = '100%';
-  setTimeout(startWorld, 400);
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+  s.onload=function(){
+    clearInterval(barTick);
+    if(lbar){ lbar.style.width='100%'; }
+    setTimeout(function(){ try{ initWorld(); } catch(e){ showErr(e.message); } }, 300);
+  };
+  s.onerror=function(){ clearInterval(barTick); showErr('Failed to load 3D engine. Refresh to retry.'); };
+  document.head.appendChild(s);
+
+  function showErr(msg){
+    var el=document.getElementById('lerr');
+    if(el){ el.style.display='block'; el.textContent=msg; }
+  }
+})();
+
+function dismissLoader(){
+  const ldr=document.getElementById('loader');
+  if(!ldr) return;
+  ldr.style.opacity='0';
+  setTimeout(()=>{ ldr.style.display='none'; },1600);
+  const hud=document.getElementById('hud');
+  if(hud) hud.style.opacity='1';
 }
 
-function onTHREEError(){
-  clearInterval(barTick);
-  document.getElementById('lerr').style.display = 'block';
-  document.getElementById('lerr').textContent = 'Failed to load 3D engine. Please refresh.';
-}
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
-        onload="onTHREELoaded()" onerror="onTHREEError()"></script>
-<script>
+
 function startWorld(){
   try { initWorld(); }
   catch(e){
@@ -132,12 +145,7 @@ function startWorld(){
   }
 }
 
-function dismissLoader(){
-  const ldr = document.getElementById('loader');
-  ldr.style.opacity = '0';
-  setTimeout(()=>{ ldr.style.display='none'; }, 1600);
-  document.getElementById('hud').style.opacity = '1';
-}
+
 
 // ============================================================
 //  WORLD ENGINE
@@ -589,6 +597,7 @@ function animate(){
   if(driftAttr){ for(let i=0;i<driftN;i++){ driftAttr.array[i*3+1]+=.024; if(driftAttr.array[i*3+1]>80) driftAttr.array[i*3+1]=-3; } driftAttr.needsUpdate=true; }
   renderer.render(scene,cam);
 }
+
 </script>
 </body>
 </html>
