@@ -29,6 +29,8 @@
   <div id="lerr" style="color:#ff6060;font-size:.65rem;margin-top:18px;letter-spacing:.1em;display:none;"></div>
 </div>
 
+<div style="position:fixed;inset:0;pointer-events:none;z-index:99;background:radial-gradient(ellipse at center,transparent 40%,rgba(4,1,14,0.35) 100%);"></div>
+
 <canvas id="c" style="position:fixed;inset:0;display:block;cursor:crosshair;"></canvas>
 
 <!-- HUD -->
@@ -179,20 +181,24 @@ let portalGroups=[],nearPortal=-1,dimScenes=[],transitioning=false;
 function initWorld(){
   renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true,powerPreference:'high-performance'});
   renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.45;
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x04010e,0.005);clock=new THREE.Clock();
+  if(renderer.outputEncoding)renderer.outputEncoding=THREE.sRGBEncoding;
+  if(renderer.physicallyCorrectLights!==undefined)renderer.physicallyCorrectLights=true;
+  scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x0a0612,0.008);clock=new THREE.Clock();
   fpCam=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,2000);
   tpCam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,2000);cam=fpCam;
   pivot=new THREE.Group();scene.add(pivot);pivot.position.set(0,5,40);
   pivot.add(fpCam);fpCam.position.set(0,0,0);scene.add(tpCam);
-  scene.add(new THREE.AmbientLight(0x4a3a8a,0.35));
-  scene.add(new THREE.HemisphereLight(0xffe4b5,0x1a0a2e,0.45));
-  const sun=new THREE.DirectionalLight(0xffeedd,2.0);
-  sun.position.set(30,50,20);sun.castShadow=true;
-  sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.near=0.5;sun.shadow.camera.far=200;
-  sun.shadow.camera.left=-80;sun.shadow.camera.right=80;sun.shadow.camera.top=80;sun.shadow.camera.bottom=-80;
-  sun.shadow.bias=-0.0005;scene.add(sun);
+  scene.add(new THREE.AmbientLight(0x6a5a9a,0.6));
+  scene.add(new THREE.HemisphereLight(0xfff0d0,0x2a1a3e,0.7));
+  const sun=new THREE.DirectionalLight(0xfff5e6,1.1);
+  sun.position.set(30,60,25);sun.castShadow=true;
+  sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.near=0.5;sun.shadow.camera.far=250;
+  sun.shadow.camera.left=-90;sun.shadow.camera.right=90;sun.shadow.camera.top=90;sun.shadow.camera.bottom=-90;
+  sun.shadow.bias=-0.0008;sun.shadow.radius=8;scene.add(sun);
+  // Soft fill light from opposite direction
+  const fill=new THREE.DirectionalLight(0x8090c0,0.3);fill.position.set(-20,30,-15);scene.add(fill);
   scene.add(new THREE.PointLight(0x7b68ee,2,200,-40,30,-40));
   scene.add(new THREE.PointLight(0xd4af37,1.5,150,40,20,40));
   buildStars();buildDrift();buildScentSystem();buildHub();buildAllDimensions();buildAvatar();loadSoulNPCs();
@@ -247,7 +253,7 @@ function buildScentSystem(){
   }
   dustGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
   dustGeo.setAttribute('color',new THREE.BufferAttribute(col,3));
-  const dustMat=new THREE.PointsMaterial({size:0.15,vertexColors:true,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false});
+  const dustMat=new THREE.PointsMaterial({size:0.35,vertexColors:true,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
   dustMotes=new THREE.Points(dustGeo,dustMat);scene.add(dustMotes);
   dustAttr=dustGeo.attributes.position;dustN=N;
 }
@@ -321,13 +327,14 @@ function pbrMat(color, opts) {
   opts = opts || {};
   return new THREE.MeshStandardMaterial({
     color: color,
-    roughness: opts.roughness !== undefined ? opts.roughness : 0.7,
-    metalness: opts.metalness !== undefined ? opts.metalness : 0.0,
+    roughness: opts.roughness !== undefined ? opts.roughness : 0.85,
+    metalness: opts.metalness !== undefined ? opts.metalness : 0.05,
     emissive: opts.emissive !== undefined ? opts.emissive : 0x000000,
     emissiveIntensity: opts.emissiveIntensity !== undefined ? opts.emissiveIntensity : 0,
     transparent: opts.transparent || false,
     opacity: opts.opacity !== undefined ? opts.opacity : 1.0,
-    flatShading: false
+    flatShading: false,
+    envMapIntensity: 0.8
   });
 }
 
@@ -338,7 +345,7 @@ function smoothTree(x, z, g, leafColor, trunkColor) {
   const trunkH = 4 + Math.random() * 3;
   const trunkR = 0.3 + Math.random() * 0.15;
   const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(trunkR * 0.7, trunkR, trunkH, 10),
+    new THREE.CylinderGeometry(trunkR * 0.7, trunkR, trunkH, 16),
     pbrMat(trunkColor, { roughness: 0.9 })
   );
   trunk.position.set(x, trunkH / 2, z);
@@ -348,7 +355,7 @@ function smoothTree(x, z, g, leafColor, trunkColor) {
   for (let i = 0; i < layers; i++) {
     const r = 2.5 + Math.random() * 1.5 - i * 0.3;
     const foliage = new THREE.Mesh(
-      new THREE.SphereGeometry(r, 14, 12),
+      new THREE.SphereGeometry(r, 24, 18),
       pbrMat(leafColor, { roughness: 0.85 })
     );
     foliage.position.set(
@@ -364,15 +371,15 @@ function smoothTree(x, z, g, leafColor, trunkColor) {
 function smoothWater(x, z, w, d, g, opts) {
   opts = opts || {};
   const grp = g || scene;
-  const waterGeom = new THREE.PlaneGeometry(w, d, 24, 24);
+  const waterGeom = new THREE.PlaneGeometry(w, d, 48, 48);
   const waterMat = new THREE.MeshStandardMaterial({
     color: opts.color || 0x1a6aaa,
     transparent: true,
     opacity: opts.opacity || 0.75,
-    roughness: 0.05,
-    metalness: 0.3,
+    roughness: 0.02,
+    metalness: 0.4,
     emissive: opts.emissive || 0x0a3060,
-    emissiveIntensity: opts.emissiveIntensity || 0.1
+    emissiveIntensity: opts.emissiveIntensity || 0.15
   });
   const water = new THREE.Mesh(waterGeom, waterMat);
   water.rotation.x = -Math.PI / 2;
@@ -386,14 +393,14 @@ function smoothWater(x, z, w, d, g, opts) {
 function smoothHill(cx, cz, g, radius, height, topColor, sideColor) {
   const grp = g || scene;
   radius = radius || 8; height = height || 5;
-  const geom = new THREE.ConeGeometry(radius, height, 20, 4);
+  const geom = new THREE.ConeGeometry(radius, height, 32, 8);
   const pos = geom.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const y = pos.getY(i);
     if (y > -height / 2 + 0.5) {
-      pos.setX(i, pos.getX(i) + (Math.random() - 0.5) * 1.5);
-      pos.setZ(i, pos.getZ(i) + (Math.random() - 0.5) * 1.5);
-      pos.setY(i, pos.getY(i) + (Math.random() - 0.5) * 0.5);
+      pos.setX(i, pos.getX(i) + (Math.random() - 0.5) * 0.8);
+      pos.setZ(i, pos.getZ(i) + (Math.random() - 0.5) * 0.8);
+      pos.setY(i, pos.getY(i) + (Math.random() - 0.5) * 0.3);
     }
   }
   geom.computeVertexNormals();
@@ -406,10 +413,10 @@ function smoothHill(cx, cz, g, radius, height, topColor, sideColor) {
 function smoothGround(g, size, color) {
   const grp = g || scene;
   color = color || 0x3a6a1a;
-  const geom = new THREE.PlaneGeometry(size || 100, size || 100, 64, 64);
+  const geom = new THREE.PlaneGeometry(size || 100, size || 100, 128, 128);
   const pos = geom.attributes.position;
   for (let i = 0; i < pos.count; i++) {
-    pos.setZ(i, Math.sin(pos.getX(i) * 0.3) * 0.3 + Math.cos(pos.getY(i) * 0.4) * 0.2);
+    pos.setZ(i, Math.sin(pos.getX(i) * 0.15) * 0.5 + Math.cos(pos.getY(i) * 0.2) * 0.35 + (Math.random()-0.5)*0.1);
   }
   geom.computeVertexNormals();
   const ground = new THREE.Mesh(geom, pbrMat(color, { roughness: 0.9 }));
@@ -422,11 +429,11 @@ function smoothGround(g, size, color) {
 function smoothFlower(x, z, g, color) {
   const grp = g || scene;
   const stemMat = pbrMat(0x2e7d32, { roughness: 0.9 });
-  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 6), stemMat);
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 10), stemMat);
   stem.position.set(x, 0.3, z);
   grp.add(stem);
   const bloomMat = pbrMat(color || 0xff3366, { roughness: 0.6, emissive: color || 0xff3366, emissiveIntensity: 0.1 });
-  const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 8), bloomMat);
+  const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.15, 18, 14), bloomMat);
   bloom.position.set(x, 0.65, z);
   bloom.castShadow = true;
   grp.add(bloom);
@@ -440,12 +447,12 @@ function smoothLantern(x, y, z, g, color) {
   const grp = g || scene;
   color = color || 0xffaa22;
   const post = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.08, 0.08, 2, 8),
+    new THREE.CylinderGeometry(0.08, 0.08, 2, 12),
     pbrMat(0x2a2018, { roughness: 0.8 })
   );
   post.position.set(x, y, z); post.castShadow = true;
   const lamp = new THREE.Mesh(
-    new THREE.SphereGeometry(0.25, 12, 10),
+    new THREE.SphereGeometry(0.25, 20, 16),
     pbrMat(color, { emissive: color, emissiveIntensity: 0.9, roughness: 0.3 })
   );
   lamp.position.set(x, y + 1.2, z);
@@ -464,7 +471,7 @@ function buildHub(){
   smoothGround(null, 120, 0x3a5a28);
 
   // Polished marble central platform
-  const platformGeom = new THREE.CircleGeometry(14, 64);
+  const platformGeom = new THREE.CircleGeometry(14, 96);
   const platformMat = pbrMat(0x6a6a6a, { roughness: 0.2, metalness: 0.3 });
   const platform = new THREE.Mesh(platformGeom, platformMat);
   platform.rotation.x = -Math.PI / 2; platform.position.y = 0.1;
@@ -475,14 +482,14 @@ function buildHub(){
     color: 0xd4af37, emissive: 0xd4af37, emissiveIntensity: 0.6,
     roughness: 0.1, metalness: 0.8, transparent: true, opacity: 0.8
   });
-  const sp = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 48, 16, 1, true), beaconMat);
+  const sp = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 48, 32, 1, true), beaconMat);
   sp.position.y = 24; scene.add(sp);
 
   catBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,300,16,1,true), new THREE.MeshBasicMaterial({color:0xffd700,transparent:true,opacity:0.16,side:THREE.DoubleSide}));
   catBeam.position.y = 150; scene.add(catBeam);
 
   [[1.5,0.22],[2.1,0.18],[2.85,0.14]].forEach(([sc,th],i)=>{
-    const r = new THREE.Mesh(new THREE.TorusGeometry(18*sc,th,16,100), stdMat(0xd4af37,0xd4af37,0.85,1,0.05));
+    const r = new THREE.Mesh(new THREE.TorusGeometry(18*sc,th,24,128), stdMat(0xd4af37,0xd4af37,0.85,1,0.05));
     r.position.y = 10+i*10; r.rotation.x = Math.PI/3+i*0.3; r.rotation.z = i*0.6; scene.add(r); orbRings.push({m:r, spd:0.0016*(i+1)});
   });
 
@@ -499,14 +506,14 @@ function buildHub(){
 
     // Smooth crystalline portal pillar base
     const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(2.5, 3, 1.5, 24),
+      new THREE.CylinderGeometry(2.5, 3, 1.5, 48),
       pbrMat(0x1a1228, { roughness: 0.3, metalness: 0.6 })
     );
     base.position.set(x, 0.75, z); base.castShadow = true; base.receiveShadow = true; scene.add(base);
 
     // Smooth crystalline column
     const colM = new THREE.Mesh(
-      new THREE.CylinderGeometry(1, 1.2, pH, 24),
+      new THREE.CylinderGeometry(1, 1.2, pH, 48),
       pbrMat(0x221a36, { roughness: 0.2, metalness: 0.4, emissive: col, emissiveIntensity: 0.3, transparent: true, opacity: 0.85 })
     );
     colM.position.set(x, pH/2 + 1.5, z); colM.castShadow = true; scene.add(colM);
@@ -514,14 +521,14 @@ function buildHub(){
     // Glowing crystal cap
     const capY = pH + 2;
     const cap = new THREE.Mesh(
-      new THREE.OctahedronGeometry(2, 0),
+      new THREE.OctahedronGeometry(2, 1),
       pbrMat(col, { emissive: col, emissiveIntensity: 0.8, roughness: 0.1, metalness: 0.5, transparent: true, opacity: 0.9 })
     );
     cap.position.set(x, capY, z); scene.add(cap);
 
     pillarGlow.push({m: cap, base: 0.6 + freqTier*0.08, ph: i*1.3, spd: 0.8 + freqTier*0.7, amp: 0.2 + freqTier*0.04});
 
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.5,0.15,12,48), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5+freqTier*0.05}));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.5,0.15,20,72), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5+freqTier*0.05}));
     ring.position.set(x,4,z); ring.rotation.x = Math.PI/2; scene.add(ring); spinners.push({m:ring,spd:0.004*(i%2?1:-1)*(1+freqTier*0.25)});
 
     const glow = new THREE.Mesh(new THREE.CircleGeometry(2.3+freqTier*0.15,48), new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.12+freqTier*0.02,side:THREE.DoubleSide}));
@@ -661,10 +668,10 @@ function buildD3(g){
     const angle = (i / 8) * Math.PI * 2, r = 55;
     const mx = Math.cos(angle) * r, mz = Math.sin(angle) * r;
     const mh = 14 + Math.random() * 8;
-    const m = new THREE.Mesh(new THREE.ConeGeometry(mh * 0.8, mh, 12, 3), stoneMat);
+    const m = new THREE.Mesh(new THREE.ConeGeometry(mh * 0.8, mh, 24, 6), stoneMat);
     m.position.set(mx, mh / 2, mz); m.castShadow = true; m.receiveShadow = true;
     // Snow cap
-    const cap = new THREE.Mesh(new THREE.ConeGeometry(mh * 0.3, mh * 0.35, 12, 2), snowMat);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(mh * 0.3, mh * 0.35, 24, 4), snowMat);
     cap.position.set(mx, mh * 0.65, mz); g.add(m); g.add(cap);
   }
 
@@ -685,7 +692,7 @@ function buildD3(g){
   [[12, 18], [-18, -22], [28, -10]].forEach(([hx, hz]) => {
     const house = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 5), cobbleMat);
     house.position.set(hx, 2, hz); house.castShadow = true; house.receiveShadow = true; g.add(house);
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(4, 2.5, 4), roofMat);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(4, 2.5, 8), roofMat);
     roof.position.set(hx, 5.25, hz); roof.rotation.y = Math.PI / 4; roof.castShadow = true; g.add(roof);
   });
 
@@ -699,7 +706,7 @@ function buildD3(g){
   // Earthly souls
   for (let i = 0; i < 40; i++) {
     const a = (i / 40) * Math.PI * 2, r = 10 + Math.random() * 45;
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 10), new THREE.MeshBasicMaterial({ color: 0x6090c0, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.25, 20, 16), new THREE.MeshBasicMaterial({ color: 0x6090c0, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
     s.position.set(Math.cos(a) * r, 2 + Math.random() * 3, Math.sin(a) * r);
     s.userData = { baseY: 2 + Math.random() * 3, phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.4, type: 'earthly' };
     g.add(s); earthlySouls.push(s);
@@ -718,11 +725,11 @@ function buildD4(g){
   for (let i = 0; i < 20; i++) {
     const a = (i / 20) * Math.PI * 2, r = 40 + Math.random() * 10;
     const wx = Math.cos(a) * r, wz = Math.sin(a) * r;
-    const wall = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 20, 12), stoneMat);
+    const wall = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 20, 24), stoneMat);
     wall.position.set(wx, 10, wz); wall.castShadow = true; g.add(wall);
     // Stalagmites
     const smH = 3 + Math.random() * 5;
-    const sm = new THREE.Mesh(new THREE.ConeGeometry(Math.max(1, smH * 0.4), smH, 10), stoneMat);
+    const sm = new THREE.Mesh(new THREE.ConeGeometry(Math.max(1, smH * 0.4), smH, 20), stoneMat);
     sm.position.set(wx * 0.8, smH / 2, wz * 0.8); sm.castShadow = true; g.add(sm);
   }
 
@@ -748,7 +755,7 @@ function buildD4(g){
     for (let j = 0; j < count; j++) {
       const h = 2 + Math.random() * 5;
       const crystal = new THREE.Mesh(
-        new THREE.ConeGeometry(0.4, h, 6),
+        new THREE.ConeGeometry(0.4, h, 12),
         pbrMat(cCol, { emissive: cCol, emissiveIntensity: 0.8, roughness: 0.15, transparent: true, opacity: 0.85 })
       );
       crystal.position.set((Math.random() - 0.5) * 2, h / 2, (Math.random() - 0.5) * 2);
@@ -791,7 +798,7 @@ function buildD4(g){
   // Awakening souls
   for (let i = 0; i < 25; i++) {
     const a = (i / 25) * Math.PI * 2, r = 10 + Math.random() * 35;
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.4, 14, 12), new THREE.MeshBasicMaterial({ color: 0x00ddff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending }));
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.4, 24, 18), new THREE.MeshBasicMaterial({ color: 0x00ddff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending }));
     s.position.set(Math.cos(a) * r, 3 + Math.random() * 6, Math.sin(a) * r);
     s.userData = { baseY: 3 + Math.random() * 6, phase: Math.random() * Math.PI * 2, speed: 0.5, type: 'awakening', orbitR: r, orbitA: a };
     g.add(s);
@@ -821,7 +828,7 @@ function buildD5(g){
   // Lily pads
   const padMat = pbrMat(0x11aa33, { roughness: 0.6 });
   for (let i = 0; i < 10; i++) {
-    const pad = new THREE.Mesh(new THREE.CircleGeometry(0.6, 12), padMat);
+    const pad = new THREE.Mesh(new THREE.CircleGeometry(0.6, 24), padMat);
     pad.rotation.x = -Math.PI / 2; pad.position.set((Math.random() - 0.5) * 6, 0.22, 5 + (Math.random() - 0.5) * 15);
     g.add(pad);
   }
@@ -855,7 +862,7 @@ function buildD5(g){
   // Light-body souls
   for (let i = 0; i < 25; i++) {
     const a = (i / 25) * Math.PI * 2, r = 10 + Math.random() * 45;
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.5, 14, 12), new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }));
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.5, 28, 20), new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }));
     s.position.set(Math.cos(a) * r, 3 + Math.random() * 8, Math.sin(a) * r);
     s.userData = { baseY: s.position.y, phase: Math.random() * Math.PI * 2, speed: 0.5, type: 'lightbody', orbitR: r, orbitA: a };
     g.add(s);
@@ -871,7 +878,7 @@ function buildD6(g){
   // Floating smooth islands
   const islands = [[0, 0, 0, 16], [-25, 8, -15, 12], [30, -5, 20, 14], [-18, -12, 28, 10], [22, 12, -25, 12], [0, 22, -35, 10]];
   islands.forEach(([ix, iy, iz, sz]) => {
-    const isl = new THREE.Mesh(new THREE.SphereGeometry(sz / 2, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2.5), islandMat);
+    const isl = new THREE.Mesh(new THREE.SphereGeometry(sz / 2, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2.5), islandMat);
     isl.position.set(ix, iy, iz); isl.castShadow = true; g.add(isl);
     // Crystal underneath
     const crystal = new THREE.Mesh(new THREE.ConeGeometry(1.5, 4, 8), energyMat);
@@ -899,7 +906,7 @@ function buildD6(g){
   // Energy souls
   for (let i = 0; i < 30; i++) {
     const a = (i / 30) * Math.PI * 2, r = 10 + Math.random() * 40;
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.45, 14, 12), new THREE.MeshBasicMaterial({ color: 0x8a2be2, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending }));
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.45, 24, 18), new THREE.MeshBasicMaterial({ color: 0x8a2be2, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending }));
     s.position.set(Math.cos(a) * r, Math.random() * 20, Math.sin(a) * r);
     s.userData = { baseY: s.position.y, phase: Math.random() * Math.PI * 2, speed: 0.8, type: 'energy', orbitR: r, orbitA: a };
     g.add(s);
@@ -914,10 +921,10 @@ function buildD7(g){
   const crystalMat = pbrMat(0xda70d6, { emissive: 0xda70d6, emissiveIntensity: 1.0, roughness: 0.1, transparent: true, opacity: 0.85 });
 
   // Floating smooth islands
-  const mainIsland = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 4, 32), stoneMat);
+  const mainIsland = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 4, 64), stoneMat);
   mainIsland.position.set(0, 0, 0); mainIsland.castShadow = true; mainIsland.receiveShadow = true; g.add(mainIsland);
   [[-30, 6, -25, 14], [35, -4, 20, 16], [-20, -8, 30, 12], [28, 10, -30, 12]].forEach(([ix, iy, iz, sz]) => {
-    const isl = new THREE.Mesh(new THREE.CylinderGeometry(sz / 2, sz / 2, 3, 24), stoneMat);
+    const isl = new THREE.Mesh(new THREE.CylinderGeometry(sz / 2, sz / 2, 3, 48), stoneMat);
     isl.position.set(ix, iy, iz); isl.castShadow = true; g.add(isl);
   });
 
@@ -926,7 +933,7 @@ function buildD7(g){
     const angle = (i / 6) * Math.PI * 2, r = 14;
     const px = Math.cos(angle) * r, pz = Math.sin(angle) * r;
     const pH = 12 + i * 2;
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, pH, 20), obsidianMat);
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, pH, 48), obsidianMat);
     pillar.position.set(px, pH / 2 + 2, pz); pillar.castShadow = true; g.add(pillar);
     const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1.5, 0), crystalMat);
     crystal.position.set(px, pH + 3.5, pz);
@@ -956,7 +963,7 @@ function buildD7(g){
   // Consciousness souls
   for (let i = 0; i < 30; i++) {
     const a = (i / 30) * Math.PI * 2, r = 10 + Math.random() * 45;
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.35, 14, 12), new THREE.MeshBasicMaterial({ color: 0xda70d6, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }));
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.35, 20, 16), new THREE.MeshBasicMaterial({ color: 0xda70d6, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }));
     s.position.set(Math.cos(a) * r, 3 + Math.random() * 20, Math.sin(a) * r);
     s.userData = { baseY: s.position.y, phase: Math.random() * Math.PI * 2, speed: 0.5, type: 'consciousness', orbitR: r, orbitA: a };
     g.add(s);
@@ -972,7 +979,7 @@ function buildD8(g){
   const diamondMat = pbrMat(0x00ffff, { emissive: 0x00ffff, emissiveIntensity: 0.5, roughness: 0.1, metalness: 0.6, transparent: true, opacity: 0.8 });
 
   // Smooth grid floor
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80, 10, 10), ironMat);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80, 32, 32), ironMat);
   floor.rotation.x = -Math.PI / 2; floor.position.y = 0; floor.receiveShadow = true; g.add(floor);
 
   // Redstone conduit lines
@@ -987,7 +994,7 @@ function buildD8(g){
 
   // Command blocks — smooth glowing cubes
   [[-16, -16], [16, -16], [-16, 16], [16, 16], [0, 0]].forEach(([cx, cz]) => {
-    const cmd = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cmdMat);
+    const cmd = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), cmdMat);
     cmd.position.set(cx, 1, cz); cmd.castShadow = true;
     spinners.push({ m: cmd, spd: 0.005 }); g.add(cmd);
   });
@@ -1022,7 +1029,7 @@ function buildHeaven(g){
 
   // Quartz floating islands
   [[-25, 8, -25, 16], [28, -4, 22, 18], [-20, -6, 28, 14]].forEach(([ix, iy, iz, sz]) => {
-    const isl = new THREE.Mesh(new THREE.CylinderGeometry(sz / 2, sz / 2, 3, 24), quartzMat);
+    const isl = new THREE.Mesh(new THREE.CylinderGeometry(sz / 2, sz / 2, 3, 48), quartzMat);
     isl.position.set(ix, iy, iz); isl.castShadow = true; isl.receiveShadow = true; g.add(isl);
     // Waterfall
     const wf = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 12, 1, 6), pbrMat(0x00ffff, { transparent: true, opacity: 0.7, roughness: 0.1, emissive: 0x00ffff, emissiveIntensity: 0.3 }));
@@ -1033,7 +1040,7 @@ function buildHeaven(g){
   for (let i = 0; i < 12; i++) {
     const angle = (i / 12) * Math.PI * 2, r = 40;
     const px = Math.cos(angle) * r, pz = Math.sin(angle) * r;
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.2, 20, 20), quartzMat);
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.2, 20, 48), quartzMat);
     pillar.position.set(px, 10, pz); pillar.castShadow = true; g.add(pillar);
     const cap = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.5, 2.8), goldMat);
     cap.position.set(px, 21, pz); cap.castShadow = true; g.add(cap);
@@ -1053,7 +1060,7 @@ function buildHeaven(g){
     const bx = THREE.MathUtils.lerp(-25, 0, t);
     const bz = THREE.MathUtils.lerp(-25, 0, t);
     const by = Math.sin(t * Math.PI) * 6 + 4;
-    const seg = new THREE.Mesh(new THREE.SphereGeometry(0.6, 10, 8), pbrMat(rainbowCols[Math.floor(t * 100) % 6], { emissive: rainbowCols[Math.floor(t * 100) % 6], emissiveIntensity: 0.3, roughness: 0.2 }));
+    const seg = new THREE.Mesh(new THREE.SphereGeometry(0.6, 20, 16), pbrMat(rainbowCols[Math.floor(t * 100) % 6], { emissive: rainbowCols[Math.floor(t * 100) % 6], emissiveIntensity: 0.3, roughness: 0.2 }));
     seg.position.set(bx, by, bz); g.add(seg);
   }
 
@@ -1063,7 +1070,7 @@ function buildHeaven(g){
   // Ascended souls
   for (let i = 0; i < 50; i++) {
     const a = (i / 50) * Math.PI * 2, r = 10 + Math.random() * 65;
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 14), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }));
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.6, 28, 22), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }));
     s.position.set(Math.cos(a) * r, 3 + Math.random() * 20, Math.sin(a) * r);
     s.userData = { baseY: s.position.y, phase: Math.random() * Math.PI * 2, speed: 0.4, type: 'ascended', orbitR: r, orbitA: a };
     g.add(s);
@@ -1329,20 +1336,20 @@ function buildStars(){
   const N=3200,geo=new THREE.BufferGeometry(),pos=new Float32Array(N*3),col=new Float32Array(N*3);
   for(let i=0;i<N;i++){const r=400+Math.random()*400,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);pos[i*3]=r*Math.sin(ph)*Math.cos(th);pos[i*3+1]=r*Math.cos(ph);pos[i*3+2]=r*Math.sin(ph)*Math.sin(th);const c=Math.random();col[i*3]=c>0.8?1:0.5+c*0.3;col[i*3+1]=c>0.8?0.9:0.4+c*0.3;col[i*3+2]=c>0.8?0.6:0.6+c*0.2;}
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));
-  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:1.2,vertexColors:true,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending,depthWrite:false})));
+  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:2.0,vertexColors:true,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true})));
 }
 
 function buildDrift(){
   const N=1400,geo=new THREE.BufferGeometry(),pos=new Float32Array(N*3);
   for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*240;pos[i*3+1]=Math.random()*80;pos[i*3+2]=(Math.random()-.5)*240;}
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:.38,color:0xd4af37,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false})));
+  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({size:.6,color:0xd4af37,transparent:true,opacity:.35,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true})));
   driftAttr=geo.attributes.position;driftN=N;
 }
 
 function buildAvatar(){
   avatar=new THREE.Group();scene.add(avatar);
-  function glow(r,col,op,x,y,z){const m=new THREE.Mesh(new THREE.SphereGeometry(r,12,12),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false}));m.position.set(x||0,y||0,z||0);return m;}
+  function glow(r,col,op,x,y,z){const m=new THREE.Mesh(new THREE.SphereGeometry(r,24,20),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false}));m.position.set(x||0,y||0,z||0);return m;}
   avatar.add(glow(0.18,0xffffff,0.95));avatar.add(glow(0.45,0xe8d8ff,0.55));
   avatar.add(glow(0.9,0xb090ff,0.28));avatar.add(glow(1.6,0x7b68ee,0.12));
   const head=new THREE.Group();head.position.y=1.85;avatar.add(head);
