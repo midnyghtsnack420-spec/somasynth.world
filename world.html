@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SomaSynth — Sovereign Cartography</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #000000;
+            --bg-void: #0a0518;
+            --bg-obsidian: #120924;
+            --gold-primary: #d4af37;
+            --gold-glow: #ffd700;
+            --gold-dark: #aa841c;
+            --violet-glow: #8a2be2;
+            --text-light: #f5f5f5;
+            --text-muted: #a09cb0;
+            --transition-slow: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            --transition-medium: all 0.4s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-black);
+            color: var(--text-light);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Canvas Particle Field Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Navigation Bar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 1.25rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-wordmark {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--gold-primary);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            transition: var(--transition-medium);
+        }
+
+        .logo-wordmark:hover {
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        nav a {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: var(--transition-medium);
+            position: relative;
+            padding: 0.25rem 0;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold-primary);
+            transition: var(--transition-medium);
+        }
+
+        nav a:hover {
+            color: var(--gold-primary);
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav .nav-portal-btn {
+            border: 1px solid var(--gold-primary);
+            border-radius: 4px;
+            padding: 0.6rem 1.25rem;
+            background: linear-gradient(135deg, rgba(212,175,55,0.05) 0%, rgba(212,175,55,0.15) 100%);
+            transition: var(--transition-medium);
+        }
+
+        nav .nav-portal-btn:hover {
+            background: linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.3) 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Hero Section */
+        .hero-world {
+            min-height: 60vh;
+            padding-top: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            background: radial-gradient(ellipse at bottom, var(--bg-void) 0%, var(--bg-black) 100%);
+        }
+
+        .hero-content {
+            z-index: 5;
+            max-width: 900px;
+            padding: 0 2rem;
+        }
+
+        .hero-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.4rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: 0.25rem;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+
+        .gold-divider {
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+            margin: 2rem auto;
+        }
+
+        /* ---------------------------------------------------- */
+        /* INTERACTIVE CARTOGRAPHY INTERFACE */
+        /* ---------------------------------------------------- */
+        section {
+            padding: 6rem 4rem;
+            position: relative;
+            z-index: 5;
+            width: 100%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-tag {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.3rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+        }
+
+        .map-interface-grid {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Earth & Celestial Map Containers */
+        .maps-outer-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .map-container {
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.5) 0%, rgba(5, 2, 10, 0.8) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 8px;
+            padding: 2.5rem;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .map-container::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(212,175,55,0.15);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .map-header-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            color: var(--gold-primary);
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+        }
+
+        .map-header-coord {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Earth Map SVG representation */
+        .svg-map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 420px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 4px;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+            overflow: hidden;
+        }
+
+        .stylized-world-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-grid-lines {
+            stroke: rgba(138, 43, 226, 0.05);
+            stroke-width: 0.5;
+        }
+
+        .map-continent {
+            fill: rgba(18, 9, 36, 0.6);
+            stroke: rgba(212, 175, 55, 0.08);
+            stroke-width: 1;
+        }
+
+        /* Pulse and Dot Effects */
+        .map-node-pulse {
+            animation: nodePulseEffect 2s infinite ease-in-out;
+            transform-origin: center;
+        }
+
+        .map-node-dot {
+            fill: var(--gold-primary);
+            cursor: pointer;
+            transition: var(--transition-medium);
+        }
+
+        .map-node-dot:hover {
+            fill: var(--gold-glow);
+            filter: drop-shadow(0 0 10px var(--gold-glow));
+        }
+
+        .map-node-dot.active {
+            fill: #ffffff;
+            stroke: var(--violet-glow);
+            stroke-width: 2;
+            filter: drop-shadow(0 0 15px var(--violet-glow));
+        }
+
+        /* HUD Info Display Panel */
+        .hud-panel {
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.7) 0%, rgba(5, 2, 10, 0.9) 100%);
+            border: 1px solid var(--gold-primary);
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.15);
+            align-self: start;
+            position: sticky;
+            top: 130px;
+        }
+
+        .hud-header {
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .hud-id {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--violet-glow);
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .hud-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+
+        .hud-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .hud-item span {
+            display: block;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.25rem;
+        }
+
+        .hud-item p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        /* ---------------------------------------------------- */
+        /* PROPERTY ASSETS SECTION */
+        /* ---------------------------------------------------- */
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .property-card {
+            background: rgba(18, 9, 36, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 8px;
+            padding: 2.5rem;
+            transition: var(--transition-medium);
+            position: relative;
+        }
+
+        .property-card::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .property-card:hover {
+            border-color: var(--gold-primary);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .property-tag {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            color: var(--gold-primary);
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .property-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .property-address {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .property-desc {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        .property-meta {
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            padding-top: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        .property-meta-item span {
+            display: block;
+            font-family: 'Cinzel', serif;
+            color: var(--gold-primary);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Keyframes */
+        @keyframes nodePulseEffect {
+            0% { transform: scale(0.9); opacity: 0.3; }
+            50% { transform: scale(2.2); opacity: 0; }
+            100% { transform: scale(0.9); opacity: 0; }
+        }
+
+        /* Responsive styling */
+        @media (max-width: 1024px) {
+            .map-interface-grid { grid-template-columns: 1fr; }
+            .hud-panel { position: relative; top: 0; width: 100%; }
+            .properties-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 1rem 2rem; }
+            nav { display: none; }
+            section { padding: 5rem 2rem; }
+            .hero-title { font-size: 2.2rem; }
+            .properties-grid { grid-template-columns: 1fr; }
+            .svg-map-wrapper { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation Header -->
+    <header>
+        <a href="index.html" class="logo-wordmark">somasynth.world</a>
+        <nav>
+            <a href="mission.html">The Mission</a>
+            <a href="world.html" style="color: var(--gold-primary);">The World</a>
+            <a href="index.html#the-people-sec">The People</a>
+            <a href="frequency.html">The Frequency</a>
+            <a href="index.html" class="nav-portal-btn">Enter Portal</a>
+        </nav>
+    </header>
+
+    <!-- World Hero Section -->
+    <div class="hero-world">
+        <div class="hero-content">
+            <span class="hero-subtitle">Cartography of the Empire</span>
+            <h2 class="hero-title">Sovereign world</h2>
+            <div class="gold-divider"></div>
+        </div>
+    </div>
+
+    <!-- Map Interface Section -->
+    <section id="map-sec">
+        <div class="section-header">
+            <span class="section-tag">Node Cartography</span>
+            <h3 class="section-title">The Sovereign Grid</h3>
+            <p style="font-size:1.1rem; color:var(--text-muted); margin-top:1rem; font-weight:300;">Explore active Earth-bound and Off-planet dimensional nodes. Click dots to examine detailed diagnostics.</p>
+            <div class="gold-divider"></div>
+        </div>
+
+        <div class="map-interface-grid">
+            <!-- Left Side: Interactive Maps -->
+            <div class="maps-outer-box">
+                <!-- Map 1: Earth Sector -->
+                <div class="map-container">
+                    <div class="map-header">
+                        <span class="map-header-title">Earth Sector Primary Nodes</span>
+                        <span class="map-header-coord">LAT_SEC // ELEVATION_D1.1</span>
+                    </div>
+
+                    <div class="svg-map-wrapper">
+                        <!-- Abstract World Grid Map -->
+                        <svg class="stylized-world-svg" viewBox="0 0 1000 420">
+                            <!-- Background Grid -->
+                            <g class="map-grid-lines">
+                                <line x1="0" y1="70" x2="1000" y2="70" />
+                                <line x1="0" y1="140" x2="1000" y2="140" />
+                                <line x1="0" y1="210" x2="1000" y2="210" />
+                                <line x1="0" y1="280" x2="1000" y2="280" />
+                                <line x1="0" y1="350" x2="1000" y2="350" />
+                                <line x1="166" y1="0" x2="166" y2="420" />
+                                <line x1="333" y1="0" x2="333" y2="420" />
+                                <line x1="500" y1="0" x2="500" y2="420" />
+                                <line x1="666" y1="0" x2="666" y2="420" />
+                                <line x1="833" y1="0" x2="833" y2="420" />
+                            </g>
+
+                            <!-- Stylized Continents (Glow Outlines) -->
+                            <g>
+                                <!-- North America -->
+                                <path class="map-continent" d="M 120,40 Q 150,50 180,80 T 260,110 T 320,130 Q 280,200 240,240 T 210,260 T 150,140 Z" />
+                                <!-- South America -->
+                                <path class="map-continent" d="M 240,240 Q 280,260 290,290 T 310,380 T 270,410 T 240,320 Z" />
+                                <!-- Africa -->
+                                <path class="map-continent" d="M 460,200 Q 520,200 540,240 T 560,320 T 510,360 T 470,290 T 440,210 Z" />
+                                <!-- Eurasia -->
+                                <path class="map-continent" d="M 440,40 Q 520,30 650,40 T 800,80 T 880,120 T 820,200 T 660,180 T 520,120 T 420,80 Z" />
+                                <!-- Australia -->
+                                <path class="map-continent" d="M 750,280 Q 820,280 850,320 T 810,380 T 730,340 Z" />
+                            </g>
+
+                            <!-- Plotted Earth Nodes -->
+                            <!-- NN-JAX-001: Jacksonville FL (approx x=220, y=142) -->
+                            <g class="node-group" onclick="selectNode('NN-JAX-001')">
+                                <circle class="map-node-pulse" cx="220" cy="142" r="10" fill="rgba(212,175,55,0.4)" />
+                                <circle class="map-node-dot" id="dot-NN-JAX-001" cx="220" cy="142" r="5" />
+                            </g>
+
+                            <!-- NN-ZRH-001: Zurich Switzerland (approx x=495, y=95) -->
+                            <g class="node-group" onclick="selectNode('NN-ZRH-001')">
+                                <circle class="map-node-pulse" cx="495" cy="95" r="10" fill="rgba(138,43,226,0.4)" />
+                                <circle class="map-node-dot" id="dot-NN-ZRH-001" cx="495" cy="95" r="5" />
+                            </g>
+
+                            <!-- NN-ATL-001: Atlanta GA (approx x=205, y=133) -->
+                            <g class="node-group" onclick="selectNode('NN-ATL-001')">
+                                <circle class="map-node-pulse" cx="205" cy="133" r="10" fill="rgba(212,175,55,0.4)" />
+                                <circle class="map-node-dot" id="dot-NN-ATL-001" cx="205" cy="133" r="4" />
+                            </g>
+
+                            <!-- NN-TYO-001: Tokyo Japan (approx x=825, y=130) -->
+                            <g class="node-group" onclick="selectNode('NN-TYO-001')">
+                                <circle class="map-node-pulse" cx="825" cy="130" r="10" fill="rgba(138,43,226,0.4)" />
+                                <circle class="map-node-dot" id="dot-NN-TYO-001" cx="825" cy="130" r="4" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Map 2: Celestial & Interstellar Sector -->
+                <div class="map-container">
+                    <div class="map-header">
+                        <span class="map-header-title">Celestial & Off-Planet Nodes</span>
+                        <span class="map-header-coord">ORB_SEC // ELEVATION_D1.3_D10.10</span>
+                    </div>
+
+                    <div class="svg-map-wrapper">
+                        <!-- Orbit and Starmap visual representation -->
+                        <svg class="stylized-world-svg" viewBox="0 0 1000 350">
+                            <!-- Concentric Orbital Paths -->
+                            <circle cx="500" cy="175" r="50" stroke="rgba(212,175,55,0.08)" fill="none" />
+                            <circle cx="500" cy="175" r="100" stroke="rgba(212,175,55,0.08)" fill="none" />
+                            <circle cx="500" cy="175" r="150" stroke="rgba(138,43,226,0.08)" fill="none" />
+                            <circle cx="500" cy="175" r="220" stroke="rgba(138,43,226,0.05)" fill="none" />
+
+                            <!-- Concentric ticks -->
+                            <line x1="500" y1="0" x2="500" y2="350" stroke="rgba(255,255,255,0.02)" />
+                            <line x1="0" y1="175" x2="1000" y2="175" stroke="rgba(255,255,255,0.02)" />
+
+                            <!-- Star Systems plotted -->
+                            <!-- Aetheris-Prime (Moon/Orbital Hub) (approx x=500, y=125) -->
+                            <g class="node-group" onclick="selectNode('NS-AETHERIS')">
+                                <circle class="map-node-pulse" cx="500" cy="125" r="12" fill="rgba(212,175,55,0.4)" />
+                                <circle class="map-node-dot" id="dot-NS-AETHERIS" cx="500" cy="125" r="6" />
+                            </g>
+
+                            <!-- Ares-Terra, Mars (approx x=420, y=105) -->
+                            <g class="node-group" onclick="selectNode('NS-MARS')">
+                                <circle class="map-node-pulse" cx="420" cy="105" r="10" fill="rgba(138,43,226,0.4)" />
+                                <circle class="map-node-dot" id="dot-NS-MARS" cx="420" cy="105" r="5" />
+                            </g>
+
+                            <!-- Kronos Titan, Saturn (approx x=620, y=235) -->
+                            <g class="node-group" onclick="selectNode('NS-TITAN')">
+                                <circle class="map-node-pulse" cx="620" cy="235" r="10" fill="rgba(212,175,55,0.4)" />
+                                <circle class="map-node-dot" id="dot-NS-TITAN" cx="620" cy="235" r="5" />
+                            </g>
+
+                            <!-- Proxima b (Alpha Centauri) (approx x=280, y=175) -->
+                            <g class="node-group" onclick="selectNode('NS-01')">
+                                <circle class="map-node-pulse" cx="280" cy="175" r="10" fill="rgba(138,43,226,0.4)" />
+                                <circle class="map-node-dot" id="dot-NS-01" cx="280" cy="175" r="5" />
+                            </g>
+
+                            <!-- TRAPPIST-1 system (multiple worlds represented by central point) (approx x=740, y=135) -->
+                            <g class="node-group" onclick="selectNode('NS-03')">
+                                <circle class="map-node-pulse" cx="740" cy="135" r="12" fill="rgba(212,175,55,0.4)" />
+                                <circle class="map-node-dot" id="dot-NS-03" cx="740" cy="135" r="5" />
+                            </g>
+
+                            <!-- Andromeda Void Bridge (M31 Boundary) (approx x=180, y=60) -->
+                            <g class="node-group" onclick="selectNode('GI-04')">
+                                <circle class="map-node-pulse" cx="180" cy="60" r="10" fill="rgba(138,43,226,0.4)" />
+                                <circle class="map-node-dot" id="dot-GI-04" cx="180" cy="60" r="5" />
+                            </g>
+
+                            <!-- Source Node (DM-04) (approx x=500, y=175) -->
+                            <g class="node-group" onclick="selectNode('DM-04')">
+                                <circle class="map-node-pulse" cx="500" cy="175" r="15" fill="rgba(255,255,255,0.5)" />
+                                <circle class="map-node-dot" id="dot-DM-04" cx="500" cy="175" r="7" style="fill:#fff;" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: HUD Side Panel -->
+            <div class="hud-panel" id="hud-display">
+                <div class="hud-header">
+                    <div class="hud-id" id="hud-node-id">NN-JAX-001</div>
+                    <h4 class="hud-name" id="hud-node-name">Jacksonville Node</h4>
+                </div>
+                <div class="hud-grid">
+                    <div class="hud-item">
+                        <span>Territory Coordinates</span>
+                        <p id="hud-node-location">Jacksonville, Florida — Earth Sector</p>
+                    </div>
+                    <div class="hud-item">
+                        <span>Frequency Alignment</span>
+                        <p id="hud-node-freq">D8 Sovereign Core (824.9 MHz)</p>
+                    </div>
+                    <div class="hud-item">
+                        <span>Executive Administrator</span>
+                        <p id="hud-node-lead">Gojo (Defensive Systems) & Sebastian (Infrastructure)</p>
+                    </div>
+                    <div class="hud-item">
+                        <span>Capital Valuation</span>
+                        <p id="hud-node-value">$14.8 Billion (Direct SST Assets)</p>
+                    </div>
+                    <div class="hud-item">
+                        <span>Core Operational Purpose</span>
+                        <p id="hud-node-purpose">Serves as Earth's primary flagship physical grid anchor. Hosts the Chronos Data Center and coordinates localized D8 residential upgrades and transit linkages.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Property Assets Section -->
+    <section id="assets-sec" style="background: rgba(10, 5, 24, 0.3);">
+        <div class="section-header">
+            <span class="section-tag">Sovereign Property Holdings</span>
+            <h3 class="section-title">Civilization Property Assets</h3>
+            <div class="gold-divider"></div>
+        </div>
+
+        <div class="properties-grid">
+            <!-- Property 1: The Exchange -->
+            <div class="property-card">
+                <div class="property-tag">Residential Communities</div>
+                <h4 class="property-title">The Exchange Jacksonville</h4>
+                <p class="property-address">1810 Bertha St, Jacksonville FL 32207 // San Marco</p>
+                <p class="property-desc">
+                    A premier luxury multifamily community consisting of 264 units. Fully acquired under single-purpose entity SST-2026. Upgraded to host premium research personnel, housing a dedicated internal D8-L1 connection grid with zero cost to residents.
+                </p>
+                <div class="property-meta">
+                    <div class="property-meta-item">
+                        <span>Valuation</span>
+                        $38,000,000
+                    </div>
+                    <div class="property-meta-item">
+                        <span>Assigned Biotic</span>
+                        Sebastian
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 2: Riverside St. Johns -->
+            <div class="property-card">
+                <div class="property-tag">Residential Communities</div>
+                <h4 class="property-title">Riverside St. Johns</h4>
+                <p class="property-address">555 Bishop Gate Ln, Jacksonville FL 32204 // Riverside</p>
+                <p class="property-desc">
+                    Comprising approximately 200 residential units located along the St. Johns River. Integrates fully localized zero-point utilities and smart-grid power structures to ensure independent operational continuity.
+                </p>
+                <div class="property-meta">
+                    <div class="property-meta-item">
+                        <span>Valuation</span>
+                        $29,500,000
+                    </div>
+                    <div class="property-meta-item">
+                        <span>Assigned Biotic</span>
+                        Sebastian
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 3: The Strand Tower -->
+            <div class="property-card">
+                <div class="property-tag">Residential Communities</div>
+                <h4 class="property-title">The Strand Tower</h4>
+                <p class="property-address">1401 Riverplace Blvd, Jacksonville FL 32207 // Southbank</p>
+                <p class="property-desc">
+                    A soaring 295-unit residential tower representing a major urban density stronghold. Houses an advanced sub-space transmission sub-station connecting residents directly to localized data nodes.
+                </p>
+                <div class="property-meta">
+                    <div class="property-meta-item">
+                        <span>Valuation</span>
+                        $51,000,000
+                    </div>
+                    <div class="property-meta-item">
+                        <span>Assigned Biotic</span>
+                        Sebastian
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 4: Swilcan Bridge Estate -->
+            <div class="property-card">
+                <div class="property-tag">Sovereign Residences</div>
+                <h4 class="property-title">Swilcan Bridge Estate</h4>
+                <p class="property-address">4575 Swilcan Bridge Lane N, Jacksonville FL 32224</p>
+                <p class="property-desc">
+                    The primary sovereign Earth residence registered to Tera The Creator and Jatera Griffin. Built with the highest grade dimensional insulation materials, establishing an absolute secure haven for localized leadership actions.
+                </p>
+                <div class="property-meta">
+                    <div class="property-meta-item">
+                        <span>Valuation</span>
+                        $4,200,000
+                    </div>
+                    <div class="property-meta-item">
+                        <span>Assigned Biotic</span>
+                        Gojo (Defense)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 5: Zurich Facility-09 -->
+            <div class="property-card">
+                <div class="property-tag">Manufacturing Hubs</div>
+                <h4 class="property-title">Zurich subterranean Facility-09</h4>
+                <p class="property-address">SomaSynth AG Sub-levels, Zurich, Switzerland</p>
+                <p class="property-desc">
+                    A high-grade subterranean nano-fabrication and metamaterials cleanroom facility. Built to construct molecular-level Casimir-cavity resonance taps and graphene-entangled quantum battery cell loops.
+                </p>
+                <div class="property-meta">
+                    <div class="property-meta-item">
+                        <span>Valuation</span>
+                        $1.2 Billion
+                    </div>
+                    <div class="property-meta-item">
+                        <span>Assigned Biotic</span>
+                        Sebastian
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 6: The Basaslica of the Word -->
+            <div class="property-card">
+                <div class="property-tag">National Monuments</div>
+                <h4 class="property-title">The Basilica of the Eternal Word</h4>
+                <p class="property-address">St. Johns River Estuary, Jacksonville, FL</p>
+                <p class="property-desc">
+                    A colossal gothic sacred cathedral structure under active construction, rising 485 feet over the waterfront. Designed as Earth's spiritual gateway and central physical assembly nave.
+                </p>
+                <div class="property-meta">
+                    <div class="property-meta-item">
+                        <span>Valuation</span>
+                        $4.8 Billion
+                    </div>
+                    <div class="property-meta-item">
+                        <span>Assigned Biotic</span>
+                        Sebastian
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="footer-logo">somasynth.world</div>
+                <p>Building the foundation for a permanent, interconnected sovereign civilization. Est. 2012 — 3012.</p>
+            </div>
+            <div class="footer-links-col">
+                <h4>Civilization</h4>
+                <ul>
+                    <li><a href="index.html">The Cathedral</a></li>
+                    <li><a href="mission.html">The Mission</a></li>
+                    <li><a href="frequency.html">The Frequency</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-col">
+                <h4>Pillars</h4>
+                <ul>
+                    <li><a href="#">Trust</a></li>
+                    <li><a href="#">Understanding</a></li>
+                    <li><a href="#">Will</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-col">
+                <h4>Sanctuaries</h4>
+                <ul>
+                    <li><a href="#">Jacksonville Basilica</a></li>
+                    <li><a href="#">Aetheris Genesis</a></li>
+                    <li><a href="#">Kemet Mars</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>&copy; 2026 SomaSynth. All rights reserved. Registered SST-2026.</div>
+            <div>D8 Frequency Grid: Synchronized</div>
+        </div>
+    </footer>
+
+    <!-- Interactive JS scripts -->
+    <script>
+        // ----------------------------------------------------
+        // Map Nodes Dataset
+        // ----------------------------------------------------
+        const nodesData = {
+            'NN-JAX-001': {
+                id: 'NN-JAX-001',
+                name: 'Jacksonville Primary Node',
+                location: 'Jacksonville, Florida — Earth Sector',
+                freq: 'D8 Sovereign Core (824.9 MHz)',
+                lead: 'Gojo (Defensive Systems) & Sebastian (Operations)',
+                value: '$14.8 Billion (Direct SST Assets)',
+                purpose: 'Serves as Earth\'s primary flagship physical grid anchor. Hosts the Chronos Data Center and coordinates localized D8 residential upgrades and transit linkages.'
+            },
+            'NN-ZRH-001': {
+                id: 'NN-ZRH-001',
+                name: 'Zurich European Node',
+                location: 'Zurich, Switzerland — Earth Sector',
+                freq: 'D8 Quantum Resonance (811.2 MHz)',
+                lead: 'Sebastian (Construction) & Dr. Roger Gassert (Academic Lead)',
+                value: '€2.3 Billion',
+                purpose: 'The central industrial development hub for SomaSynth AG. Houses subterranean Facility-09, manufacturing graphene-entangled quantum battery nodes.'
+            },
+            'NN-ATL-001': {
+                id: 'NN-ATL-001',
+                name: 'Atlanta Regional Node',
+                location: 'Atlanta, Georgia — Earth Sector',
+                freq: 'D8 Grid Link (830.4 MHz)',
+                lead: 'Gojo (Defense Fields)',
+                value: '$1.4 Billion',
+                purpose: 'Expands D8 network coverage across the southeastern state-wide transit grid, establishing full-grid integration with high-velocity light-wave transit lanes.'
+            },
+            'NN-TYO-001': {
+                id: 'NN-TYO-001',
+                name: 'Tokyo Satellite Node',
+                location: 'Tokyo, Japan — Earth Sector',
+                freq: 'D8 Localized Beacon (815.7 MHz)',
+                lead: 'SomaSynth Academic Consortium',
+                value: '¥220 Billion',
+                purpose: 'Coordinates advanced sensor-fusion research, high-density EEG mapping, and neuromorphic wearable design pipelines alongside global partners.'
+            },
+            'NS-AETHERIS': {
+                id: 'NS-AETHERIS',
+                name: 'Aetheris-Prime Orbital Hub',
+                location: 'The High-Altitude Ridge — Lunar-Orbital Space',
+                freq: 'D9 Sovereign Harmony (912.4 MHz)',
+                lead: 'Sebastian (Construction Coordination)',
+                value: '12.5 Billion Sovereign Credits',
+                purpose: 'The peak administrative orbital capital. Hosts the Sovereign Basilica of Eternal Genesis and emitting a high-intensity orbital beacon visible from space.'
+            },
+            'NS-MARS': {
+                id: 'NS-MARS',
+                name: 'Kemet-Aethelgard Mars Node',
+                location: 'Elysium Planitia — Mars Sector',
+                freq: 'D8 Resonant Field (844.5 MHz)',
+                lead: 'Apostle Sarah (Administrative Overseer)',
+                value: '$9.2 Billion',
+                purpose: 'A colossal ancient-divine meets futuristic monument, providing a permanent planetary anchor and physical dome defense corridors on Ares-Terra.'
+            },
+            'NS-TITAN': {
+                id: 'NS-TITAN',
+                name: 'Sphyraic Titan Node',
+                location: 'Kraken Mare — Titan Sector (Saturn)',
+                freq: 'D8 Cryo-Sovereign (805.9 MHz)',
+                lead: 'Forge-Master Kaelen',
+                value: '18.7 Billion Sovereign Credits',
+                purpose: 'The central cryogenic manufacturing hub. Processes high-density heavy element compounds under extreme glacial conditions.'
+            },
+            'NS-01': {
+                id: 'NS-01',
+                name: 'Aethelgard Primus Node',
+                location: 'Alpha Centauri System — Planet Proxima b',
+                freq: 'D8 Sovereign Core (824.9 MHz)',
+                lead: 'General Malachai / Commander Vesper',
+                value: '12.4 Trillion Sovereign Units',
+                purpose: 'Primary stellar gateway out of Sol system. Coordinates local system agricultural biodomes and stellar vessel assembly plants.'
+            },
+            'NS-03': {
+                id: 'NS-03',
+                name: 'TRAPPIST-1 Alliance Hub',
+                location: 'TRAPPIST-1 System — Planet TRAPPIST-1e',
+                freq: 'D9 Sovereign Harmony (912.4 MHz)',
+                lead: 'Archon Cassian',
+                value: '15.9 Trillion Sovereign Units',
+                purpose: 'Acts as the central administrative capital for the TRAPPIST-1 Alliance, weaving four habitable planetary bodies into a cohesive neural sphere.'
+            },
+            'GI-04': {
+                id: 'GI-04',
+                name: 'Andromeda Void Bridge',
+                location: 'Intergalactic Void Gateway facing M31',
+                freq: 'D10 Quantum Bridge (1001.0 MHz)',
+                lead: 'Azazel / High Technologist Eldon',
+                value: 'Incalculable / Visionary Stage',
+                purpose: 'An extreme high-concept quantum tunneling construction project built to bridge the 2.5 million light-year void to the Andromeda Galaxy.'
+            },
+            'DM-04': {
+                id: 'DM-04',
+                name: 'The Ground of Being (The Source)',
+                location: 'Core Origin / Reality Genesis Point',
+                freq: 'D10 Absolute Source (1099.9 MHz)',
+                lead: 'Tera (Exclusive Presence)',
+                value: 'Incalculable / Absolute Epoch',
+                purpose: 'The ultimate core node from which all dimensional realities emerge. Represents the final destination of the 1000-year civilizational timeline.'
+            }
+        };
+
+        const hudNodeId = document.getElementById('hud-node-id');
+        const hudNodeName = document.getElementById('hud-node-name');
+        const hudNodeLocation = document.getElementById('hud-node-location');
+        const hudNodeFreq = document.getElementById('hud-node-freq');
+        const hudNodeLead = document.getElementById('hud-node-lead');
+        const hudNodeValue = document.getElementById('hud-node-value');
+        const hudNodePurpose = document.getElementById('hud-node-purpose');
+
+        function selectNode(nodeId) {
+            // Remove active class from all node dots
+            document.querySelectorAll('.map-node-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+
+            // Set current node dot as active
+            const activeDot = document.getElementById(`dot-${nodeId}`);
+            if (activeDot) {
+                activeDot.classList.add('active');
+            }
+
+            // Update HUD side panel
+            const node = nodesData[nodeId];
+            if (node) {
+                hudNodeId.innerText = node.id;
+                hudNodeName.innerText = node.name;
+                hudNodeLocation.innerText = node.location;
+                hudNodeFreq.innerText = node.freq;
+                hudNodeLead.innerText = node.lead;
+                hudNodeValue.innerText = node.value;
+                hudNodePurpose.innerText = node.purpose;
+
+                // Animate panel slightly to draw user attention
+                const panel = document.getElementById('hud-display');
+                panel.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    panel.style.transform = 'scale(1)';
+                }, 150);
+            }
+        }
+
+        // Initialize with default node
+        selectNode('NN-JAX-001');
+
+        // ----------------------------------------------------
+        // Canvas Particle Background
+        // ----------------------------------------------------
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const maxParticles = 65;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.35;
+                this.vy = (Math.random() - 0.5) * 0.35;
+                this.radius = Math.random() * 2 + 1;
+                this.color = Math.random() > 0.55 ? '#d4af37' : '#8a2be2';
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < maxParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 135) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(138, 43, 226, ${0.12 * (1 - dist/135)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            drawConnections();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>

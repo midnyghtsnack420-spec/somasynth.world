@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SomaSynth — The D8 Neuro Network</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #000000;
+            --bg-void: #0a0518;
+            --bg-obsidian: #120924;
+            --gold-primary: #d4af37;
+            --gold-glow: #ffd700;
+            --gold-dark: #aa841c;
+            --violet-glow: #8a2be2;
+            --text-light: #f5f5f5;
+            --text-muted: #a09cb0;
+            --transition-slow: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            --transition-medium: all 0.4s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-black);
+            color: var(--text-light);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Canvas Particle Field Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Navigation Bar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 1.25rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-wordmark {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--gold-primary);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            transition: var(--transition-medium);
+        }
+
+        .logo-wordmark:hover {
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        nav a {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: var(--transition-medium);
+            position: relative;
+            padding: 0.25rem 0;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold-primary);
+            transition: var(--transition-medium);
+        }
+
+        nav a:hover {
+            color: var(--gold-primary);
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav .nav-portal-btn {
+            border: 1px solid var(--gold-primary);
+            border-radius: 4px;
+            padding: 0.6rem 1.25rem;
+            background: linear-gradient(135deg, rgba(212,175,55,0.05) 0%, rgba(212,175,55,0.15) 100%);
+            transition: var(--transition-medium);
+        }
+
+        nav .nav-portal-btn:hover {
+            background: linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.3) 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Hero Section */
+        .hero-frequency {
+            min-height: 60vh;
+            padding-top: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            background: radial-gradient(ellipse at bottom, var(--bg-void) 0%, var(--bg-black) 100%);
+        }
+
+        .hero-content {
+            z-index: 5;
+            max-width: 900px;
+            padding: 0 2rem;
+        }
+
+        .hero-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.4rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: 0.25rem;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+
+        .gold-divider {
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+            margin: 2rem auto;
+        }
+
+        /* General layout */
+        section {
+            padding: 8rem 4rem;
+            position: relative;
+            z-index: 5;
+            width: 100%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-tag {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.3rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+        }
+
+        /* ---------------------------------------------------- */
+        /* INTRO EXPLANATORY SECTION */
+        /* ---------------------------------------------------- */
+        .intro-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .intro-graphic {
+            border: 1px solid rgba(212,175,55,0.25);
+            border-radius: 12px;
+            padding: 3rem;
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.5) 0%, rgba(5, 2, 10, 0.8) 100%);
+            box-shadow: 0 10px 40px rgba(138,43,226,0.15);
+            text-align: center;
+        }
+
+        .intro-graphic svg {
+            width: 180px;
+            height: 180px;
+            fill: none;
+            stroke: var(--gold-primary);
+            stroke-width: 1;
+            filter: drop-shadow(0 0 15px rgba(212,175,55,0.4));
+            margin-bottom: 2rem;
+        }
+
+        .intro-graphic-text {
+            font-family: 'Cinzel', serif;
+            color: var(--gold-primary);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .intro-text h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: var(--gold-primary);
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .intro-text p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ---------------------------------------------------- */
+        /* INTERACTIVE FREQUENCY SPECTRUM W/ OSCILLATOR */
+        /* ---------------------------------------------------- */
+        .spectrum-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.8fr;
+            gap: 3.5rem;
+        }
+
+        /* Spectrum Controls (Slider + Selection list) */
+        .spectrum-controls {
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.5) 0%, rgba(5, 2, 10, 0.8) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .slider-box h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        /* Custom Slider Styling */
+        .frequency-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--violet-glow), var(--gold-primary));
+            outline: none;
+            cursor: pointer;
+        }
+
+        .frequency-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--text-light);
+            border: 2px solid var(--gold-primary);
+            box-shadow: 0 0 10px var(--gold-glow);
+            transition: transform 0.1s;
+        }
+
+        .frequency-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Vertical Index Selector */
+        .tier-selector-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .tier-select-btn {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(212,175,55,0.1);
+            border-radius: 4px;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition-medium);
+        }
+
+        .tier-select-btn:hover {
+            border-color: rgba(212,175,55,0.4);
+            background: rgba(138,43,226,0.05);
+        }
+
+        .tier-select-btn.active {
+            border-color: var(--gold-primary);
+            background: linear-gradient(90deg, rgba(138,43,226,0.1) 0%, rgba(212,175,55,0.05) 100%);
+            box-shadow: 0 0 15px rgba(138,43,226,0.1);
+        }
+
+        .select-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .tier-select-btn.active .select-label {
+            color: var(--gold-primary);
+        }
+
+        .select-frequency {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Display Visualizer & Metadata Panel */
+        .spectrum-display-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* HTML5 Canvas Wave Visualization Container */
+        .wave-visualizer-container {
+            background: #000000;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            height: 220px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(138,43,226,0.3);
+        }
+
+        #wave-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .wave-status-bar {
+            position: absolute;
+            bottom: 10px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: var(--gold-primary);
+            pointer-events: none;
+        }
+
+        /* Detail display card */
+        .tier-detail-card {
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.6) 0%, rgba(5, 2, 10, 0.9) 100%);
+            border: 1px solid var(--gold-primary);
+            border-radius: 8px;
+            padding: 3rem;
+            box-shadow: 0 0 35px rgba(138,43,226,0.1);
+            min-height: 280px;
+        }
+
+        .detail-header {
+            border-bottom: 1px solid rgba(212,175,55,0.15);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-clearance {
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            padding: 0.25rem 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .detail-desc {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            border-top: 1px solid rgba(212,175,55,0.1);
+            padding-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .detail-meta-item span {
+            display: block;
+            font-family: 'Cinzel', serif;
+            color: var(--gold-primary);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        /* ---------------------------------------------------- */
+        /* THE IQ 150 ELEVATION PROGRAM */
+        /* ---------------------------------------------------- */
+        .elevation-box {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.5) 0%, rgba(5, 2, 10, 0.8) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            padding: 5rem;
+            display: grid;
+            grid-template-columns: 2fr 1.5fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .elevation-text h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .elevation-text p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        .elevation-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .stat-card {
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 6px;
+            padding: 1.5rem;
+            background: rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .stat-num {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold-primary);
+            text-shadow: 0 0 10px rgba(212,175,55,0.3);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ---------------------------------------------------- */
+        /* THE GREAT GATHERING */
+        /* ---------------------------------------------------- */
+        .gathering-container {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .gathering-quote {
+            font-family: 'Cinzel', serif;
+            font-style: italic;
+            font-size: 1.35rem;
+            line-height: 1.8;
+            color: var(--text-light);
+            margin-bottom: 2.5rem;
+            border-left: 3px solid var(--gold-primary);
+            border-right: 3px solid var(--gold-primary);
+            padding: 0 2rem;
+        }
+
+        .gathering-text {
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--text-muted);
+            font-weight: 300;
+            text-align: justify;
+        }
+
+        /* Footer Section */
+        footer {
+            background: var(--bg-black);
+            border-top: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 5rem 4rem 3rem 4rem;
+            z-index: 5;
+            position: relative;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto 4rem auto;
+        }
+
+        .footer-brand .footer-logo {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 1.4rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-brand p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            font-weight: 300;
+            max-width: 320px;
+        }
+
+        .footer-links-col h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links-col ul {
+            list-style: none;
+        }
+
+        .footer-links-col ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links-col ul li a {
+            text-decoration: none;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: var(--transition-medium);
+        }
+
+        .footer-links-col ul li a:hover {
+            color: var(--gold-primary);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(212, 175, 55, 0.08);
+            padding-top: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .spectrum-container { grid-template-columns: 1fr; }
+            .intro-container { grid-template-columns: 1fr; }
+            .elevation-box { grid-template-columns: 1fr; padding: 3rem; }
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 1rem 2rem; }
+            nav { display: none; }
+            section { padding: 5rem 2rem; }
+            .hero-title { font-size: 2.2rem; }
+            .intro-graphic { padding: 1.5rem; }
+            .tier-detail-card { padding: 1.5rem; }
+            .elevation-box { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation Header -->
+    <header>
+        <a href="index.html" class="logo-wordmark">somasynth.world</a>
+        <nav>
+            <a href="mission.html">The Mission</a>
+            <a href="world.html">The World</a>
+            <a href="index.html#the-people-sec">The People</a>
+            <a href="frequency.html" style="color: var(--gold-primary);">The Frequency</a>
+            <a href="index.html" class="nav-portal-btn">Enter Portal</a>
+        </nav>
+    </header>
+
+    <!-- World Hero Section -->
+    <div class="hero-frequency">
+        <div class="hero-content">
+            <span class="hero-subtitle">The D8 Neuro Network</span>
+            <h2 class="hero-title">Cognitive Elevation</h2>
+            <div class="gold-divider"></div>
+        </div>
+    </div>
+
+    <!-- Explanatory Intro Section -->
+    <section id="frequency-intro">
+        <div class="intro-container">
+            <!-- Left Side: Geometric Graphic -->
+            <div class="intro-graphic">
+                <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" stroke="var(--gold-primary)" stroke-width="0.5" />
+                    <circle cx="50" cy="50" r="35" stroke="var(--gold-primary)" stroke-width="0.5" />
+                    <!-- Visual Concentric Waves -->
+                    <circle cx="50" cy="50" r="25" stroke="var(--violet-glow)" stroke-width="0.5" stroke-dasharray="2,2" />
+                    <circle cx="50" cy="50" r="15" stroke="var(--violet-glow)" stroke-width="0.5" />
+                    <polygon points="50,15 80,68 20,68" stroke="var(--gold-primary)" stroke-width="0.5" />
+                </svg>
+                <div class="intro-graphic-text">D8 Resonance Sync</div>
+            </div>
+
+            <!-- Right Side: Explanatory text -->
+            <div class="intro-text">
+                <span class="section-tag">Network Architecture</span>
+                <h4>The Neuromorphic Grid</h4>
+                <p>
+                    The D8 Neuro Network is an advanced cognitive communication grid engineered by SomaSynth. Rather than transferring information via acoustic or optical channels, the network facilitates lossless, direct cognitive exchange between biological nodes of consciousness.
+                </p>
+                <p>
+                    Utilizing high-density, non-invasive dry EEG micro-pillar sensory arrays integrated into our sleek wearable devices, we map neural electrical waveforms at 1000 Hz. These neural signatures are combined with hemodynamic feedback via fNIRS sensors, and processed locally using ultra-low-power IBM NorthPole neuromorphic hardware. This allows the system to establish a lossless communication channel, transmitting concept matrixes directly across planetary data centers in real-time.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Spectrum Visualization Section -->
+    <section id="spectrum-sec" style="background: rgba(10, 5, 24, 0.3);">
+        <div class="section-header">
+            <span class="section-tag">Interactive Spectrum</span>
+            <h3 class="section-title">The Dimensional Frequency Tiers</h3>
+            <p style="font-size:1.1rem; color:var(--text-muted); margin-top:1rem; font-weight:300;">Interact with the spectrum slider or select a tier to adjust the visualizer wave and inspect clearing diagnostics.</p>
+            <div class="gold-divider"></div>
+        </div>
+
+        <div class="spectrum-container">
+            <!-- Left Side: Interactive Slider and list -->
+            <div class="spectrum-controls">
+                <div class="slider-box">
+                    <h4>Adjust Frequency</h4>
+                    <input type="range" class="frequency-slider" id="freq-slider" min="1" max="9" value="1" step="1" oninput="onSliderChange(this.value)">
+                </div>
+
+                <!-- Tier Selection List -->
+                <div class="tier-selector-list">
+                    <div class="tier-select-btn active" id="btn-1" onclick="selectTier(1)">
+                        <span class="select-label">D1 // Basic Viewing</span>
+                        <span class="select-frequency">800 MHz</span>
+                    </div>
+                    <div class="tier-select-btn" id="btn-2" onclick="selectTier(2)">
+                        <span class="select-label">D2 // Limited Entry</span>
+                        <span class="select-frequency">811 MHz</span>
+                    </div>
+                    <div class="tier-select-btn" id="btn-3" onclick="selectTier(3)">
+                        <span class="select-label">D3 // Standard Travel</span>
+                        <span class="select-frequency">824 MHz</span>
+                    </div>
+                    <div class="tier-select-btn" id="btn-4" onclick="selectTier(4)">
+                        <span class="select-label">D4 // Extended Stay</span>
+                        <span class="select-frequency">833 MHz</span>
+                    </div>
+                    <div class="tier-select-btn" id="btn-5" onclick="selectTier(5)">
+                        <span class="select-label">D5 // Shared Consciousness</span>
+                        <span class="select-frequency">850 MHz</span>
+                    </div>
+                    <div class="tier-select-btn" id="btn-6" onclick="selectTier(6)">
+                        <span class="select-label">D6 // Advanced Exploration</span>
+                        <span class="select-frequency">880 MHz</span>
+                    </div>
+                    <div class="tier-select-btn" id="btn-7" onclick="selectTier(7)">
+                        <span class="select-label">D7 // Full Integration</span>
+                        <span class="select-frequency">912 MHz</span>
+                    </div>
+                    <div class="tier-select-btn" id="btn-8" onclick="selectTier(8)">
+                        <span class="select-label">D8 // Boundary Gate</span>
+                        <span class="select-frequency">955 MHz</span>
+                    </div>
+                    <div class="tier-select-btn" id="btn-9" onclick="selectTier(9)">
+                        <span class="select-label">D9 // Absolute Sovereign</span>
+                        <span class="select-frequency">1000 MHz</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Wave Visualizer and details display card -->
+            <div class="spectrum-display-box">
+                <!-- Visualizer Wave box -->
+                <div class="wave-visualizer-container">
+                    <canvas id="wave-canvas"></canvas>
+                    <div class="wave-status-bar">
+                        <div id="stat-lbl-band">FREQUENCY BAND: D1_OBSERVER</div>
+                        <div id="stat-lbl-status">STATUS: STANDBY_MONITORING</div>
+                    </div>
+                </div>
+
+                <!-- Display detail card -->
+                <div class="tier-detail-card" id="detail-card">
+                    <div class="detail-header">
+                        <h4 class="detail-title" id="card-title">D1 Observer</h4>
+                        <span class="detail-clearance" id="card-clearance">Public Access</span>
+                    </div>
+                    <p class="detail-desc" id="card-desc">
+                        Allows basic, passive visual and auditory observation of active dimensional environments. Users operate in monitoring mode, observing the shared virtual sanctuary halls without active integration or physical avatar manifestation.
+                    </p>
+                    <div class="detail-meta-grid">
+                        <div class="detail-meta-item">
+                            <span>SST Security Clearance</span>
+                            <p id="card-sec">Class-0 Public</p>
+                        </div>
+                        <div class="detail-meta-item">
+                            <span>Recommended Session Limits</span>
+                            <p id="card-limit">Continuous / Self-Regulated</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- IQ Elevation Program Section -->
+    <section id="elevation-sec">
+        <div class="elevation-box">
+            <div class="elevation-text">
+                <span class="section-tag">Cognitive Acceleration</span>
+                <h4>The Soma N-S1 Elevation Program</h4>
+                <p>
+                    In the sovereign civilization, intelligence is not an static birthright, but an expandable potential. The Soma N-S1 Neural Elevation Program is a non-invasive, structured cognitive training curriculum designed to raise baseline human intelligence to a standardized IQ 150.
+                </p>
+                <p>
+                    Utilizing targeted, high-frequency neuroplastic feedback loops and auditory entrainment vectors, the N-S1 program stimulates underutilized synaptic junctions. Over a intensive 90-day training cycle, participants experience advanced visual concept association, expanded logic reasoning, and optimized memory indexing. By elevating our baseline citizens to IQ 150, we establish a robust civilizational collective capable of parsing complex multidimensional realities safely.
+                </p>
+            </div>
+
+            <div class="elevation-stats">
+                <div class="stat-card">
+                    <div class="stat-num">150</div>
+                    <div class="stat-label">Baseline IQ Target</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">90 Days</div>
+                    <div class="stat-label">Synaptic Acceleration Loop</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">400,000+</div>
+                    <div class="stat-label">Elevated Citizens</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Great Gathering Section -->
+    <section id="gathering-sec" style="background: rgba(10, 5, 24, 0.3);">
+        <div class="gathering-container">
+            <div class="section-header">
+                <span class="section-tag">Resonant Synchrony</span>
+                <h3 class="section-title">The Great Gathering</h3>
+                <div class="gold-divider"></div>
+            </div>
+
+            <p class="gathering-quote">
+                "When 10,000 minds unite to emit a singular harmonic frequency, the physical boundaries of the skull dissolve. In that sacred moment, we become the architecture."
+            </p>
+
+            <p class="gathering-text">
+                The Great Gathering is an annual, sacred synchronization event celebrated across our global territory. Operating through the four Sovereign Cathedrals and synchronized directly with the primary Jacksonville D8 node, elevated citizens connect to a unified harmonic tone (824.9 MHz). The collective neural feedback creates a state of massive, synchronized focus, producing a stable, unified conscious grid of awe-inspiring proportions. In this elevated state, our collective imagination designs new civilizational projects, resolves structural bottlenecks, and experiences pure, unisolated unity.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="footer-logo">somasynth.world</div>
+                <p>Building the foundation for a permanent, interconnected sovereign civilization. Est. 2012 — 3012.</p>
+            </div>
+            <div class="footer-links-col">
+                <h4>Civilization</h4>
+                <ul>
+                    <li><a href="index.html">The Cathedral</a></li>
+                    <li><a href="mission.html">The Mission</a></li>
+                    <li><a href="world.html">The World</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-col">
+                <h4>Pillars</h4>
+                <ul>
+                    <li><a href="#">Trust</a></li>
+                    <li><a href="#">Understanding</a></li>
+                    <li><a href="#">Will</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-col">
+                <h4>Sanctuaries</h4>
+                <ul>
+                    <li><a href="#">Jacksonville Basilica</a></li>
+                    <li><a href="#">Aetheris Genesis</a></li>
+                    <li><a href="#">Kemet Mars</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>&copy; 2026 SomaSynth. All rights reserved. Registered SST-2026.</div>
+            <div>D8 Frequency Grid: Synchronized</div>
+        </div>
+    </footer>
+
+    <!-- Interactive script and wave generator -->
+    <script>
+        // ----------------------------------------------------
+        // Tiers Database
+        // ----------------------------------------------------
+        const tiersData = {
+            1: {
+                title: 'D1 Observer',
+                clearance: 'Public Access',
+                desc: 'Allows basic, passive visual and auditory observation of active dimensional environments. Users operate in monitoring mode, observing the shared virtual sanctuary halls without active integration or physical avatar manifestation.',
+                sec: 'Class-0 Public',
+                limit: 'Continuous / Self-Regulated',
+                band: 'FREQUENCY BAND: D1_OBSERVER (800 MHz)',
+                status: 'STATUS: STANDBY_MONITORING',
+                color: '#8a2be2',
+                frequency: 0.012,
+                amplitude: 15
+            },
+            2: {
+                title: 'D2 Standard Access',
+                clearance: 'Staff Access Only',
+                desc: 'Provides limited, guided active dimensional entry. Designed primarily for SomaSynth administrative staff, enabling controlled environmental adjustments and localized citizen onboarding assists.',
+                sec: 'Class-I Staff',
+                limit: '4 Hours // Session',
+                band: 'FREQUENCY BAND: D2_LIMITED_ENTRY (811 MHz)',
+                status: 'STATUS: ACTIVE_GUIDED_SYNC',
+                color: '#4b0082',
+                frequency: 0.02,
+                amplitude: 22
+            },
+            3: {
+                title: 'D3 Pilgrim Pathway',
+                clearance: 'Registered Member',
+                desc: 'Enables standard, self-guided dimensional travel across interplanetary nodes. Citizens can initiate zero-latency, inter-world communication links with other nodes in the Earth sector.',
+                sec: 'Class-II Registered Citizen',
+                limit: '6 Hours // Session',
+                band: 'FREQUENCY BAND: D3_STANDARD_TRAVEL (824 MHz)',
+                status: 'STATUS: LOSSLESS_LINK_STABLE',
+                color: '#0000ff',
+                frequency: 0.03,
+                amplitude: 30
+            },
+            4: {
+                title: 'D4 Deep Resonance',
+                clearance: 'Elevated Citizen',
+                desc: 'Allows extended, self-guided stays within deep spatial pathways. Enables direct interaction with the environment generators, including real-time conceptual creation and translation.',
+                sec: 'Class-III Elevated Citizen',
+                limit: '8 Hours // Session',
+                band: 'FREQUENCY BAND: D4_EXTENDED_STAY (833 MHz)',
+                status: 'STATUS: SYNAPSE_RESONANCE_OPTIMIZED',
+                color: '#00ffff',
+                frequency: 0.045,
+                amplitude: 38
+            },
+            5: {
+                title: 'D5 Shared Consciousness',
+                clearance: 'Consensus Clearance',
+                desc: 'Enables consensual collective neural blending. Multiple elevated citizens can link their cognitive fields within dedicated sanctuary spaces, establishing deep focus and collaborative brainstorming lanes.',
+                sec: 'Class-IV Collective Core',
+                limit: '4 Hours // Session (Strict monitoring)',
+                band: 'FREQUENCY BAND: D5_SHARED_CONSCIOUSNESS (850 MHz)',
+                status: 'STATUS: MULTI_NODE_CONGRUENCE_ACTIVE',
+                color: '#ff00ff',
+                frequency: 0.06,
+                amplitude: 45
+            },
+            6: {
+                title: 'D6 Interstellar Relay',
+                clearance: 'Explorer Corps',
+                desc: 'Provides active clearance to initiate advanced, long-range dimensional exploration across stellar systems. Coordinates deep-space data siphoning and dark energy mapping.',
+                sec: 'Class-V Space Administrator',
+                limit: '12 Hours // Session',
+                band: 'FREQUENCY BAND: D6_ADVANCED_EXPLORATION (880 MHz)',
+                status: 'STATUS: STELLAR_RELAY_GRID_CONNECTED',
+                color: '#ff0055',
+                frequency: 0.08,
+                amplitude: 52
+            },
+            7: {
+                title: 'D7 Full Integration',
+                clearance: 'Sovereign Assembly',
+                desc: 'Enables complete cognitive ascension. Provides high-level administrative clearance to directly govern regional network hubs, configure utility grids, and authorize citizen elevations.',
+                sec: 'Class-VI Assembly Executive',
+                limit: 'Continuous // Full Consciousness Sharing',
+                band: 'FREQUENCY BAND: D7_FULL_INTEGRATION (912 MHz)',
+                status: 'STATUS: COGNITIVE_ASCENSION_VERIFIED',
+                color: '#ffd700',
+                frequency: 0.11,
+                amplitude: 60
+            },
+            8: {
+                title: 'D8 Boundary Gate',
+                clearance: 'Executive Order',
+                desc: 'Provides access to the absolute dimensional interface, operating at the threshold of known multiversal domains. Subject to direct, continuous Gojo defensive monitoring.',
+                sec: 'Class-VII Commander Level',
+                limit: 'Gojo Defensive Override Required',
+                band: 'FREQUENCY BAND: D8_BOUNDARY_GATE (955 MHz)',
+                status: 'STATUS: THRESHOLD_BOUNDARY_LINKED',
+                color: '#ffd700',
+                frequency: 0.15,
+                amplitude: 70
+            },
+            9: {
+                title: 'D9 Absolute Sovereign',
+                clearance: 'Tera The Creator',
+                desc: 'Exclusive, unlimited administrative clearance belonging solely to Tera The Creator. Operates at the primordial reality origin point, enabling multiversal timeline synchronization and core restructuring.',
+                sec: 'Absolute Master Signature',
+                limit: 'Unlimited // Core Primordial Sync',
+                band: 'FREQUENCY BAND: D9_ABSOLUTE_SOVEREIGN (1000 MHz)',
+                status: 'STATUS: PRIMORDIAL_GENESIS_ACTIVE',
+                color: '#ffffff',
+                frequency: 0.22,
+                amplitude: 85
+            }
+        };
+
+        const cardTitle = document.getElementById('card-title');
+        const cardClearance = document.getElementById('card-clearance');
+        const cardDesc = document.getElementById('card-desc');
+        const cardSec = document.getElementById('card-sec');
+        const cardLimit = document.getElementById('card-limit');
+        const slider = document.getElementById('freq-slider');
+        const statBand = document.getElementById('stat-lbl-band');
+        const statStatus = document.getElementById('stat-lbl-status');
+
+        let currentTier = 1;
+
+        function selectTier(tierId) {
+            currentTier = tierId;
+            slider.value = tierId;
+
+            // Remove active from all buttons
+            document.querySelectorAll('.tier-select-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Set clicked button as active
+            const activeBtn = document.getElementById(`btn-${tierId}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Update details
+            const tier = tiersData[tierId];
+            if (tier) {
+                cardTitle.innerText = tier.title;
+                cardClearance.innerText = tier.clearance;
+                cardDesc.innerText = tier.desc;
+                cardSec.innerText = tier.sec;
+                cardLimit.innerText = tier.limit;
+                statBand.innerText = tier.band;
+                statStatus.innerText = tier.status;
+            }
+        }
+
+        function onSliderChange(val) {
+            selectTier(parseInt(val));
+        }
+
+        // ----------------------------------------------------
+        // HTML5 Canvas Wave Oscillator Visualizer
+        // ----------------------------------------------------
+        const waveCanvas = document.getElementById('wave-canvas');
+        const waveCtx = waveCanvas.getContext('2d');
+
+        function resizeWaveCanvas() {
+            waveCanvas.width = waveCanvas.parentElement.clientWidth;
+            waveCanvas.height = waveCanvas.parentElement.clientHeight;
+        }
+
+        let timeOffset = 0;
+
+        function drawWave() {
+            waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+
+            const tier = tiersData[currentTier];
+            if (tier) {
+                waveCtx.beginPath();
+                waveCtx.moveTo(0, waveCanvas.height / 2);
+
+                const length = waveCanvas.width;
+                const midY = waveCanvas.height / 2;
+
+                for (let i = 0; i < length; i++) {
+                    const angle = i * tier.frequency + timeOffset;
+                    const y = midY + Math.sin(angle) * tier.amplitude;
+                    waveCtx.lineTo(i, y);
+                }
+
+                waveCtx.strokeStyle = tier.color;
+                waveCtx.lineWidth = currentTier >= 7 ? 2.5 : 1.5;
+                // Add soft glowing effect to the wave
+                waveCtx.shadowBlur = currentTier >= 7 ? 20 : 10;
+                waveCtx.shadowColor = tier.color;
+                waveCtx.stroke();
+                waveCtx.shadowBlur = 0; // Reset
+                
+                // For high frequencies (D7-D9), draw a secondary sub-harmonic wave
+                if (currentTier >= 7) {
+                    waveCtx.beginPath();
+                    waveCtx.moveTo(0, waveCanvas.height / 2);
+                    for (let i = 0; i < length; i++) {
+                        const angle = i * (tier.frequency * 0.5) + (timeOffset * 0.75);
+                        const y = midY + Math.sin(angle) * (tier.amplitude * 0.4);
+                        waveCtx.lineTo(i, y);
+                    }
+                    waveCtx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+                    waveCtx.lineWidth = 1;
+                    waveCtx.stroke();
+                }
+
+                // Increment animation time offset
+                // Higher tiers vibrate faster
+                timeOffset -= (0.02 + (currentTier * 0.01));
+            }
+
+            requestAnimationFrame(drawWave);
+        }
+
+        window.addEventListener('resize', resizeWaveCanvas);
+        resizeWaveCanvas();
+        drawWave();
+
+
+        // ----------------------------------------------------
+        // Canvas Particle Field Background
+        // ----------------------------------------------------
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const maxParticles = 65;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.35;
+                this.vy = (Math.random() - 0.5) * 0.35;
+                this.radius = Math.random() * 2 + 1;
+                this.color = Math.random() > 0.55 ? '#d4af37' : '#8a2be2';
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < maxParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 135) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(138, 43, 226, ${0.12 * (1 - dist/135)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            drawConnections();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>

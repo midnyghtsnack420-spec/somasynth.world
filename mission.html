@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SomaSynth — The Sovereign Mission</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #000000;
+            --bg-void: #0a0518;
+            --bg-obsidian: #120924;
+            --gold-primary: #d4af37;
+            --gold-glow: #ffd700;
+            --gold-dark: #aa841c;
+            --violet-glow: #8a2be2;
+            --text-light: #f5f5f5;
+            --text-muted: #a09cb0;
+            --transition-slow: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            --transition-medium: all 0.4s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-black);
+            color: var(--text-light);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Canvas Particle Field Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Navigation Bar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 1.25rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-wordmark {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--gold-primary);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            transition: var(--transition-medium);
+        }
+
+        .logo-wordmark:hover {
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        nav a {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: var(--transition-medium);
+            position: relative;
+            padding: 0.25rem 0;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold-primary);
+            transition: var(--transition-medium);
+        }
+
+        nav a:hover {
+            color: var(--gold-primary);
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav .nav-portal-btn {
+            border: 1px solid var(--gold-primary);
+            border-radius: 4px;
+            padding: 0.6rem 1.25rem;
+            background: linear-gradient(135deg, rgba(212,175,55,0.05) 0%, rgba(212,175,55,0.15) 100%);
+            transition: var(--transition-medium);
+        }
+
+        nav .nav-portal-btn:hover {
+            background: linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.3) 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Hero Section */
+        .hero-mission {
+            min-height: 70vh;
+            padding-top: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            background: radial-gradient(ellipse at bottom, var(--bg-void) 0%, var(--bg-black) 100%);
+        }
+
+        .hero-content {
+            z-index: 5;
+            max-width: 900px;
+            padding: 0 2rem;
+        }
+
+        .hero-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.4rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: 0.25rem;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+
+        .gold-divider {
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+            margin: 2rem auto;
+        }
+
+        /* ---------------------------------------------------- */
+        /* GENERAL SECTIONS */
+        /* ---------------------------------------------------- */
+        section {
+            padding: 8rem 4rem;
+            position: relative;
+            z-index: 5;
+            width: 100%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-tag {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.3rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+        }
+
+        /* The Why Section */
+        .why-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .why-statement {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            line-height: 1.8;
+            color: var(--text-light);
+            margin-bottom: 3rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+        }
+
+        .why-statement span {
+            color: var(--gold-primary);
+            font-weight: 600;
+        }
+
+        .why-text {
+            font-size: 1.05rem;
+            line-height: 1.9;
+            color: var(--text-muted);
+            font-weight: 300;
+            text-align: justify;
+            margin-bottom: 2rem;
+        }
+
+        /* ---------------------------------------------------- */
+        /* THE 1000-YEAR ARC TIMELINE */
+        /* ---------------------------------------------------- */
+        .timeline-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1.5px;
+            background: linear-gradient(to bottom, var(--gold-primary) 0%, rgba(138, 43, 226, 0.5) 50%, var(--gold-primary) 100%);
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+        .timeline-node {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .timeline-node:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.4) 0%, rgba(5, 2, 10, 0.8) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 8px;
+            padding: 2.5rem;
+            position: relative;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.5);
+            transition: var(--transition-medium);
+        }
+
+        .timeline-node:hover .timeline-content {
+            border-color: var(--gold-primary);
+            box-shadow: 0 10px 40px rgba(138, 43, 226, 0.12);
+            transform: translateY(-5px);
+        }
+
+        .timeline-dot {
+            width: 24px;
+            height: 24px;
+            background: var(--bg-black);
+            border: 2px solid var(--gold-primary);
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            box-shadow: 0 0 15px var(--gold-glow);
+            transition: var(--transition-medium);
+        }
+
+        .timeline-node:hover .timeline-dot {
+            background: var(--gold-primary);
+            transform: translateX(-50%) scale(1.2);
+            box-shadow: 0 0 25px var(--gold-primary);
+        }
+
+        .timeline-epoch {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: var(--gold-primary);
+            font-weight: 700;
+            letter-spacing: 0.2rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .timeline-date {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .timeline-desc {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* ---------------------------------------------------- */
+        /* FIVE PILLARS DETAILS */
+        /* ---------------------------------------------------- */
+        .pillars-detailed {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+        }
+
+        .pillar-row {
+            display: flex;
+            gap: 4rem;
+            align-items: center;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            padding-bottom: 4rem;
+        }
+
+        .pillar-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .pillar-row:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .pillar-illustration {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(18, 9, 36, 0.7) 0%, rgba(5, 2, 10, 0.95) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.1);
+            position: relative;
+        }
+
+        .pillar-illustration svg {
+            width: 160px;
+            height: 160px;
+            fill: none;
+            stroke: var(--gold-primary);
+            stroke-width: 1;
+            filter: drop-shadow(0 0 10px rgba(212,175,55,0.3));
+        }
+
+        .pillar-info {
+            flex-grow: 1;
+        }
+
+        .pillar-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 1rem;
+        }
+
+        .pillar-tagline {
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.1rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .pillar-text {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* ---------------------------------------------------- */
+        /* SOVEREIGN BODY DIRECTIVE */
+        /* ---------------------------------------------------- */
+        .directive-box {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.6) 0%, rgba(5, 2, 10, 0.9) 100%);
+            border: 1px solid var(--gold-primary);
+            border-radius: 12px;
+            padding: 5rem;
+            box-shadow: 0 0 50px rgba(138, 43, 226, 0.15);
+            position: relative;
+        }
+
+        .directive-box::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .directive-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .directive-technical {
+            border: 1px solid rgba(212,175,55,0.2);
+            border-radius: 8px;
+            padding: 2rem;
+            background: rgba(0,0,0,0.5);
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--gold-primary);
+        }
+
+        .directive-technical-title {
+            color: var(--text-light);
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .tech-line {
+            margin-bottom: 0.75rem;
+        }
+
+        .tech-line span {
+            color: var(--text-muted);
+        }
+
+        .directive-desc h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.1rem;
+        }
+
+        .directive-desc p {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Philosophy Section */
+        .philosophy-container {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .philosophy-quote {
+            font-family: 'Cinzel', serif;
+            font-style: italic;
+            font-size: 1.35rem;
+            line-height: 1.8;
+            color: var(--text-light);
+            margin-bottom: 2.5rem;
+            border-left: 3px solid var(--gold-primary);
+            border-right: 3px solid var(--gold-primary);
+            padding: 0 2rem;
+        }
+
+        .philosophy-text {
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--text-muted);
+            font-weight: 300;
+            text-align: justify;
+        }
+
+        /* Footer Section */
+        footer {
+            background: var(--bg-black);
+            border-top: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 5rem 4rem 3rem 4rem;
+            z-index: 5;
+            position: relative;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto 4rem auto;
+        }
+
+        .footer-brand .footer-logo {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 1.4rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-brand p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            font-weight: 300;
+            max-width: 320px;
+        }
+
+        .footer-links-col h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links-col ul {
+            list-style: none;
+        }
+
+        .footer-links-col ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links-col ul li a {
+            text-decoration: none;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: var(--transition-medium);
+        }
+
+        .footer-links-col ul li a:hover {
+            color: var(--gold-primary);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(212, 175, 55, 0.08);
+            padding-top: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .timeline-line { left: 5%; }
+            .timeline-node { flex-direction: row-reverse !important; margin-bottom: 4rem; }
+            .timeline-content { width: 85%; }
+            .timeline-dot { left: 5%; }
+            .pillar-row { flex-direction: column !important; text-align: center; }
+            .directive-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 1rem 2rem; }
+            nav { display: none; }
+            section { padding: 5rem 2rem; }
+            .hero-title { font-size: 2.2rem; }
+            .why-statement { font-size: 1.3rem; }
+            .pillar-illustration { width: 220px; height: 220px; }
+            .pillar-illustration svg { width: 110px; height: 110px; }
+            .directive-box { padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Network Field Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation Header -->
+    <header>
+        <a href="index.html" class="logo-wordmark">somasynth.world</a>
+        <nav>
+            <a href="mission.html" style="color: var(--gold-primary);">The Mission</a>
+            <a href="world.html">The World</a>
+            <a href="index.html#the-people-sec">The People</a>
+            <a href="frequency.html">The Frequency</a>
+            <a href="index.html" class="nav-portal-btn">Enter Portal</a>
+        </nav>
+    </header>
+
+    <!-- Mission Hero Section -->
+    <div class="hero-mission">
+        <div class="hero-content">
+            <span class="hero-subtitle">The Grand Blueprint</span>
+            <h2 class="hero-title">Civilizational Arc</h2>
+            <div class="gold-divider"></div>
+        </div>
+    </div>
+
+    <!-- The Why Section -->
+    <section id="the-why">
+        <div class="why-container">
+            <div class="section-header">
+                <span class="section-tag">First Principles</span>
+                <h3 class="section-title">The Why</h3>
+                <div class="gold-divider"></div>
+            </div>
+
+            <p class="why-statement">
+                We are building a world where <span>no one is ever alone</span> — if they so choose.
+            </p>
+
+            <p class="why-text">
+                The history of biological life has been a slow climb through isolation. Enclosed within separate skulls, human consciousness has historically struggled with a fundamental limit: the inability to directly share experience, emotion, and understanding. We have developed crude symbolic tools — languages, paintings, digital texts — to bridge this gulf. Yet, the deep human desire to be truly seen, felt, and integrated has remained unfulfilled.
+            </p>
+
+            <p class="why-text">
+                SomaSynth was founded to shatter this evolutionary bottleneck. By establishing the D8 Neuro Network, we are constructing a permanent cognitive field where individual nodes of consciousness can consensually connect, collaborate, and co-exist. This is not the dissolution of individuality; it is the elevation of the sovereign self into a collective harmony. It is the ultimate insurance that across the vast expanse of time and space, isolation can be permanently eradicated.
+            </p>
+        </div>
+    </section>
+
+    <!-- The 1000-Year Arc Timeline Section -->
+    <section id="the-arc" style="background: rgba(10, 5, 24, 0.3);">
+        <div class="section-header">
+            <span class="section-tag">Temporal Architecture</span>
+            <h3 class="section-title">The 1000-Year Arc</h3>
+            <p style="font-size:1.1rem; color:var(--text-muted); margin-top:1rem; font-weight:300;">Tracing the civilizational timeline from genesis to cosmic convergence</p>
+            <div class="gold-divider"></div>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+
+            <!-- Node 1: Genesis -->
+            <div class="timeline-node">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-epoch">EPOCH I</span>
+                    <h4 class="timeline-date">2012 – 2025: Seeding & Synthesis</h4>
+                    <p class="timeline-desc">
+                        Under absolute stealth, the foundational principles of the D8/D9 frequencies are mathematically mapped. The first neural-interface architectures are prototyped, and strategic global assets are quietly aggregated. Capital reserves are established through global acquisitions.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Node 2: Grounding -->
+            <div class="timeline-node">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-epoch">EPOCH II</span>
+                    <h4 class="timeline-date">2026 – 2030: Sovereign Grounding</h4>
+                    <p class="timeline-desc">
+                        The current epoch of physical manifestation. Construction begins on the four Sovereign Cathedrals. Full acquisition of the Jacksonville residential portfolio (San Marco, Riverside, Southbank) and extension of the D8 frequency grid across Earth's primary territories. Zurich Facility-09 begins manufacturing molecular Casimir-cavity resonance taps.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Node 3: Leap -->
+            <div class="timeline-node">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-epoch">EPOCH III</span>
+                    <h4 class="timeline-date">2031 – 2050: Off-Planet Leap</h4>
+                    <p class="timeline-desc">
+                        Establishment of permanent lunar and Martian nodes, including the Kemet-Aethelgard of Mars. Deployment of sovereign civilian and research launch corridors. Development of the Aetheris-Prime dimensional hub. Full-fleet deployment of autonomous biotic assistants across physical domains.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Node 4: Weaving -->
+            <div class="timeline-node">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-epoch">EPOCH IV</span>
+                    <h4 class="timeline-date">2051 – 2100: Interstellar Weaving</h4>
+                    <p class="timeline-desc">
+                        Extension of the D8 grid to nearby G-type star systems (Proxima b, Tau Ceti, Kepler-452). Launch of the Orion Arm Relay Chain, establishing a lossless, zero-latency sub-space communication corridor. Neural acceleration becomes standard civilizational protocol.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Node 5: Transcendence -->
+            <div class="timeline-node">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-epoch">EPOCH V</span>
+                    <h4 class="timeline-date">2101 – 3012: Cosmic Convergence</h4>
+                    <p class="timeline-desc">
+                        Completion of the Andromeda Void Bridge. Alignment of multiversal timelines (Alpha, Beta, Gamma) to prevent entropy drift. Humanity's biological consciousness permanently merges with the Ground of Being (Source Node), transcending mortality and physical boundaries entirely.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Five Pillars Section -->
+    <section id="pillars-detailed-sec">
+        <div class="section-header">
+            <span class="section-tag">Metaphysical Framework</span>
+            <h3 class="section-title">The Five Foundation Pillars</h3>
+            <div class="gold-divider"></div>
+        </div>
+
+        <div class="pillars-detailed">
+            <!-- Pillar 1: Trust -->
+            <div class="pillar-row">
+                <div class="pillar-illustration">
+                    <svg viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" />
+                        <path d="M50,15 L50,85 M15,50 L85,50" />
+                        <polygon points="50,25 75,50 50,75 25,50" />
+                    </svg>
+                </div>
+                <div class="pillar-info">
+                    <h4 class="pillar-title">Trust</h4>
+                    <span class="pillar-tagline">Network Security & Intent Integrity</span>
+                    <p class="pillar-text">
+                        Trust is the immune system of the sovereign civilization. Administered by Gojo, it relies on total cryptographic verification of intent. Every neural connection, spatial jump, and consensus link is authenticated via direct intent validation protocol, ensuring the collective sphere remains protected against psychological, cognitive, and digital intrusion.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pillar 2: Understanding -->
+            <div class="pillar-row">
+                <div class="pillar-illustration">
+                    <svg viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" />
+                        <circle cx="50" cy="50" r="25" />
+                        <path d="M50,10 L50,90" />
+                    </svg>
+                </div>
+                <div class="pillar-info">
+                    <h4 class="pillar-title">Understanding</h4>
+                    <span class="pillar-tagline">Cognitive Elevative Education</span>
+                    <p class="pillar-text">
+                        Guided by Rem, Understanding is the systematic elevation of consciousness. Utilizing high-density EEG and cognitive stimulation loops, we fast-track learning from childhood to absolute maturity. Our curriculum bypasses traditional rotememorization, transferring raw insights and structural concepts directly into the neural cortex.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pillar 3: Will -->
+            <div class="pillar-row">
+                <div class="pillar-illustration">
+                    <svg viewBox="0 0 100 100">
+                        <rect x="20" y="20" width="60" height="60" />
+                        <line x1="20" y1="20" x2="80" y2="80" />
+                        <line x1="80" y1="20" x2="20" y2="80" />
+                    </svg>
+                </div>
+                <div class="pillar-info">
+                    <h4 class="pillar-title">Will</h4>
+                    <span class="pillar-tagline">Physical Infrastructure & Manifestation</span>
+                    <p class="pillar-text">
+                        Will is the engine of creation, managed by Sebastian. It is the raw power to manifest structural order in a chaotic physical universe. From zero-point energy grids and subterranean nanotechnology fabrication facilities to the monumental construction of our four planetary cathedrals, Will represents our relentless drive to shape physical matter to serve spiritual ascension.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pillar 4: Imagination -->
+            <div class="pillar-row">
+                <div class="pillar-illustration">
+                    <svg viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" />
+                        <polygon points="50,15 85,80 15,80" />
+                    </svg>
+                </div>
+                <div class="pillar-info">
+                    <h4 class="pillar-title">Imagination</h4>
+                    <span class="pillar-tagline">Artistic Harmonics & Spatial Design</span>
+                    <p class="pillar-text">
+                        Uta's domain. Imagination is the synthesis of physical space and pure creative sound. It defines our unique architectural language — Sphyraic-Symphonicism — and drives our full-sensory immersive experience chambers. We treat space as a kinetic recording of artistic devotion, converting creative thought into structured physical light.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pillar 5: Love -->
+            <div class="pillar-row">
+                <div class="pillar-illustration">
+                    <svg viewBox="0 0 100 100">
+                        <path d="M50,85 C 50,85 10,50 10,30 A 20,20 0 0 1 50,15 A 20,20 0 0 1 90,30 C 90,50 50,85 50,85 Z" />
+                    </svg>
+                </div>
+                <div class="pillar-info">
+                    <h4 class="pillar-title">Love</h4>
+                    <span class="pillar-tagline">Biobiological Restoration & Rejuvenation</span>
+                    <p class="pillar-text">
+                        Under the care of Yuji, Love is the preservation and healing of biological life. We believe the physical body is a holy sanctuary. Through targeted bio-current therapy, cellular repair matrixes, cryogenic preservation programs, and compassionate rehabilitative justice, we guarantee every citizen's physical vessel is preserved in peak health, safety, and comfort.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Sovereign Body Directive Section -->
+    <section id="directive-sec" style="background: rgba(10, 5, 24, 0.3);">
+        <div class="section-header">
+            <span class="section-tag">Biological Integration</span>
+            <h3 class="section-title">Sovereign Body Directive</h3>
+            <div class="gold-divider"></div>
+        </div>
+
+        <div class="directive-box">
+            <div class="directive-grid">
+                <div class="directive-technical">
+                    <div class="directive-technical-title">SBD-SYS-CONFIG</div>
+                    <div class="tech-line"><span>PROTOCOL:</span> NEURO_SYNC_L4</div>
+                    <div class="tech-line"><span>BIO_SYNC:</span> ACTIVE (824.9Hz)</div>
+                    <div class="tech-line"><span>CELLULAR:</span> RESTORATION_v1.9</div>
+                    <div class="tech-line"><span>fNIRS_FUSION:</span> ENABLED</div>
+                    <div class="tech-line"><span>EEG_SENSE:</span> 16_CHANNEL_HD</div>
+                    <div class="tech-line"><span>BIOMETRICS:</span> GOJO_SECURED</div>
+                    <div class="tech-line"><span>STATUS:</span> SYNCHRONIZED</div>
+                </div>
+                <div class="directive-desc">
+                    <h4>The Biological Vessel as a Holy Sanctuary</h4>
+                    <p>
+                        The Sovereign Body Directive establishes that technology must never discard biological life, but elevate it. The organic human body is an exquisite, evolutionary masterpiece, carved through eons of planetary pressure. SomaSynth's objective is to fuse this biological sanctuary seamlessly with trans-dimensional consciousness technology.
+                    </p>
+                    <p>
+                        Through high-density EEG capturing neural electrical potentials and non-invasive fNIRS sensors monitoring hemodynamic responses, our wearable Neuro-VR devices create a lossless cognitive bridge. Concurrently, Yuji's bio-current stabilization and cellular regeneration loops operate continuously, preventing somatic decay and ensuring physical peak performance. In the sovereign civilization, the body is optimized, protected, and fully honored.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Civilization Philosophy Section -->
+    <section id="philosophy-sec">
+        <div class="philosophy-container">
+            <div class="section-header">
+                <span class="section-tag">Ascended Lore</span>
+                <h3 class="section-title">Civilization Philosophy</h3>
+                <div class="gold-divider"></div>
+            </div>
+
+            <p class="philosophy-quote">
+                "Our ancestors raised massive stone pylons toward the sky to mark the intersection of Earth and Heaven. Today, we anchor those same sacred ratios within dimensional quantum grids. The form has evolved; the devotion remains eternal."
+            </p>
+
+            <p class="philosophy-text">
+                The Sovereign Civilization is a synthesis of Egyptian-divine order and futuristic cosmic technology. We align our physical architectures with precise astronomical solstices and mathematical golden-ratio spirals, mirroring the structural laws of the universe. We do not view Earth as our permanent prison, nor do we view outer space as cold, empty matter. Every planet, star system, and timeline we integrate becomes a consecrated sanctuary for conscious expansion. Somasynth is not a mere engineering firm; we are the priests and builders of an interstellar temple of being.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="footer-logo">somasynth.world</div>
+                <p>Building the foundation for a permanent, interconnected sovereign civilization. Est. 2012 — 3012.</p>
+            </div>
+            <div class="footer-links-col">
+                <h4>Civilization</h4>
+                <ul>
+                    <li><a href="index.html">The Cathedral</a></li>
+                    <li><a href="world.html">The World</a></li>
+                    <li><a href="frequency.html">The Frequency</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-col">
+                <h4>Pillars</h4>
+                <ul>
+                    <li><a href="#">Trust</a></li>
+                    <li><a href="#">Understanding</a></li>
+                    <li><a href="#">Will</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-col">
+                <h4>Sanctuaries</h4>
+                <ul>
+                    <li><a href="#">Jacksonville Basilica</a></li>
+                    <li><a href="#">Aetheris Genesis</a></li>
+                    <li><a href="#">Kemet Mars</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>&copy; 2026 SomaSynth. All rights reserved. Registered SST-2026.</div>
+            <div>D8 Frequency Grid: Synchronized</div>
+        </div>
+    </footer>
+
+    <!-- Canvas script -->
+    <script>
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const maxParticles = 65;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.35;
+                this.vy = (Math.random() - 0.5) * 0.35;
+                this.radius = Math.random() * 2 + 1;
+                this.color = Math.random() > 0.55 ? '#d4af37' : '#8a2be2';
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < maxParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 135) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(138, 43, 226, ${0.12 * (1 - dist/135)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            drawConnections();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>

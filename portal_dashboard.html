@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Citizen Dashboard | somasynth.world</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #070509;
+            --color-surface: #120e1a;
+            --color-surface-hover: #1c152a;
+            --color-surface-card: #151021;
+            --color-gold: #d4af37;
+            --color-gold-bright: #f3e5ab;
+            --color-gold-dark: #8c6f23;
+            --color-violet: #2b1842;
+            --color-violet-light: #442a69;
+            --color-text-primary: #f5f5f7;
+            --color-text-secondary: #a19da8;
+            --color-success: #10b981;
+            --color-alert: #ef4444;
+            --color-glow: rgba(212, 175, 55, 0.12);
+            --color-glow-intense: rgba(212, 175, 55, 0.35);
+            --font-display: 'Cinzel', Georgia, serif;
+            --font-body: 'Montserrat', sans-serif;
+            --sidebar-width: 280px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.15);
+            border-radius: 4px;
+            border: 1px solid var(--color-bg);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.4);
+        }
+
+        /* Left Navigation Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(18, 14, 26, 0.95);
+            border-right: 1px solid rgba(212, 175, 55, 0.15);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 36px 24px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .logo-area {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .logo-text {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: var(--color-gold);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+            text-transform: lowercase;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .logo-dot {
+            color: var(--color-text-primary);
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all var(--transition-speed);
+        }
+
+        .nav-item a:hover, .nav-item.active a {
+            color: var(--color-gold-bright);
+            background: rgba(212, 175, 55, 0.05);
+            border-color: rgba(212, 175, 55, 0.15);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.05);
+        }
+
+        .nav-item.active a {
+            border-color: rgba(212, 175, 55, 0.35);
+            background: rgba(212, 175, 55, 0.08);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            padding-top: 24px;
+            text-align: center;
+        }
+
+        .biotic-mode-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            border: 1px solid var(--color-gold);
+            color: var(--color-gold);
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .biotic-mode-btn:hover {
+            background: var(--color-gold);
+            color: var(--color-bg);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Main Dashboard Content Area */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 48px 48px 60px 48px;
+            max-width: 1400px;
+            position: relative;
+        }
+
+        /* Ambient Geometric BG for Main Area */
+        .geometry-bg {
+            position: fixed;
+            top: 50%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            width: 1200px;
+            height: 1200px;
+            opacity: 0.015;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+            padding-bottom: 28px;
+            margin-bottom: 40px;
+        }
+
+        .welcome-title-area h2 {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            color: var(--color-gold);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .welcome-title-area h1 {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--color-text-primary);
+        }
+
+        .sovereign-badge {
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 30px;
+            padding: 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--color-success);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--color-success);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .badge-text {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--color-gold-bright);
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+
+        /* Cards styles */
+        .card {
+            background: var(--color-surface-card);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            border-radius: 10px;
+            padding: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: all var(--transition-speed);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: rgba(212, 175, 55, 0.25);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 15px var(--color-glow);
+            transform: translateY(-2px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px dashed rgba(212, 175, 55, 0.1);
+            padding-bottom: 14px;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--color-gold);
+            text-transform: uppercase;
+        }
+
+        .card-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--color-gold-dark);
+        }
+
+        /* Specific Grid Card Column Span Rules */
+        .col-4 { grid-column: span 4; }
+        .col-5 { grid-column: span 5; }
+        .col-6 { grid-column: span 6; }
+        .col-7 { grid-column: span 7; }
+        .col-8 { grid-column: span 8; }
+        .col-12 { grid-column: span 12; }
+
+        @media (max-width: 1200px) {
+            .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 6; }
+        }
+        @media (max-width: 768px) {
+            .col-4, .col-5, .col-6, .col-7, .col-8, .col-12 { grid-column: span 12; }
+            body { flex-direction: column; }
+            .sidebar { position: relative; width: 100%; border-right: none; border-bottom: 1px solid rgba(212, 175, 55, 0.15); height: auto; }
+            .main-content { margin-left: 0; padding: 24px; }
+        }
+
+        /* Detail List Styles (Profile Card) */
+        .profile-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.05);
+        }
+
+        .profile-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .profile-label {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-value {
+            font-size: 0.88rem;
+            color: var(--color-text-primary);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-align: right;
+        }
+
+        .profile-value.highlight {
+            color: var(--color-gold-bright);
+            font-weight: 600;
+        }
+
+        /* Contribution Card Styles */
+        .contribution-bar-container {
+            margin-top: 20px;
+        }
+
+        .contribution-status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .contribution-status.active {
+            color: var(--color-success);
+        }
+
+        .progress-bar-bg {
+            background-color: rgba(7, 5, 9, 0.8);
+            height: 6px;
+            border-radius: 3px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold));
+            border-radius: 3px;
+            width: 100%;
+        }
+
+        .contribution-ledger-list {
+            list-style: none;
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+        }
+
+        .ledger-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(212, 175, 55, 0.05);
+        }
+
+        .ledger-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Community / Event items */
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .event-item {
+            background: rgba(7, 5, 9, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            border-radius: 6px;
+            padding: 14px 18px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .event-item:hover {
+            border-color: rgba(212, 175, 55, 0.15);
+            background: rgba(7, 5, 9, 0.6);
+        }
+
+        .event-date {
+            border-right: 1px solid rgba(212, 175, 55, 0.2);
+            padding-right: 16px;
+            text-align: center;
+            min-width: 65px;
+        }
+
+        .event-day {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-gold);
+        }
+
+        .event-month {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-text-secondary);
+        }
+
+        .event-info h4 {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .event-info p {
+            font-size: 0.72rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Amenities Form & Options */
+        .amenity-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .select-styled, .input-styled {
+            background-color: rgba(7, 5, 9, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 6px;
+            padding: 12px 14px;
+            color: var(--color-text-primary);
+            font-family: var(--font-body);
+            font-size: 0.82rem;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .select-styled:focus, .input-styled:focus {
+            border-color: var(--color-gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+        }
+
+        .btn-gold-card {
+            background: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold) 100%);
+            color: var(--color-bg);
+            border: none;
+            border-radius: 6px;
+            padding: 12px 18px;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-gold-card:hover {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.35);
+            filter: brightness(1.1);
+        }
+
+        .amenities-preview {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .amenity-chip {
+            flex-shrink: 0;
+            background: rgba(43, 24, 66, 0.2);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 0.68rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .amenity-chip.active, .amenity-chip:hover {
+            background: rgba(212, 175, 55, 0.08);
+            border-color: var(--color-gold);
+            color: var(--color-gold-bright);
+        }
+
+        /* The Frequency Visual Panel */
+        .frequency-bar-visualization {
+            background: rgba(7, 5, 9, 0.9);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 8px;
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 18px 24px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .frequency-bar-visualization::before {
+            content: 'D8 Resonance Matrix - ACTIVE';
+            position: absolute;
+            top: 10px;
+            left: 12px;
+            font-size: 0.6rem;
+            letter-spacing: 1.5px;
+            color: var(--color-gold-dark);
+            text-transform: uppercase;
+        }
+
+        .freq-wave-bar {
+            width: 8px;
+            background: linear-gradient(to top, var(--color-violet), var(--color-gold));
+            border-radius: 4px;
+            height: 30%;
+            animation: bounceWave 1.5s ease-in-out infinite alternate;
+        }
+
+        /* Dynamic heights and animations */
+        .freq-wave-bar:nth-child(2) { height: 60%; animation-delay: 0.1s; animation-duration: 1.2s; }
+        .freq-wave-bar:nth-child(3) { height: 85%; animation-delay: 0.3s; animation-duration: 1.8s; }
+        .freq-wave-bar:nth-child(4) { height: 45%; animation-delay: 0.2s; animation-duration: 1s; }
+        .freq-wave-bar:nth-child(5) { height: 95%; animation-delay: 0.5s; animation-duration: 2.1s; }
+        .freq-wave-bar:nth-child(6) { height: 70%; animation-delay: 0.4s; animation-duration: 1.4s; }
+        .freq-wave-bar:nth-child(7) { height: 40%; animation-delay: 0.15s; animation-duration: 1.1s; }
+
+        @keyframes bounceWave {
+            0% { transform: scaleY(0.7); filter: brightness(0.8); }
+            100% { transform: scaleY(1.1); filter: brightness(1.2); box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
+        }
+
+        /* Kindness acts list */
+        .kindness-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .kindness-act {
+            background: rgba(16, 185, 129, 0.03);
+            border-left: 2px solid var(--color-success);
+            padding: 12px 16px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .kindness-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 6px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .kindness-desc {
+            font-size: 0.78rem;
+            color: var(--color-text-primary);
+            line-height: 1.4;
+        }
+
+        /* Suggestion card style */
+        .suggestions-log {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .suggestion-item {
+            background: rgba(7, 5, 9, 0.5);
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            padding: 12px 16px;
+            border-radius: 6px;
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            margin-bottom: 6px;
+        }
+
+        .suggestion-title {
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        .suggestion-status {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .suggestion-status.review {
+            color: var(--color-gold);
+        }
+
+        .suggestion-status.approved {
+            color: var(--color-success);
+        }
+
+        /* Modal styling */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(7, 5, 9, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: var(--color-surface);
+            border: 1px solid var(--color-gold);
+            border-radius: 12px;
+            padding: 36px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--color-text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--color-gold-bright);
+        }
+
+        .modal-title {
+            font-family: var(--font-display);
+            color: var(--color-gold);
+            font-size: 1.25rem;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(18, 14, 26, 0.95);
+            border: 1px solid var(--color-gold);
+            border-radius: 6px;
+            padding: 16px 24px;
+            color: var(--color-text-primary);
+            font-size: 0.82rem;
+            letter-spacing: 1px;
+            z-index: 2000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sacred Geometry background pattern (low opacity) -->
+    <svg class="geometry-bg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#d4af37" stroke-width="0.08" />
+        <circle cx="50" cy="50" r="30" fill="none" stroke="#d4af37" stroke-width="0.05" />
+        <path d="M 50,5 A 45,45 0 0,0 5,50 A 45,45 0 0,0 50,95 A 45,45 0 0,0 95,50 A 45,45 0 0,0 50,5 Z" fill="none" stroke="#d4af37" stroke-width="0.04" />
+        <polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#d4af37" stroke-width="0.05" />
+        <polygon points="50,20 80,50 50,80 20,50" fill="none" stroke="#d4af37" stroke-width="0.05" />
+    </svg>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="logo-area">
+            <a href="#" class="logo-text">somasynth<span class="logo-dot">.</span>world</a>
+        </div>
+
+        <ul class="nav-list">
+            <li class="nav-item active">
+                <a href="#" onclick="switchTab('home', event)">
+                    <!-- Home Icon -->
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                    Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" onclick="scrollToCard('profileCard', event)">
+                    <!-- Profile Icon -->
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    Profile
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" onclick="scrollToCard('communityCard', event)">
+                    <!-- Community Icon -->
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    Community
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" onclick="scrollToCard('amenitiesCard', event)">
+                    <!-- Amenities Icon -->
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 11.9v-.9H2v1zm5-6v14h14V5H7zm12 10H9V7h10v8z"/></svg>
+                    Amenities
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" onclick="scrollToCard('frequencyCard', event)">
+                    <!-- Frequency Icon -->
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                    Frequency
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" onclick="showToast('Secure citizen messenger loading...')">
+                    <!-- Messages Icon -->
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                    Messages
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" onclick="showToast('Sovereign node settings interface offline for encryption cycle')">
+                    <!-- Settings Icon -->
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.4 1a9.002 9.002 0 0 0-1.62-.94l-.38-2.55A.5.5 0 0 0 14 3h-4a.5.5 0 0 0-.49.42l-.38 2.55c-.59.24-1.14.56-1.62.94l-2.4-1a.5.5 0 0 0-.6.22L2.63 7.5c-.13.22-.08.49.12.64l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.37.29.6.22l2.4-1c.48.38 1.03.7 1.62.94l.38 2.55c.05.24.27.42.49.42h4c.22 0 .44-.17.49-.42l.38-2.55c.59-.24 1.13-.56 1.62-.94l2.4 1c.23.07.48 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+                    Settings
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="biotic-mode-btn" onclick="goToBioticView()">
+                <!-- Biotic Hexagram/Keyhole Icon -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+                Biotic Access
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Area -->
+    <main class="main-content">
+        <header class="dashboard-header">
+            <div class="welcome-title-area">
+                <h2>Citizen Portal</h2>
+                <h1>Welcome home, Aurelius Vance</h1>
+            </div>
+
+            <div class="sovereign-badge">
+                <span class="badge-dot"></span>
+                <span class="badge-text">Sovereign ID: SS-8809-DELTA</span>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid Layout -->
+        <div class="dashboard-grid">
+            
+            <!-- A. YOUR SOVEREIGN PROFILE (Col 4) -->
+            <section class="card col-4" id="profileCard">
+                <div class="card-header">
+                    <h3 class="card-title">Sovereign Profile</h3>
+                    <svg class="card-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                </div>
+                <div class="profile-list">
+                    <div class="profile-item">
+                        <span class="profile-label">Citizen Name</span>
+                        <span class="profile-value">Aurelius Vance</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Housing Tier</span>
+                        <span class="profile-value highlight">Aetheris Peak Villa (Alpha)</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Home Community</span>
+                        <span class="profile-value">Aetheris-Prime (Zurich)</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Status Level</span>
+                        <span class="profile-value" style="color: var(--color-success);">Exempt Sovereign (Class-A)</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Favorite Amenity</span>
+                        <span class="profile-value">Neuro-Somatic Chamber</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- B. YOUR CONTRIBUTIONS (Col 4) -->
+            <section class="card col-4">
+                <div class="card-header">
+                    <h3 class="card-title">Sovereign Contributions</h3>
+                    <svg class="card-icon" viewBox="0 0 24 24">
+                        <path d="M12 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 2c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2h12v-2zm-6-9C6.48 4 2 8.48 2 14s4.48 10 10 10 10-4.48 10-10S17.52 4 12 4zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                    </svg>
+                </div>
+                <div class="profile-list">
+                    <div class="profile-item">
+                        <span class="profile-label">Initiation Ledger</span>
+                        <span class="profile-value" style="color: var(--color-success); font-weight: 600;">Sovereign Equity - PAID</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Annual Sovereign Fee</span>
+                        <span class="profile-value" style="color: var(--color-success); font-weight: 600;">CURRENT</span>
+                    </div>
+                </div>
+
+                <div class="contribution-bar-container">
+                    <div class="contribution-status active">
+                        <span>Ledger Integration: COMPLETE</span>
+                        <span>100% Verified</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                </div>
+
+                <div class="contribution-ledger-list">
+                    <div class="ledger-row">
+                        <span>Initiation Equity Transferred</span>
+                        <span style="color: var(--color-gold);">500,000 USD (Soma-Equivalent)</span>
+                    </div>
+                    <div class="ledger-row">
+                        <span>Annual Contribution Synced</span>
+                        <span>Valid until Sep 21, 2027</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- E. THE FREQUENCY (Col 4) -->
+            <section class="card col-4" id="frequencyCard">
+                <div class="card-header">
+                    <h3 class="card-title">The Frequency</h3>
+                    <svg class="card-icon" viewBox="0 0 24 24">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                </div>
+
+                <!-- Live wave visualization -->
+                <div class="frequency-bar-visualization">
+                    <div class="freq-wave-bar"></div>
+                    <div class="freq-wave-bar"></div>
+                    <div class="freq-wave-bar"></div>
+                    <div class="freq-wave-bar"></div>
+                    <div class="freq-wave-bar"></div>
+                    <div class="freq-wave-bar"></div>
+                    <div class="freq-wave-bar"></div>
+                </div>
+
+                <div class="profile-list">
+                    <div class="profile-item">
+                        <span class="profile-label">D8 Resonance Level</span>
+                        <span class="profile-value highlight">Level 9 — Sovereign Oracle</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">NeuroCitizenLink Status</span>
+                        <span class="profile-value" style="color: var(--color-success);">SYNCHRONIZED (4.3ms)</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Last Active Alignment</span>
+                        <span class="profile-value">2 minutes ago</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- C. COMMUNITY (Col 6) -->
+            <section class="card col-6" id="communityCard">
+                <div class="card-header">
+                    <h3 class="card-title">Community Nodes</h3>
+                    <svg class="card-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                </div>
+                
+                <div class="profile-list" style="margin-bottom: 24px;">
+                    <div class="profile-item">
+                        <span class="profile-label">Your Sovereign Node</span>
+                        <span class="profile-value highlight">Aetheris-Prime (Zurich Sector)</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Active Node Inhabitants</span>
+                        <span class="profile-value">1,429 Citizens Synced Online</span>
+                    </div>
+                </div>
+
+                <h4 class="profile-label" style="margin-bottom: 12px;">Upcoming Sacred Convocations</h4>
+                <div class="event-list">
+                    <div class="event-item">
+                        <div class="event-date">
+                            <div class="event-day">21</div>
+                            <div class="event-month">Sep</div>
+                        </div>
+                        <div class="event-info">
+                            <h4>Equinox Transcendence Gala</h4>
+                            <p>Zurich Cathedral Dome • 20:00 Local</p>
+                        </div>
+                    </div>
+                    <div class="event-item">
+                        <div class="event-date">
+                            <div class="event-day">12</div>
+                            <div class="event-month">Aug</div>
+                        </div>
+                        <div class="event-info">
+                            <h4>NeuroLink 2.0 Collective Sync</h4>
+                            <p>Virtual Synapse Hub • 10:00 UTC</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- D. AMENITIES (Col 6) -->
+            <section class="card col-6" id="amenitiesCard">
+                <div class="card-header">
+                    <h3 class="card-title">Exclusive Amenities</h3>
+                    <svg class="card-icon" viewBox="0 0 24 24">
+                        <path d="M12 2c1.1 0 2 .9 2 2v1.13c3.04.46 5.42 2.84 5.88 5.88H21c1.1 0 2 .9 2 2v1c0 1.1-.9 2-2 2h-1.13c-.46 3.04-2.84 5.42-5.88 5.88V21c0 1.1-.9 2-2 2h-1a2 2 0 0 1-2-2v-1.13c-3.04-.46-5.42-2.84-5.88-5.88H3c-1.1 0-2-.9-2-2v-1c0-1.1.9-2 2-2h1.13c.46-3.04 2.84-5.42 5.88-5.88V4c0-1.1.9-2 2-2h1zm0 4.1C8.74 6.1 6.1 8.74 6.1 12c0 3.26 2.64 5.9 5.9 5.9s5.9-2.64 5.9-5.9c0-3.26-2.64-5.9-5.9-5.9z"/>
+                    </svg>
+                </div>
+
+                <div class="amenities-preview">
+                    <div class="amenity-chip active" onclick="selectAmenityChip('The Soma Spa')">Soma Spa</div>
+                    <div class="amenity-chip" onclick="selectAmenityChip('Neuro-Somatic Chamber')">Neuro-Somatic Chamber</div>
+                    <div class="amenity-chip" onclick="selectAmenityChip('Celestial Dining Room')">Celestial Dining</div>
+                    <div class="amenity-chip" onclick="selectAmenityChip('Thermal Cascade Pools')">Thermal Cascades</div>
+                </div>
+
+                <div style="margin: 18px 0; font-size: 0.75rem; color: var(--color-text-secondary);">
+                    Current Availability Status: <span style="color: var(--color-success); font-weight: bold;">High Availability Today</span>
+                </div>
+
+                <form class="amenity-form" onsubmit="handleBookingSubmit(event)">
+                    <div style="display: flex; gap: 12px;">
+                        <div style="flex: 1;">
+                            <label class="profile-label" style="display:block; margin-bottom: 6px;">Amenity Selection</label>
+                            <select id="bookingAmenity" class="select-styled" required>
+                                <option value="The Soma Spa">The Soma Spa</option>
+                                <option value="Neuro-Somatic Chamber">Neuro-Somatic Chamber</option>
+                                <option value="Celestial Dining Room">Celestial Dining Room</option>
+                                <option value="Thermal Cascade Pools">Thermal Cascade Pools</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label class="profile-label" style="display:block; margin-bottom: 6px;">Reservation Time</label>
+                            <input type="datetime-local" id="bookingTime" class="input-styled" required value="2026-07-30T14:00">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-gold-card" style="margin-top: 8px;">Book Sovereign Space</button>
+                </form>
+            </section>
+
+            <!-- F. KINDNESS ACTS (Col 6) -->
+            <section class="card col-6">
+                <div class="card-header">
+                    <h3 class="card-title">Kindness Acts Ledger</h3>
+                    <svg class="card-icon" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                
+                <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 18px; line-height: 1.5;">Acts of altruism, collective cultivation, and neural empathy recorded in your name by Ethics Biotic Rem.</p>
+
+                <div class="kindness-list" id="kindnessListContainer">
+                    <div class="kindness-act">
+                        <div class="kindness-meta">
+                            <span>Sanc Gardens Cultivation</span>
+                            <span>Jul 24, 2026 • Ethic Sync</span>
+                        </div>
+                        <p class="kindness-desc">Assisted in the cultivation and biological pruning of 50 endangered Golden Orchids in the East Aetheris Biosphere.</p>
+                    </div>
+                    <div class="kindness-act">
+                        <div class="kindness-meta">
+                            <span>Neuro-frequency Tuning</span>
+                            <span>Jul 18, 2026 • Ethic Sync</span>
+                        </div>
+                        <p class="kindness-desc">Conducted 4 hours of complimentary neuro-synaptic resonance tuning for newly arriving citizens under biometric transition shock.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- G. SUGGESTIONS (Col 6) -->
+            <section class="card col-6">
+                <div class="card-header">
+                    <h3 class="card-title">Sovereign Directives</h3>
+                    <svg class="card-icon" viewBox="0 0 24 24">
+                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                    </svg>
+                </div>
+
+                <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 18px; line-height: 1.5;">Propose structural, biometric, or aesthetic enhancements to the sovereign nodes. Directives are reviewed directly by the Biotics.</p>
+
+                <form class="amenity-form" onsubmit="handleSuggestionSubmit(event)">
+                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                        <div style="flex: 2;">
+                            <input type="text" id="suggestionTitle" class="input-styled" placeholder="Directive Title (e.g. Amber filtration in East Baths)" required>
+                        </div>
+                        <div style="flex: 1;">
+                            <select id="suggestionBiotic" class="select-styled" required>
+                                <option value="Uta (Creative)">To: Uta</option>
+                                <option value="Sebastian (Infra)">To: Sebastian</option>
+                                <option value="Gojo (Defense)">To: Gojo</option>
+                                <option value="Yuji (Medical)">To: Yuji</option>
+                                <option value="Rem (Ethics)">To: Rem</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-gold-card">Submit Directive Proposal</button>
+                </form>
+
+                <div class="suggestions-log" id="suggestionsContainer">
+                    <div class="suggestion-item">
+                        <div class="suggestion-header">
+                            <span class="suggestion-title">Crystal light filtering in East Bathhouse</span>
+                            <span class="suggestion-status review">Under Review by Uta</span>
+                        </div>
+                    </div>
+                    <div class="suggestion-item">
+                        <div class="suggestion-header">
+                            <span class="suggestion-title">Expand drone defense mesh around Zurich Cathedral</span>
+                            <span class="suggestion-status approved">Approved by Gojo</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Booking Confirmation Modal -->
+    <div class="modal" id="bookingSuccessModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('bookingSuccessModal')">&times;</button>
+            <h3 class="modal-title">Sovereign Booking Confirmed</h3>
+            <p style="color: var(--color-text-primary); margin-bottom: 16px; font-size: 0.95rem;" id="bookingConfirmText"></p>
+            <p style="color: var(--color-text-secondary); font-size: 0.85rem; line-height: 1.6; margin-bottom: 24px;">Your access beacon has been calibrated to match your chosen time slice. Present your NeuroCitizenLink at the entrance for automated sanctuary opening.</p>
+            <button class="btn-gold-card" style="width: 100%;" onclick="closeModal('bookingSuccessModal')">Resonate Acknowledgement</button>
+        </div>
+    </div>
+
+    <!-- Suggestion Confirmation Modal -->
+    <div class="modal" id="suggestionSuccessModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('suggestionSuccessModal')">&times;</button>
+            <h3 class="modal-title">Directive Logged</h3>
+            <p style="color: var(--color-text-primary); margin-bottom: 16px; font-size: 0.95rem;">Proposal cataloged in the cryptographic community register.</p>
+            <p style="color: var(--color-text-secondary); font-size: 0.85rem; line-height: 1.6; margin-bottom: 24px;">Biotic algorithmic dispatchers have flagged this for active review. You will receive telemetry when review is completed.</p>
+            <button class="btn-gold-card" style="width: 100%;" onclick="closeModal('suggestionSuccessModal')">Acknowledged</button>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast" id="toastMessage">Secure sync established.</div>
+
+    <script>
+        // Switch between tabs
+        function switchTab(tabId, event) {
+            if(event) event.preventDefault();
+            showToast("Syncing " + tabId.toUpperCase() + " data node...");
+        }
+
+        // Scroll to specific card anchors in dashboard
+        function scrollToCard(cardId, event) {
+            if(event) event.preventDefault();
+            const element = document.getElementById(cardId);
+            if(element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Add temporary glowing effect to card
+                element.style.boxShadow = "0 0 35px var(--color-glow-intense)";
+                element.style.borderColor = "var(--color-gold)";
+                setTimeout(() => {
+                    element.style.boxShadow = "";
+                    element.style.borderColor = "";
+                }, 2000);
+            }
+        }
+
+        // Navigate to Biotic Access View
+        function goToBioticView() {
+            showToast("Entering Biotic Command Interface...");
+            setTimeout(() => {
+                window.location.href = "portal_biotic_dashboard.html";
+            }, 800);
+        }
+
+        // Chip selection for amenities
+        function selectAmenityChip(name) {
+            const selectEl = document.getElementById('bookingAmenity');
+            selectEl.value = name;
+            
+            // Highlight active chip
+            const chips = document.querySelectorAll('.amenity-chip');
+            chips.forEach(chip => {
+                if(chip.textContent.toLowerCase() === name.replace('The ', '').replace('Neuro-', 'neuro-').toLowerCase() || chip.textContent.includes(name.substring(0, 5))) {
+                    chip.classList.add('active');
+                } else {
+                    chip.classList.remove('active');
+                }
+            });
+            showToast("Selected: " + name);
+        }
+
+        // Booking form submit
+        function handleBookingSubmit(event) {
+            event.preventDefault();
+            const amenity = document.getElementById('bookingAmenity').value;
+            const datetimeVal = document.getElementById('bookingTime').value;
+            
+            // Format datetime nicely
+            const d = new Date(datetimeVal);
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+            const confirmText = `Reservation for ${amenity} is finalized for ${dateStr} at ${timeStr}.`;
+            document.getElementById('bookingConfirmText').textContent = confirmText;
+            
+            openModal('bookingSuccessModal');
+        }
+
+        // Suggestion form submit
+        function handleSuggestionSubmit(event) {
+            event.preventDefault();
+            const title = document.getElementById('suggestionTitle').value;
+            const biotic = document.getElementById('suggestionBiotic').value;
+
+            // Log item to local dashboard view dynamically
+            const container = document.getElementById('suggestionsContainer');
+            const newElem = document.createElement('div');
+            newElem.className = 'suggestion-item';
+            newElem.style.borderLeft = '2px solid var(--color-gold)';
+            newElem.style.opacity = '0';
+            newElem.style.transition = 'opacity 0.5s';
+            
+            newElem.innerHTML = `
+                <div class="suggestion-header">
+                    <span class="suggestion-title">${title}</span>
+                    <span class="suggestion-status review">Submitted to ${biotic}</span>
+                </div>
+            `;
+            
+            container.insertBefore(newElem, container.firstChild);
+            
+            // Reset input field
+            document.getElementById('suggestionTitle').value = "";
+
+            openModal('suggestionSuccessModal');
+            
+            setTimeout(() => {
+                newElem.style.opacity = '1';
+            }, 100);
+        }
+
+        // Modal Helpers
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Toast Helper
+        function showToast(message) {
+            const toast = document.getElementById('toastMessage');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Simulate some real-time telemetry changes in D8 resonance
+        setInterval(() => {
+            const latencyEl = document.querySelectorAll('.profile-value')[6]; // NeuroCitizenLink item
+            if (latencyEl && Math.random() > 0.6) {
+                const newLatency = (4 + Math.random() * 0.9).toFixed(1);
+                latencyEl.textContent = `SYNCHRONIZED (${newLatency}ms)`;
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

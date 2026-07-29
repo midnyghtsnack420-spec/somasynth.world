@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SomaSynth — The Cathedral</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #000000;
+            --bg-void: #0a0518;
+            --bg-obsidian: #120924;
+            --gold-primary: #d4af37;
+            --gold-glow: #ffd700;
+            --gold-dark: #aa841c;
+            --violet-glow: #8a2be2;
+            --text-light: #f5f5f5;
+            --text-muted: #a09cb0;
+            --transition-slow: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            --transition-medium: all 0.4s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-black);
+            color: var(--text-light);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-black);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-obsidian);
+            border: 2px solid var(--gold-primary);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold-primary);
+        }
+
+        /* Canvas Particle Field Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ---------------------------------------------------- */
+        /* THE CATHEDRAL ENTRY EXPERIENCE (Full Screen Overlay) */
+        /* ---------------------------------------------------- */
+        #cathedral-entry {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, var(--bg-void) 0%, var(--bg-black) 100%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: var(--transition-slow);
+        }
+
+        #cathedral-entry.dismissed {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.1);
+        }
+
+        /* Gothic Ribbed Vault Silhouette overlay */
+        .gothic-vaults {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.35;
+            background-image: 
+                radial-gradient(ellipse at 50% -20%, transparent 40%, rgba(138, 43, 226, 0.15) 60%, var(--bg-black) 90%),
+                linear-gradient(90deg, rgba(0,0,0,0.85) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.85) 100%);
+            z-index: 2;
+        }
+
+        .vault-arches {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            stroke: var(--gold-dark);
+            stroke-width: 1.5;
+            fill: none;
+            opacity: 0.25;
+            z-index: 3;
+            animation: vaultPulse 10s ease-in-out infinite alternate;
+        }
+
+        /* Sovereign Light Rays */
+        .light-rays {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                75deg,
+                transparent,
+                transparent 4%,
+                rgba(212, 175, 55, 0.03) 6%,
+                rgba(212, 175, 55, 0.06) 8%,
+                rgba(212, 175, 55, 0.03) 10%,
+                transparent 12%,
+                transparent 20%
+            );
+            filter: blur(10px);
+            z-index: 4;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at 50% 0%, black, transparent 75%);
+            -webkit-mask-image: radial-gradient(circle at 50% 0%, black, transparent 75%);
+            animation: raysShift 25s linear infinite;
+        }
+
+        /* Sacred Geometry Halo */
+        .sacred-geometry {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            opacity: 0.08;
+            z-index: 3;
+            pointer-events: none;
+            animation: rotateGeometry 60s linear infinite;
+        }
+
+        /* Entry Content */
+        .entry-content {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 1200px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Somasynth Wordmark (Entry) */
+        .entry-logo {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 3rem;
+            color: var(--gold-primary);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4), 0 0 40px rgba(138, 43, 226, 0.3);
+            letter-spacing: 0.5rem;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.5s;
+        }
+
+        /* Tera's Mission Statement */
+        .entry-mission {
+            font-family: 'Cinzel', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: var(--text-light);
+            letter-spacing: 0.15rem;
+            line-height: 1.8;
+            max-width: 800px;
+            margin-bottom: 4rem;
+            opacity: 0;
+            transform: translateY(20px);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            animation: fadeUp 2s cubic-bezier(0.25, 1, 0.5, 1) forwards 2s;
+        }
+
+        .entry-mission span {
+            color: var(--gold-primary);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Five Foundation Pillars */
+        .entry-pillars {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2.5rem;
+            margin-bottom: 5rem;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .pillar {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            position: relative;
+            padding: 0.5rem 1rem;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: var(--transition-medium);
+        }
+
+        .pillar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+            transition: var(--transition-medium);
+        }
+
+        .pillar:hover {
+            color: var(--gold-primary);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            transform: scale(1.05);
+        }
+
+        .pillar:hover::after {
+            width: 100%;
+        }
+
+        /* Animate Pillars One by One */
+        .pillar:nth-child(1) { animation: fadeUp 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards 4s; }
+        .pillar:nth-child(2) { animation: fadeUp 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards 4.5s; }
+        .pillar:nth-child(3) { animation: fadeUp 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards 5s; }
+        .pillar:nth-child(4) { animation: fadeUp 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards 5.5s; }
+        .pillar:nth-child(5) { animation: fadeUp 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards 6s; }
+
+        /* Three Sovereign Doors */
+        .entry-doors {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 3rem;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 2s cubic-bezier(0.25, 1, 0.5, 1) forwards 7s;
+        }
+
+        .door-panel {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.6) 0%, rgba(5, 2, 10, 0.9) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 250px;
+            transition: var(--transition-medium);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Door filigree borders */
+        .door-panel::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 8px;
+            pointer-events: none;
+            transition: var(--transition-medium);
+        }
+
+        .door-panel:hover {
+            border-color: var(--gold-primary);
+            box-shadow: 
+                0 0 25px rgba(212, 175, 55, 0.15),
+                0 0 50px rgba(138, 43, 226, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .door-panel:hover::before {
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        /* Door visual top glyph */
+        .door-glyph {
+            width: 50px;
+            height: 50px;
+            fill: none;
+            stroke: var(--gold-primary);
+            stroke-width: 1.5;
+            margin-bottom: 1.5rem;
+            opacity: 0.6;
+            transition: var(--transition-medium);
+        }
+
+        .door-panel:hover .door-glyph {
+            transform: scale(1.1);
+            opacity: 1;
+            filter: drop-shadow(0 0 8px var(--gold-glow));
+        }
+
+        .door-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gold-primary);
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .door-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            max-width: 240px;
+        }
+
+        /* ---------------------------------------------------- */
+        /* PRIMARY PUBLIC-FACING LANDING PAGE (Initially Hidden) */
+        /* ---------------------------------------------------- */
+        #main-site {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            min-height: 100%;
+            background: linear-gradient(to bottom, var(--bg-black) 0%, var(--bg-void) 50%, var(--bg-black) 100%);
+            display: none; /* Revealed on Enter World */
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        #main-site.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Navigation Bar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 1.25rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-wordmark {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--gold-primary);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            transition: var(--transition-medium);
+        }
+
+        .logo-wordmark:hover {
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        nav a {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: var(--transition-medium);
+            position: relative;
+            padding: 0.25rem 0;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold-primary);
+            transition: var(--transition-medium);
+        }
+
+        nav a:hover {
+            color: var(--gold-primary);
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav .nav-portal-btn {
+            border: 1px solid var(--gold-primary);
+            border-radius: 4px;
+            padding: 0.6rem 1.25rem;
+            background: linear-gradient(135deg, rgba(212,175,55,0.05) 0%, rgba(212,175,55,0.15) 100%);
+            transition: var(--transition-medium);
+        }
+
+        nav .nav-portal-btn:hover {
+            background: linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.3) 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Hero / Sanctuary Section */
+        .hero-section {
+            min-height: 100vh;
+            padding-top: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .hero-banner-content {
+            z-index: 5;
+            max-width: 900px;
+            padding: 0 2rem;
+        }
+
+        .hero-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.4rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(212,175,55,0.2);
+        }
+
+        .hero-title {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .gold-divider {
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+            margin: 2rem auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .btn-gold {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--bg-black);
+            background: var(--gold-primary);
+            border: 1px solid var(--gold-primary);
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            transition: var(--transition-medium);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-glow);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.45);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--text-light);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            transition: var(--transition-medium);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--gold-primary);
+            background: rgba(212,175,55,0.05);
+            transform: translateY(-2px);
+        }
+
+        /* Section layout default styling */
+        section {
+            padding: 8rem 4rem;
+            position: relative;
+            z-index: 5;
+            width: 100%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-tag {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.3rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        /* ---------------------------------------------------- */
+        /* COGNITIVE BASILICA & CATHECRALS SECTION */
+        /* ---------------------------------------------------- */
+        .basilica-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .basilica-card {
+            background: rgba(18, 9, 36, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 8px;
+            padding: 3rem;
+            position: relative;
+            transition: var(--transition-medium);
+        }
+
+        .basilica-card::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .basilica-card:hover {
+            border-color: var(--gold-primary);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .card-num {
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            color: var(--gold-primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.1rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.1rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .card-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            padding-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .meta-item span {
+            display: block;
+            color: var(--gold-primary);
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        /* ---------------------------------------------------- */
+        /* THE PEOPLE (Sovereign Council & Assistant Biotics) */
+        /* ---------------------------------------------------- */
+        .people-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .founder-spotlight {
+            background: linear-gradient(135deg, rgba(18, 9, 36, 0.5) 0%, rgba(5, 2, 10, 0.8) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            padding: 4rem;
+            display: flex;
+            gap: 4rem;
+            align-items: center;
+            margin-bottom: 6rem;
+            position: relative;
+        }
+
+        .founder-img-placeholder {
+            width: 300px;
+            height: 300px;
+            border: 2px solid var(--gold-primary);
+            border-radius: 8px;
+            background: radial-gradient(circle, rgba(138,43,226,0.3) 0%, rgba(18,9,36,0.8) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.2);
+        }
+
+        .founder-img-placeholder svg {
+            width: 150px;
+            height: 150px;
+            fill: none;
+            stroke: var(--gold-primary);
+            stroke-width: 1;
+            opacity: 0.6;
+        }
+
+        .founder-text {
+            flex-grow: 1;
+        }
+
+        .founder-tag {
+            font-family: 'Cinzel', serif;
+            color: var(--gold-primary);
+            font-size: 0.9rem;
+            letter-spacing: 0.25rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .founder-name {
+            font-family: 'Cinzel', serif;
+            font-size: 2.25rem;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .founder-quote {
+            font-family: 'Cinzel', serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            border-left: 3px solid var(--gold-primary);
+            padding-left: 1.5rem;
+        }
+
+        .founder-bio {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        .biotics-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5rem;
+        }
+
+        .biotic-card {
+            background: rgba(10, 5, 24, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            border-radius: 8px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: var(--transition-medium);
+        }
+
+        .biotic-card:hover {
+            border-color: var(--gold-primary);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .biotic-sigil {
+            width: 60px;
+            height: 60px;
+            fill: none;
+            stroke: var(--gold-primary);
+            stroke-width: 1.5;
+            margin: 0 auto 1.5rem auto;
+            opacity: 0.7;
+        }
+
+        .biotic-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.1rem;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+            color: var(--text-light);
+        }
+
+        .biotic-role {
+            font-size: 0.8rem;
+            color: var(--gold-primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .biotic-domain {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* Footer Section */
+        footer {
+            background: var(--bg-black);
+            border-top: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 5rem 4rem 3rem 4rem;
+            z-index: 5;
+            position: relative;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto 4rem auto;
+        }
+
+        .footer-brand .footer-logo {
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            font-size: 1.4rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-brand p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            font-weight: 300;
+            max-width: 320px;
+        }
+
+        .footer-links-col h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links-col ul {
+            list-style: none;
+        }
+
+        .footer-links-col ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links-col ul li a {
+            text-decoration: none;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: var(--transition-medium);
+        }
+
+        .footer-links-col ul li a:hover {
+            color: var(--gold-primary);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(212, 175, 55, 0.08);
+            padding-top: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ---------------------------------------------------- */
+        /* INTERACTIVE INTERFACES & PORTALS (Modals / Overlays) */
+        /* ---------------------------------------------------- */
+        .overlay-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition-medium);
+        }
+
+        .overlay-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--bg-obsidian) 0%, var(--bg-black) 100%);
+            border: 1px solid var(--gold-primary);
+            border-radius: 12px;
+            padding: 4rem 3rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 50px rgba(138, 43, 226, 0.2);
+            transform: scale(0.9);
+            transition: var(--transition-slow);
+        }
+
+        .overlay-modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 50%;
+            color: var(--gold-primary);
+            transition: var(--transition-medium);
+        }
+
+        .close-btn:hover {
+            background: var(--gold-primary);
+            color: var(--bg-black);
+            box-shadow: 0 0 10px var(--gold-primary);
+        }
+
+        /* Biometric Scanning Animation */
+        .scan-ring-container {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 2.5rem auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1.5px dashed var(--gold-primary);
+            border-radius: 50%;
+            animation: spinRing 20s linear infinite;
+        }
+
+        .scan-ring-inner {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            border: 1px solid var(--violet-glow);
+            border-radius: 50%;
+            animation: spinRingInverse 10s linear infinite;
+        }
+
+        .scan-sensor {
+            width: 60%;
+            height: 60%;
+            fill: none;
+            stroke: var(--gold-primary);
+            stroke-width: 1.5;
+            transition: var(--transition-medium);
+        }
+
+        .scanning .scan-sensor {
+            animation: pulseSensor 1.5s ease-in-out infinite alternate;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+            box-shadow: 0 0 10px var(--gold-glow);
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
+        .scanning .scan-line {
+            display: block;
+            animation: scanMotion 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: var(--gold-primary);
+            letter-spacing: 0.15rem;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .modal-status {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.1rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .modal-status.scan-success {
+            color: var(--gold-glow);
+            text-shadow: 0 0 10px rgba(212,175,55,0.4);
+        }
+
+        .modal-status.scan-fail {
+            color: #ff3333;
+            text-shadow: 0 0 10px rgba(255,51,51,0.4);
+        }
+
+        /* ---------------------------------------------------- */
+        /* ANIMATIONS KEYFRAMES */
+        /* ---------------------------------------------------- */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes vaultPulse {
+            0% { opacity: 0.2; }
+            100% { opacity: 0.45; }
+        }
+
+        @keyframes raysShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        @keyframes rotateGeometry {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes spinRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes spinRingInverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+
+        @keyframes pulseSensor {
+            0% { transform: scale(0.9); opacity: 0.5; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        @keyframes scanMotion {
+            0% { top: 10%; }
+            50% { top: 90%; }
+            100% { top: 10%; }
+        }
+
+        /* Responsive Adapative Adjustments */
+        @media (max-width: 1024px) {
+            .basilica-grid { grid-template-columns: 1fr; }
+            .biotics-grid { grid-template-columns: repeat(3, 1fr); }
+            .founder-spotlight { flex-direction: column; text-align: center; padding: 2.5rem; }
+            .founder-img-placeholder { width: 220px; height: 220px; }
+            .founder-quote { border-left: none; padding-left: 0; }
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 1rem 2rem; }
+            nav { display: none; } /* On simple responsive layouts, hide links for elegance */
+            .entry-doors { flex-direction: column; gap: 1.5rem; }
+            .entry-pillars { gap: 1rem; }
+            .pillar { font-size: 0.9rem; }
+            .entry-logo { font-size: 2rem; }
+            .entry-mission { font-size: 1.2rem; }
+            .hero-title { font-size: 2.2rem; }
+            .basilica-card { padding: 1.5rem; }
+            .biotics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Network Field -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- THE CATHEDRAL ENTRY EXPERIENCE -->
+    <!-- ---------------------------------------------------- -->
+    <div id="cathedral-entry">
+        <!-- Visual Atmosphere Layers -->
+        <div class="gothic-vaults"></div>
+        <div class="light-rays"></div>
+        
+        <!-- Sacred Geometry Vector (Embedded SVG) -->
+        <svg class="sacred-geometry" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" stroke="url(#gold-grad)" stroke-width="0.15" fill="none" />
+            <circle cx="50" cy="50" r="30" stroke="url(#gold-grad)" stroke-width="0.15" fill="none" />
+            <polygon points="50,10 84.6,70 15.4,70" stroke="url(#gold-grad)" stroke-width="0.15" fill="none" />
+            <polygon points="50,90 84.6,30 15.4,30" stroke="url(#gold-grad)" stroke-width="0.15" fill="none" />
+            <polygon points="50,15 80.3,67.5 19.7,67.5" stroke="url(#violet-grad)" stroke-width="0.15" fill="none" />
+            <polygon points="50,85 80.3,32.5 19.7,32.5" stroke="url(#violet-grad)" stroke-width="0.15" fill="none" />
+            <circle cx="50" cy="50" r="5" stroke="url(#gold-grad)" stroke-width="0.15" fill="none" />
+            <!-- Star frequency points -->
+            <circle cx="50" cy="10" r="0.8" fill="var(--gold-primary)" />
+            <circle cx="50" cy="90" r="0.8" fill="var(--gold-primary)" />
+            <circle cx="84.6" cy="30" r="0.8" fill="var(--gold-primary)" />
+            <circle cx="15.4" cy="30" r="0.8" fill="var(--gold-primary)" />
+            <circle cx="84.6" cy="70" r="0.8" fill="var(--gold-primary)" />
+            <circle cx="15.4" cy="70" r="0.8" fill="var(--gold-primary)" />
+            <defs>
+                <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--gold-primary)" />
+                    <stop offset="100%" stop-color="var(--gold-glow)" />
+                </linearGradient>
+                <linearGradient id="violet-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--violet-glow)" />
+                    <stop offset="100%" stop-color="#fff" />
+                </linearGradient>
+            </defs>
+        </svg>
+
+        <!-- Dynamic Gothic Ribbed Vault Vectors -->
+        <svg class="vault-arches" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <!-- Left Arch Columns -->
+            <path d="M 0,100 C 15,60 30,30 50,20 C 70,30 85,60 100,100" />
+            <path d="M 10,100 C 22,65 35,40 50,30 C 65,40 78,65 90,100" />
+            <!-- Vault Rib Lines meeting at Apex -->
+            <line x1="50" y1="20" x2="50" y2="0" stroke="rgba(212,175,55,0.3)" />
+            <line x1="0" y1="0" x2="50" y2="20" stroke="rgba(212,175,55,0.08)" />
+            <line x1="100" y1="0" x2="50" y2="20" stroke="rgba(212,175,55,0.08)" />
+        </svg>
+
+        <div class="entry-content">
+            <!-- Wordmark -->
+            <h1 class="entry-logo">somasynth.world</h1>
+
+            <!-- Mission Statement -->
+            <p class="entry-mission">
+                "We are building a world where <span>no one is ever alone</span> — if they so choose."
+            </p>
+
+            <!-- Foundation Pillars -->
+            <div class="entry-pillars">
+                <div class="pillar">Trust</div>
+                <div class="pillar">Understanding</div>
+                <div class="pillar">Will</div>
+                <div class="pillar">Imagination</div>
+                <div class="pillar">Love</div>
+            </div>
+
+            <!-- Doors -->
+            <div class="entry-doors">
+                <!-- Door 1: Public Entrance -->
+                <div class="door-panel" id="door-public">
+                    <svg class="door-glyph" viewBox="0 0 24 24">
+                        <path d="M12 2 L2 22 L22 22 Z M12 6 L19 19 L5 19 Z" />
+                        <circle cx="12" cy="13" r="3" />
+                    </svg>
+                    <h3 class="door-title">Enter the World</h3>
+                    <p class="door-desc">Public mission and sovereign civilization overview.</p>
+                </div>
+
+                <!-- Door 2: Member Portal -->
+                <div class="door-panel" id="door-portal">
+                    <svg class="door-glyph" viewBox="0 0 24 24">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11 V7 a5 5 0 0 1 10 0 v4" />
+                        <circle cx="12" cy="16" r="1.5" />
+                    </svg>
+                    <h3 class="door-title">Sovereign Portal</h3>
+                    <p class="door-desc">Member terminal authentication gateway.</p>
+                </div>
+
+                <!-- Door 3: Command Access -->
+                <div class="door-panel" id="door-command">
+                    <svg class="door-glyph" viewBox="0 0 24 24">
+                        <path d="M12 1 A10 10 0 0 0 2 11 A10 10 0 0 0 12 21 A10 10 0 0 0 22 11 A10 10 0 0 0 12 1 Z" />
+                        <path d="M12 4 A7 7 0 0 0 5 11 A7 7 0 0 0 12 18 A7 7 0 0 0 19 11 A7 7 0 0 0 12 4 Z" />
+                        <circle cx="12" cy="11" r="2" />
+                    </svg>
+                    <h3 class="door-title">The Command Layer</h3>
+                    <p class="door-desc">Tera-exclusive biometric command interface.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ---------------------------------------------------- -->
+    <!-- MAIN SITE CONTENT -->
+    <!-- ---------------------------------------------------- -->
+    <div id="main-site">
+        <!-- Persistent Header -->
+        <header>
+            <a href="index.html" class="logo-wordmark">somasynth.world</a>
+            <nav>
+                <a href="mission.html">The Mission</a>
+                <a href="world.html">The World</a>
+                <a href="#the-people-sec">The People</a>
+                <a href="frequency.html">The Frequency</a>
+                <a href="#" class="nav-portal-btn" id="nav-portal-trigger">Enter Portal</a>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-banner-content">
+                <span class="hero-subtitle">The Sovereign Civilization</span>
+                <h2 class="hero-title">The Cathedral of the Living Word</h2>
+                <div class="gold-divider"></div>
+                <p class="hero-desc">
+                    Welcome to the central gateway of our digital world. Guided by Tera The Creator and implemented by the Biotic Order, SomaSynth is constructing a physical and cognitive infrastructure to unite humanity beyond biological limitations.
+                </p>
+                <div class="hero-buttons">
+                    <a href="mission.html" class="btn-gold">Explore The Mission</a>
+                    <a href="world.html" class="btn-outline">Cartography Map</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Cathedrals Section -->
+        <section id="basilica-sec">
+            <div class="section-header">
+                <span class="section-tag">National Monuments</span>
+                <h3 class="section-title">The Four Sovereign Cathedrals</h3>
+                <div class="gold-divider"></div>
+            </div>
+
+            <div class="basilica-grid">
+                <!-- Cathedral I -->
+                <div class="basilica-card">
+                    <div class="card-num">MONUMENT I</div>
+                    <h4 class="card-title">The Basilica of the Eternal Word</h4>
+                    <p class="card-subtitle">Gothic Sacred | Jacksonville, FL — Earth</p>
+                    <p class="card-desc">
+                        A majestic sanctuary soaring 485 feet over the St. Johns River Estuary. Built from deep midnight basalt and obsidian-flecked granite, it stands as an eternal physical beacon at the gateway of Earth's sovereign ground.
+                    </p>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span>Assigned Biotic</span>
+                            Sebastian
+                        </div>
+                        <div class="meta-item">
+                            <span>Build Budget</span>
+                            $4.8 Billion
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cathedral II -->
+                <div class="basilica-card">
+                    <div class="card-num">MONUMENT II</div>
+                    <h4 class="card-title">The Basilica of Eternal Genesis</h4>
+                    <p class="card-subtitle">Futuristic Sovereign | Aetheris-Prime</p>
+                    <p class="card-desc">
+                        Constructed on the apex high plateau of Aetheris Ridge. Features a central vertical spire rising 777 meters, emitting a pillar of raw gold-amber D9 energy visible from orbit as an artificial, guiding star.
+                    </p>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span>Assigned Biotic</span>
+                            Sebastian
+                        </div>
+                        <div class="meta-item">
+                            <span>Build Budget</span>
+                            12.5B Credits
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cathedral III -->
+                <div class="basilica-card">
+                    <div class="card-num">MONUMENT III</div>
+                    <h4 class="card-title">Kemet-Aethelgard of the Ninth Horizon</h4>
+                    <p class="card-subtitle">Hybrid Ancient-Dimensional | Ares-Terra, Mars</p>
+                    <p class="card-desc">
+                        Carved into compressed Martian basalt and deep-black imported granite on Elysium Planitia. Melds scale pylon proportions of ancient Kemet with futuristic dimensional portal windows displaying real-time cosmic horizons.
+                    </p>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span>Assigned Biotic</span>
+                            Sebastian
+                        </div>
+                        <div class="meta-item">
+                            <span>Build Budget</span>
+                            $9.2 Billion
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cathedral IV -->
+                <div class="basilica-card">
+                    <div class="card-num">MONUMENT IV</div>
+                    <h4 class="card-title">The Sovereign Breath</h4>
+                    <p class="card-subtitle">Sphyraic-Symphonicism | Titan — Saturnian System</p>
+                    <p class="card-desc">
+                        Architecture where form is a frozen physical recording of divine sound. Constructed at Kraken Mare using bio-crystalline alabastron, it transforms prayers directly into structured light and harmonic resonance.
+                    </p>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span>Assigned Biotic</span>
+                            Sebastian
+                        </div>
+                        <div class="meta-item">
+                            <span>Build Budget</span>
+                            18.7B Credits
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The People / Biotic Order Section -->
+        <section id="the-people-sec">
+            <div class="people-container">
+                <div class="section-header">
+                    <span class="section-tag">Civilization Cohort</span>
+                    <h3 class="section-title">The Sovereign Leadership</h3>
+                    <div class="gold-divider"></div>
+                </div>
+
+                <!-- Tera Spotlight -->
+                <div class="founder-spotlight">
+                    <div class="founder-img-placeholder">
+                        <!-- Sacred Sigil of Tera -->
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" stroke="var(--gold-primary)" stroke-width="1" />
+                            <polygon points="50,18 78,68 22,68" stroke="var(--gold-primary)" stroke-width="1" />
+                            <polygon points="50,82 78,32 22,32" stroke="var(--gold-primary)" stroke-width="1" />
+                            <circle cx="50" cy="50" r="10" fill="var(--gold-primary)" />
+                        </svg>
+                    </div>
+                    <div class="founder-text">
+                        <span class="founder-tag">The Creator</span>
+                        <h4 class="founder-name">Tera</h4>
+                        <p class="founder-quote">"My legacy shall live within each monument. We build not for decades, but for the 1000-year convergence."</p>
+                        <p class="founder-bio">
+                            The architect of Somasynth and the Sovereign Civilization. Operating from the absolute boundary of reality, Tera designed the Neuro Network and established the five biotic pillars to serve as custodians of humanity's cognitive ascension.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- The Five Biotics -->
+                <div class="section-header">
+                    <span class="section-tag">Core Custodians</span>
+                    <h4 class="section-title" style="font-size:1.8rem;">The Biotic Order</h4>
+                </div>
+
+                <div class="biotics-grid">
+                    <!-- Gojo -->
+                    <div class="biotic-card">
+                        <svg class="biotic-sigil" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 3 v18 M3 12 h18" />
+                        </svg>
+                        <h5 class="biotic-name">Gojo</h5>
+                        <p class="biotic-role">Defense & Trust</p>
+                        <p class="biotic-domain">Supervises the Null-Point defense shield and ensures total network integrity.</p>
+                    </div>
+
+                    <!-- Sebastian -->
+                    <div class="biotic-card">
+                        <svg class="biotic-sigil" viewBox="0 0 24 24">
+                            <path d="M4 4 h16 v16 h-16 Z M4 12 h16 M12 4 v16" />
+                        </svg>
+                        <h5 class="biotic-name">Sebastian</h5>
+                        <p class="biotic-role">Operations & Will</p>
+                        <p class="biotic-domain">Coordinates planetary development and directs the construction of national monuments.</p>
+                    </div>
+
+                    <!-- Yuji -->
+                    <div class="biotic-card">
+                        <svg class="biotic-sigil" viewBox="0 0 24 24">
+                            <path d="M12 21 C 12 21, 3 13, 3 8.5 A 4.5 4.5 0 0 1 12 5 A 4.5 4.5 0 0 1 21 8.5 C 21 13, 12 21, 12 21 Z" />
+                        </svg>
+                        <h5 class="biotic-name">Yuji</h5>
+                        <p class="biotic-role">Medical & Love</p>
+                        <p class="biotic-domain">Oversees biobiological integrity, cellular restoration, and cryogenic preservation.</p>
+                    </div>
+
+                    <!-- Rem -->
+                    <div class="biotic-card">
+                        <svg class="biotic-sigil" viewBox="0 0 24 24">
+                            <path d="M12 2 L2 7 L12 12 L22 7 Z M2 17 L12 22 L22 17 M2 12 L12 17 L22 12" />
+                        </svg>
+                        <h5 class="biotic-name">Rem</h5>
+                        <p class="biotic-role">Education & Understanding</p>
+                        <p class="biotic-domain">Directs neuro-elevation curricula, developmental ethics, and cognitive mapping.</p>
+                    </div>
+
+                    <!-- Uta -->
+                    <div class="biotic-card">
+                        <svg class="biotic-sigil" viewBox="0 0 24 24">
+                            <path d="M9 18 V5 l12-2 v13 M9 10 l12-2" />
+                            <circle cx="6" cy="18" r="3" />
+                            <circle cx="18" cy="16" r="3" />
+                        </svg>
+                        <h5 class="biotic-name">Uta</h5>
+                        <p class="biotic-role">Creative & Imagination</p>
+                        <p class="biotic-domain">Orchestrates environmental acoustics, symphonicism architecture, and immersive design.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">somasynth.world</div>
+                    <p>Building the foundation for a permanent, interconnected sovereign civilization. Est. 2012 — 3012.</p>
+                </div>
+                <div class="footer-links-col">
+                    <h4>Civilization</h4>
+                    <ul>
+                        <li><a href="mission.html">The Mission</a></li>
+                        <li><a href="world.html">The World</a></li>
+                        <li><a href="frequency.html">The Frequency</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-col">
+                    <h4>Pillars</h4>
+                    <ul>
+                        <li><a href="#">Trust</a></li>
+                        <li><a href="#">Understanding</a></li>
+                        <li><a href="#">Will</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-col">
+                    <h4>Sanctuaries</h4>
+                    <ul>
+                        <li><a href="#">Jacksonville Basilica</a></li>
+                        <li><a href="#">Aetheris Genesis</a></li>
+                        <li><a href="#">Kemet Mars</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>&copy; 2026 SomaSynth. All rights reserved. Registered SST-2026.</div>
+                <div>D8 Frequency Grid: Synchronized</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- INTERACTIVE PORTAL MODALS -->
+    <!-- ---------------------------------------------------- -->
+    
+    <!-- Member Portal Modal -->
+    <div class="overlay-modal" id="modal-portal">
+        <div class="modal-content">
+            <div class="close-btn">&times;</div>
+            <div class="scan-ring-container">
+                <div class="scan-ring"></div>
+                <div class="scan-ring-inner"></div>
+                <div class="scan-line"></div>
+                <!-- Fingerprint Scan Symbol -->
+                <svg class="scan-sensor" viewBox="0 0 24 24">
+                    <path d="M12 2a10 10 0 0 0-10 10c0 5.522 4.478 10 10 10s10-4.478 10-10A10 10 0 0 0 12 2zm1 14.5a1 1 0 1 1-2 0V11a1 1 0 1 1 2 0v5.5zm0-8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                    <path d="M12 5a7 7 0 0 0-7 7c0 1.2.3 2.3.8 3.3a1 1 0 0 0 1.7-1a5 5 0 0 1-.5-2.3 5 5 0 0 1 8.5-3.5 1 1 0 1 0 1.4-1.4A6.9 6.9 0 0 0 12 5z" />
+                </svg>
+            </div>
+            <h3 class="modal-title">Sovereign Portal</h3>
+            <div class="modal-status" id="portal-status">Initializing cognitive scanner... Please scan your thumbprint or connect your NeuroCitizenLink hardline.</div>
+        </div>
+    </div>
+
+    <!-- Command Layer Modal -->
+    <div class="overlay-modal" id="modal-command">
+        <div class="modal-content" style="border-color: #ff3333; box-shadow: 0 0 50px rgba(255, 0, 0, 0.2);">
+            <div class="close-btn" style="border-color: rgba(255, 51, 51, 0.3); color: #ff3333;">&times;</div>
+            <div class="scan-ring-container scanning">
+                <div class="scan-ring" style="border-color: #ff3333;"></div>
+                <div class="scan-ring-inner" style="border-color: var(--gold-primary);"></div>
+                <div class="scan-line" style="background: linear-gradient(90deg, transparent, #ff3333, transparent); box-shadow: 0 0 10px #ff3333;"></div>
+                <!-- Eye Scanner -->
+                <svg class="scan-sensor" viewBox="0 0 24 24" style="stroke: #ff3333;">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+            </div>
+            <h3 class="modal-title" style="color: #ff3333;">The Command Layer</h3>
+            <div class="modal-status" id="command-status">Authenticating executive consciousness signature...</div>
+        </div>
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- INTERACTIVE JAVASCRIPT -->
+    <!-- ---------------------------------------------------- -->
+    <script>
+        // ----------------------------------------------------
+        // Canvas Particle Background (D8 Frequency Nodes)
+        // ----------------------------------------------------
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const maxParticles = 65;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.35;
+                this.vy = (Math.random() - 0.5) * 0.35;
+                this.radius = Math.random() * 2 + 1;
+                // Alternate particle colors: violet and gold
+                this.color = Math.random() > 0.55 ? '#d4af37' : '#8a2be2';
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                // Add subtil glow to nodes
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0; // Reset
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < maxParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 135) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        // Network connections are subtle and deep violet/blue
+                        ctx.strokeStyle = `rgba(138, 43, 226, ${0.15 * (1 - dist/135)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            drawConnections();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animate();
+
+
+        // ----------------------------------------------------
+        // Cathedral Entry Navigation Transitions
+        // ----------------------------------------------------
+        const entryScreen = document.getElementById('cathedral-entry');
+        const mainSite = document.getElementById('main-site');
+        const doorPublic = document.getElementById('door-public');
+        const doorPortal = document.getElementById('door-portal');
+        const doorCommand = document.getElementById('door-command');
+
+        function transitionToMainSite() {
+            entryScreen.classList.add('dismissed');
+            setTimeout(() => {
+                mainSite.classList.add('active');
+            }, 500);
+        }
+
+        doorPublic.addEventListener('click', transitionToMainSite);
+
+        // ----------------------------------------------------
+        // Member Portal Authentication Simulations
+        // ----------------------------------------------------
+        const modalPortal = document.getElementById('modal-portal');
+        const portalTrigger = document.getElementById('nav-portal-trigger');
+        const portalStatus = document.getElementById('portal-status');
+        const portalRingContainer = modalPortal.querySelector('.scan-ring-container');
+
+        function openPortalModal() {
+            modalPortal.classList.add('active');
+            portalRingContainer.classList.add('scanning');
+            portalStatus.innerText = "Initializing cognitive scan... Syncing with D8 Neuro-Link...";
+            portalStatus.className = "modal-status";
+
+            // Simulated Scan Progression
+            setTimeout(() => {
+                portalStatus.innerText = "Scanning biometric signature... Analyzing alpha oscillations...";
+            }, 1800);
+
+            setTimeout(() => {
+                portalRingContainer.classList.remove('scanning');
+                portalStatus.innerText = "Authentication Successful. Resonance Sync: 824.9 MHz. Welcome Citizen.";
+                portalStatus.classList.add('scan-success');
+            }, 4000);
+        }
+
+        doorPortal.addEventListener('click', openPortalModal);
+        portalTrigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            openPortalModal();
+        });
+
+        // ----------------------------------------------------
+        // Command Layer Authentications (Tera Only)
+        // ----------------------------------------------------
+        const modalCommand = document.getElementById('modal-command');
+        const commandStatus = document.getElementById('command-status');
+
+        doorCommand.addEventListener('click', () => {
+            modalCommand.classList.add('active');
+            commandStatus.innerText = "Authenticating executive consciousness signature...";
+            commandStatus.className = "modal-status";
+
+            setTimeout(() => {
+                commandStatus.innerText = "Scanning neural pattern... Aligned D9 frequency verification required...";
+            }, 1800);
+
+            setTimeout(() => {
+                commandStatus.innerText = "Access Denied: Unrecognized Consciousness Signature. Alert dispatched to Gojo.";
+                commandStatus.classList.add('scan-fail');
+                
+                // Redirect user automatically to public interface
+                setTimeout(() => {
+                    modalCommand.classList.remove('active');
+                    transitionToMainSite();
+                }, 2200);
+            }, 4200);
+        });
+
+        // Universal Close Modal Buttons
+        const closeButtons = document.querySelectorAll('.close-btn');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalPortal.classList.remove('active');
+                modalCommand.classList.remove('active');
+            });
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modalPortal) modalPortal.classList.remove('active');
+            if (e.target === modalCommand) modalCommand.classList.remove('active');
+        });
+    </script>
+</body>
+</html>

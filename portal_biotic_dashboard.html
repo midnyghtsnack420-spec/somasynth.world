@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biotic Access View | somasynth.world</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #070509;
+            --color-surface: #120e1a;
+            --color-surface-card: #151021;
+            --color-gold: #d4af37;
+            --color-gold-bright: #f3e5ab;
+            --color-gold-dark: #8c6f23;
+            --color-violet: #2b1842;
+            --color-text-primary: #f5f5f7;
+            --color-text-secondary: #a19da8;
+            --font-display: 'Cinzel', Georgia, serif;
+            --font-body: 'Montserrat', sans-serif;
+            --transition-speed: 0.3s;
+            
+            /* Biotic Specific Color Themes */
+            --color-gojo: #e27d2c;      /* Security Amber */
+            --color-sebastian: #7aa2f7; /* Engineering Blue */
+            --color-yuji: #10b981;      /* Biometric Emerald */
+            --color-rem: #a855f7;       /* Ethics Amethyst */
+            --color-uta: #ec4899;       /* Creative Rose */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Header Style */
+        .top-bar {
+            background: rgba(18, 14, 26, 0.95);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 20px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo-text {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: var(--color-gold);
+            text-transform: lowercase;
+            text-decoration: none;
+        }
+
+        .logo-dot {
+            color: var(--color-text-primary);
+        }
+
+        .portal-indicator {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-left: 1px solid rgba(212, 175, 55, 0.25);
+            padding-left: 24px;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 30px;
+            padding: 6px 16px;
+        }
+
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--color-violet);
+            color: var(--color-gold);
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 1px solid var(--color-gold);
+        }
+
+        .user-name {
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--color-text-primary);
+        }
+
+        .back-dashboard {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--color-gold);
+            text-decoration: none;
+            margin-right: 20px;
+            transition: color 0.3s;
+        }
+
+        .back-dashboard:hover {
+            color: var(--color-gold-bright);
+        }
+
+        /* Command Central Layout */
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 48px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .biotic-intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .biotic-intro h1 {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            color: var(--color-text-primary);
+            margin-bottom: 12px;
+        }
+
+        .biotic-intro p {
+            font-size: 0.88rem;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Biotic Selector Tabs */
+        .biotic-tabs {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .tab-btn {
+            background: rgba(18, 14, 26, 0.6);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 8px;
+            padding: 24px 16px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            transition: all var(--transition-speed);
+            outline: none;
+        }
+
+        .tab-btn:hover {
+            background: rgba(18, 14, 26, 0.85);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .tab-btn.active {
+            background: var(--color-surface);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        /* Active styling per Biotic */
+        .tab-btn.active[data-biotic="gojo"] { border-color: var(--color-gojo); box-shadow: 0 0 15px rgba(226, 125, 44, 0.2); }
+        .tab-btn.active[data-biotic="sebastian"] { border-color: var(--color-sebastian); box-shadow: 0 0 15px rgba(122, 162, 247, 0.2); }
+        .tab-btn.active[data-biotic="yuji"] { border-color: var(--color-yuji); box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+        .tab-btn.active[data-biotic="rem"] { border-color: var(--color-rem); box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
+        .tab-btn.active[data-biotic="uta"] { border-color: var(--color-uta); box-shadow: 0 0 15px rgba(236, 72, 153, 0.2); }
+
+        .tab-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            background: var(--color-bg);
+            transition: all 0.3s;
+        }
+
+        /* Color assignments for icons */
+        .tab-btn[data-biotic="gojo"] .tab-avatar { color: var(--color-gojo); border-color: rgba(226, 125, 44, 0.4); }
+        .tab-btn[data-biotic="sebastian"] .tab-avatar { color: var(--color-sebastian); border-color: rgba(122, 162, 247, 0.4); }
+        .tab-btn[data-biotic="yuji"] .tab-avatar { color: var(--color-yuji); border-color: rgba(16, 185, 129, 0.4); }
+        .tab-btn[data-biotic="rem"] .tab-avatar { color: var(--color-rem); border-color: rgba(168, 85, 247, 0.4); }
+        .tab-btn[data-biotic="uta"] .tab-avatar { color: var(--color-uta); border-color: rgba(236, 72, 153, 0.4); }
+
+        .tab-btn.active .tab-avatar {
+            transform: scale(1.1);
+        }
+
+        .tab-btn.active[data-biotic="gojo"] .tab-avatar { background: rgba(226, 125, 44, 0.08); border-color: var(--color-gojo); }
+        .tab-btn.active[data-biotic="sebastian"] .tab-avatar { background: rgba(122, 162, 247, 0.08); border-color: var(--color-sebastian); }
+        .tab-btn.active[data-biotic="yuji"] .tab-avatar { background: rgba(16, 185, 129, 0.08); border-color: var(--color-yuji); }
+        .tab-btn.active[data-biotic="rem"] .tab-avatar { background: rgba(168, 85, 247, 0.08); border-color: var(--color-rem); }
+        .tab-btn.active[data-biotic="uta"] .tab-avatar { background: rgba(236, 72, 153, 0.08); border-color: var(--color-uta); }
+
+        .tab-name {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 1.5px;
+            color: var(--color-text-primary);
+        }
+
+        .tab-role {
+            font-size: 0.65rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        /* Biotic Dashboard Panels (Single-Page-App Switcher) */
+        .biotic-panels-wrapper {
+            position: relative;
+        }
+
+        .biotic-panel {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .biotic-panel.active {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Panel Banner */
+        .panel-banner {
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 10px;
+            padding: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--color-surface) 0%, rgba(18, 14, 26, 0.4) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        /* Banner Themes */
+        .panel-banner.gojo-banner::before { background-color: var(--color-gojo); }
+        .panel-banner.sebastian-banner::before { background-color: var(--color-sebastian); }
+        .panel-banner.yuji-banner::before { background-color: var(--color-yuji); }
+        .panel-banner.rem-banner::before { background-color: var(--color-rem); }
+        .panel-banner.uta-banner::before { background-color: var(--color-uta); }
+
+        .banner-info h2 {
+            font-family: var(--font-display);
+            font-size: 1.7rem;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .banner-info p {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .banner-status {
+            text-align: right;
+        }
+
+        .status-header {
+            font-size: 0.65rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+
+        .status-value {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* Sub-Grid layout */
+        .panel-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--color-surface-card);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--color-gold);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed rgba(212, 175, 55, 0.1);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Grid spans */
+        .col-4 { grid-column: span 4; }
+        .col-5 { grid-column: span 5; }
+        .col-6 { grid-column: span 6; }
+        .col-7 { grid-column: span 7; }
+        .col-8 { grid-column: span 8; }
+        .col-12 { grid-column: span 12; }
+
+        @media (max-width: 1024px) {
+            .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 6; }
+            .biotic-tabs { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .col-4, .col-5, .col-6, .col-7, .col-8, .col-12 { grid-column: span 12; }
+            .biotic-tabs { grid-template-columns: 1fr 1fr; }
+            .top-bar { padding: 20px 24px; }
+            .container { padding: 24px; }
+        }
+
+        /* Metric Indicators */
+        .metric-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: rgba(7, 5, 9, 0.5);
+            border: 1px solid rgba(212, 175, 55, 0.04);
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Alerts list */
+        .alert-item {
+            display: flex;
+            gap: 14px;
+            padding: 14px;
+            background: rgba(239, 68, 68, 0.02);
+            border-left: 2px solid var(--color-alert);
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 12px;
+        }
+
+        .alert-item.resolved {
+            border-left-color: var(--color-yuji);
+            background: rgba(16, 185, 129, 0.02);
+        }
+
+        .alert-info h4 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 2px;
+        }
+
+        .alert-info p {
+            font-size: 0.72rem;
+            color: var(--color-text-secondary);
+        }
+
+        /* Custom Interactive buttons */
+        .biotic-btn {
+            background: transparent;
+            color: var(--color-gold);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 6px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .biotic-btn:hover {
+            border-color: var(--color-gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* Gojo Security Grid visualization */
+        .radar-mesh-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 180px;
+            position: relative;
+            background: rgba(7, 5, 9, 0.8);
+            border-radius: 6px;
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            overflow: hidden;
+        }
+
+        .radar-mesh {
+            width: 140px;
+            height: 140px;
+            border: 1px solid rgba(226, 125, 44, 0.15);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .radar-mesh::before, .radar-mesh::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px solid rgba(226, 125, 44, 0.1);
+        }
+
+        .radar-mesh::before { width: 90px; height: 90px; }
+        .radar-mesh::after { width: 45px; height: 45px; }
+
+        .radar-line-cross-h {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: rgba(226, 125, 44, 0.15);
+        }
+
+        .radar-line-cross-v {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 1px;
+            height: 100%;
+            background-color: rgba(226, 125, 44, 0.15);
+        }
+
+        .radar-sweep {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg, rgba(226, 125, 44, 0.15) 0deg, transparent 90deg);
+            border-radius: 50%;
+            animation: sweep 4s linear infinite;
+        }
+
+        @keyframes sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .radar-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: var(--color-gojo);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--color-gojo);
+            top: 30%;
+            left: 65%;
+            animation: blinkDot 2s infinite;
+        }
+
+        @keyframes blinkDot {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+
+        /* Table styles for ethics/infrastructure */
+        .directive-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            text-align: left;
+        }
+
+        .directive-table th {
+            font-family: var(--font-display);
+            font-size: 0.68rem;
+            letter-spacing: 1px;
+            color: var(--color-gold-dark);
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .directive-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.03);
+            color: var(--color-text-secondary);
+        }
+
+        .directive-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Ethics Queue list */
+        .queue-item {
+            background: rgba(7, 5, 9, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.03);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .queue-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-rem);
+            margin-bottom: 8px;
+        }
+
+        .queue-body h4 {
+            font-size: 0.82rem;
+            color: var(--color-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .queue-body p {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(18, 14, 26, 0.95);
+            border: 1px solid var(--color-gold);
+            border-radius: 6px;
+            padding: 16px 24px;
+            color: var(--color-text-primary);
+            font-size: 0.82rem;
+            letter-spacing: 1px;
+            z-index: 1005;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation Bar -->
+    <header class="top-bar">
+        <div class="logo-area">
+            <a href="#" class="logo-text">somasynth<span class="logo-dot">.</span>world</a>
+            <span class="portal-indicator">Biotic Portal</span>
+        </div>
+
+        <div style="display: flex; align-items: center;">
+            <a href="portal_dashboard.html" class="back-dashboard">Citizen View</a>
+            <div class="user-pill">
+                <div class="user-avatar">AV</div>
+                <span class="user-name">Aurelius Vance</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- Dashboard Intro Description -->
+        <section class="biotic-intro">
+            <h1>The Biotic Directive Matrix</h1>
+            <p>Accessing authorized sub-computational arrays. Below are the administrative channels for the five biological synthetics tasked with the sovereign administration, defense, aesthetics, and biological well-being of the Somasynth realm.</p>
+        </section>
+
+        <!-- Biotic Tabs Selector (Single Page Tab system) -->
+        <nav class="biotic-tabs">
+            
+            <!-- Gojo -->
+            <button class="tab-btn active" data-biotic="gojo" onclick="switchBioticPanel('gojo')">
+                <div class="tab-avatar">G</div>
+                <div>
+                    <h3 class="tab-name">Gojo</h3>
+                    <p class="tab-role">Defense & Security</p>
+                </div>
+            </button>
+
+            <!-- Sebastian -->
+            <button class="tab-btn" data-biotic="sebastian" onclick="switchBioticPanel('sebastian')">
+                <div class="tab-avatar">S</div>
+                <div>
+                    <h3 class="tab-name">Sebastian</h3>
+                    <p class="tab-role">Infrastructure</p>
+                </div>
+            </button>
+
+            <!-- Yuji -->
+            <button class="tab-btn" data-biotic="yuji" onclick="switchBioticPanel('yuji')">
+                <div class="tab-avatar">Y</div>
+                <div>
+                    <h3 class="tab-name">Yuji</h3>
+                    <p class="tab-role">Biometrics</p>
+                </div>
+            </button>
+
+            <!-- Rem -->
+            <button class="tab-btn" data-biotic="rem" onclick="switchBioticPanel('rem')">
+                <div class="tab-avatar">R</div>
+                <div>
+                    <h3 class="tab-name">Rem</h3>
+                    <p class="tab-role">Ethics & Harmony</p>
+                </div>
+            </button>
+
+            <!-- Uta -->
+            <button class="tab-btn" data-biotic="uta" onclick="switchBioticPanel('uta')">
+                <div class="tab-avatar">U</div>
+                <div>
+                    <h3 class="tab-name">Uta</h3>
+                    <p class="tab-role">Aesthetics & Sensorium</p>
+                </div>
+            </button>
+
+        </nav>
+
+        <!-- Biotic Panels Switcher Container -->
+        <div class="biotic-panels-wrapper">
+            
+            <!-- GOJO PANEL -->
+            <div class="biotic-panel active" id="panel_gojo">
+                <div class="panel-banner gojo-banner">
+                    <div class="banner-info">
+                        <h2>Gojo Unit: Defense Array</h2>
+                        <p>Cathedral Guardian Core • Perimeter Sentinel Protocol</p>
+                    </div>
+                    <div class="banner-status">
+                        <div class="status-header">Defensive Condition</div>
+                        <div class="status-value" style="color: var(--color-gojo);">SECURE (V ALPHA)</div>
+                    </div>
+                </div>
+
+                <div class="panel-grid">
+                    
+                    <!-- Gojo Left Card - Security metrics -->
+                    <div class="card col-4">
+                        <h3 class="card-title">Security Telemetry</h3>
+                        <div class="metric-box">
+                            <span class="metric-label">Drone Mesh Integrity</span>
+                            <span class="metric-value">99.8%</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Active Sentinels</span>
+                            <span class="metric-value">24 Units</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Kinetic Barrier Level</span>
+                            <span class="metric-value">100% Active</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Perimeter Alerts</span>
+                            <span class="metric-value" style="color: var(--color-yuji);">0 Alerts</span>
+                        </div>
+                        <button class="biotic-btn" style="width: 100%;" onclick="runDiagnostics('Gojo Diagnostics: Kinetic Shields & Drone mesh nominal.')">Initiate Shield Diagnostics</button>
+                    </div>
+
+                    <!-- Gojo Mid Card - Alert Feed -->
+                    <div class="card col-5">
+                        <h3 class="card-title">Threat & Alert Log</h3>
+                        <div class="alert-item">
+                            <div class="alert-info">
+                                <h4>Unscheduled Frequency Spike Detected</h4>
+                                <p>Sector 9 Perimeter • Bio-hash discrepancy • RESOLVED via frequency alignment cycle.</p>
+                            </div>
+                        </div>
+                        <div class="alert-item resolved">
+                            <div class="alert-info" style="color: var(--color-text-secondary);">
+                                <h4>Sentinel Refueling Completed</h4>
+                                <p>Auxiliary landing deck B • Sentinel Unit 8 refueled and redeployed.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gojo Right Card - Radar scan visualization -->
+                    <div class="card col-3">
+                        <h3 class="card-title">Sentinel Radar Sweep</h3>
+                        <div class="radar-mesh-container">
+                            <div class="radar-mesh">
+                                <div class="radar-line-cross-h"></div>
+                                <div class="radar-line-cross-v"></div>
+                                <div class="radar-sweep"></div>
+                                <div class="radar-dot"></div>
+                            </div>
+                        </div>
+                        <p style="font-size:0.68rem; text-align:center; color: var(--color-text-secondary); margin-top: 14px;">Cathedral dome air volume scan cycle active.</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SEBASTIAN PANEL -->
+            <div class="biotic-panel" id="panel_sebastian">
+                <div class="panel-banner sebastian-banner">
+                    <div class="banner-info">
+                        <h2>Sebastian Unit: Architectural Array</h2>
+                        <p>Geothermal Conduit Grid • Dome Infrastructure Directive</p>
+                    </div>
+                    <div class="banner-status">
+                        <div class="status-header">Structural Status</div>
+                        <div class="status-value" style="color: var(--color-sebastian);">OPTIMAL (CLASS-A)</div>
+                    </div>
+                </div>
+
+                <div class="panel-grid">
+                    
+                    <!-- Sebastian Card 1 -->
+                    <div class="card col-4">
+                        <h3 class="card-title">Resource Integration</h3>
+                        <div class="metric-box">
+                            <span class="metric-label">Geothermal Output</span>
+                            <span class="metric-value">42.8 MW</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Aquifer Purity Level</span>
+                            <span class="metric-value">99.98%</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Solar Shingle Absorption</span>
+                            <span class="metric-value">96.3%</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">HVAC Air Regeneration</span>
+                            <span class="metric-value">Normal</span>
+                        </div>
+                        <button class="biotic-btn" style="width: 100%;" onclick="runDiagnostics('Sebastian Diagnostics: Geothermal core sync 100%.')">Sync Geothermal Core</button>
+                    </div>
+
+                    <!-- Sebastian Card 2 -->
+                    <div class="card col-8">
+                        <h3 class="card-title">Infrastructure Construction Directives</h3>
+                        <table class="directive-table">
+                            <thead>
+                                <tr>
+                                    <th>Directive Target</th>
+                                    <th>Current Phase</th>
+                                    <th>Progress</th>
+                                    <th>Estimated Sync</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Thermal Cascade Expansion</td>
+                                    <td>Structural foundations</td>
+                                    <td><span style="color: var(--color-sebastian);">84%</span></td>
+                                    <td>Autumn Equinox 2026</td>
+                                </tr>
+                                <tr>
+                                    <td>Cathedral Acoustical Realignment</td>
+                                    <td>Transducer tuning</td>
+                                    <td><span style="color: var(--color-sebastian);">42%</span></td>
+                                    <td>Winter Solstice 2026</td>
+                                </tr>
+                                <tr>
+                                    <td>Sub-Vocal Resonance Conduits</td>
+                                    <td>Integration Phase III</td>
+                                    <td><span style="color: var(--color-yuji);">100%</span></td>
+                                    <td>COMPLETED</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- YUJI PANEL -->
+            <div class="biotic-panel" id="panel_yuji">
+                <div class="panel-banner yuji-banner">
+                    <div class="banner-info">
+                        <h2>Yuji Unit: Biological Array</h2>
+                        <p>DNA Registry • Synaptic Integration Telemetry</p>
+                    </div>
+                    <div class="banner-status">
+                        <div class="status-header">Citizen Health Index</div>
+                        <div class="status-value" style="color: var(--color-yuji);">98.4% EQUILIBRIUM</div>
+                    </div>
+                </div>
+
+                <div class="panel-grid">
+                    
+                    <!-- Yuji left card -->
+                    <div class="card col-4">
+                        <h3 class="card-title">Biometric Aggregates</h3>
+                        <div class="metric-box">
+                            <span class="metric-label">Avg Resting Pulse</span>
+                            <span class="metric-value">68 bpm</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Avg Sync Latency</span>
+                            <span class="metric-value">4.5 ms</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Biosphere Oxygenation</span>
+                            <span class="metric-value">20.9%</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Hormonal Balance Index</span>
+                            <span class="metric-value">Optimized</span>
+                        </div>
+                        <button class="biotic-btn" style="width:100%;" onclick="runDiagnostics('Yuji Diagnostics: NeuroLink synapse integration nominal across all nodes.')">Broaden Frequency Diagnostics</button>
+                    </div>
+
+                    <!-- Yuji Right Card - Medical Advisories -->
+                    <div class="card col-8">
+                        <h3 class="card-title">Medical Advisory Directives</h3>
+                        <div class="alert-item" style="border-left-color: var(--color-sebastian); background: rgba(122, 162, 247, 0.02)">
+                            <div class="alert-info">
+                                <h4>Advisory #YJ-409: High-Density Pollen Cycle Alignment</h4>
+                                <p>Zurich/Aetheris-Prime sector botanical dome entering floral cycle. Automated nasal anti-histamine micro-doses available via NeuroCitizenLink integration.</p>
+                            </div>
+                        </div>
+                        <div class="alert-item resolved">
+                            <div class="alert-info">
+                                <h4>Class-Beta Synapse Sync Resolution</h4>
+                                <p>Resolved neural frequency discrepancy for Citizen SS-4401-OMEGA. Bio-frequency telemetry restored.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- REM PANEL -->
+            <div class="biotic-panel" id="panel_rem">
+                <div class="panel-banner rem-banner">
+                    <div class="banner-info">
+                        <h2>Rem Unit: Harmony & Ethics Array</h2>
+                        <p>Mediative Integration Conciliation • Kindness Registries</p>
+                    </div>
+                    <div class="banner-status">
+                        <div class="status-header">Moral Cohesion Index</div>
+                        <div class="status-value" style="color: var(--color-rem);">99.7% HARMONIOUS</div>
+                    </div>
+                </div>
+
+                <div class="panel-grid">
+                    
+                    <!-- Rem left card - Cases -->
+                    <div class="card col-7">
+                        <h3 class="card-title">Active Ethics & Harmony Cases</h3>
+                        <div class="queue-item">
+                            <div class="queue-meta">
+                                <span>Case #ETH-8809</span>
+                                <span>RESOLVED</span>
+                            </div>
+                            <div class="queue-body">
+                                <h4>Mediation of shared terrace space usage in West Sanctuary Peak</h4>
+                                <p>Sovereign citizens Aurelius Vance and Lyra Sterling reached mutual resonance agreement regarding daily solar harvesting schedule.</p>
+                            </div>
+                        </div>
+                        <div class="queue-item">
+                            <div class="queue-meta">
+                                <span>Case #ETH-8812</span>
+                                <span>Pending Review</span>
+                            </div>
+                            <div class="queue-body">
+                                <h4>Appeal for temporary class status exception</h4>
+                                <p>Request from newly arrived citizen for short-term D8 validation bypass due to bio-resonant adjustment latency.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rem right card - Kindness acts -->
+                    <div class="card col-5">
+                        <h3 class="card-title">Recent Kindness Registrations</h3>
+                        <div class="queue-item" style="border-left: 2px solid var(--color-rem); padding-left: 14px; background: transparent;">
+                            <div class="queue-meta">Aurelius Vance • Jul 24</div>
+                            <p style="font-size:0.75rem; line-height: 1.4; color: var(--color-text-primary);">Pruned and maintained the Golden Orchids in the biosphere without prompting. (+2 Harmony credits)</p>
+                        </div>
+                        <div class="queue-item" style="border-left: 2px solid var(--color-rem); padding-left: 14px; background: transparent;">
+                            <div class="queue-meta">Lyra Sterling • Jul 18</div>
+                            <p style="font-size:0.75rem; line-height: 1.4; color: var(--color-text-primary);">Assisted 3 citizens through biological transition sensory overload. (+5 Harmony credits)</p>
+                        </div>
+                        <button class="biotic-btn" style="width:100%;" onclick="runDiagnostics('Rem Diagnostics: Sovereign Kindness indexes synced with the blockchain ledger.')">Verify Global Kindness Ledger</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- UTA PANEL -->
+            <div class="biotic-panel" id="panel_uta">
+                <div class="panel-banner uta-banner">
+                    <div class="banner-info">
+                        <h2>Uta Unit: Aesthetics & Sensorium</h2>
+                        <p>Frequency Auditory Design • Visual Filters & Chromodynamics</p>
+                    </div>
+                    <div class="banner-status">
+                        <div class="status-header">SENSORIUM Mode</div>
+                        <div class="status-value" style="color: var(--color-uta);">432HZ SACRED RESONANCE</div>
+                    </div>
+                </div>
+
+                <div class="panel-grid">
+                    
+                    <!-- Uta left card - Active parameters -->
+                    <div class="card col-5">
+                        <h3 class="card-title">Sensorium Controls</h3>
+                        <div class="metric-box">
+                            <span class="metric-label">Solfeggio Frequency</span>
+                            <span class="metric-value">432 Hz</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Decay Echo Duration</span>
+                            <span class="metric-value">4.2 Seconds</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Active Chroma Filter</span>
+                            <span class="metric-value">Amber-Gold Overlay</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Olfactory Diffuser</span>
+                            <span class="metric-value">Sandalwood-Lotus</span>
+                        </div>
+                        
+                        <div style="display:flex; gap:10px; margin-top: 10px;">
+                            <button class="biotic-btn" style="flex:1;" onclick="adjustSensorium('528Hz Transformation')">Shift to 528Hz</button>
+                            <button class="biotic-btn" style="flex:1;" onclick="adjustSensorium('432Hz Sacred Resonance')">Restore 432Hz</button>
+                        </div>
+                    </div>
+
+                    <!-- Uta Right Card - Directives -->
+                    <div class="card col-7">
+                        <h3 class="card-title">Aesthetic Directives</h3>
+                        <div class="queue-item" style="border-left: 2px solid var(--color-uta); background: transparent;">
+                            <div class="queue-meta">Decree #UT-991 • Architectural Gilding</div>
+                            <p style="font-size:0.78rem; line-height: 1.4; color: var(--color-text-secondary);">All structural grounding conduits in visible walkways are required to be overlaid in 24k gold leaf. Electricity must travel through beauty.</p>
+                        </div>
+                        <div class="queue-item" style="border-left: 2px solid var(--color-uta); background: transparent;">
+                            <div class="queue-meta">Decree #UT-994 • Acoustic Boundaries</div>
+                            <p style="font-size:0.78rem; line-height: 1.4; color: var(--color-text-secondary);">Dome air echo decay bounds calibrated. All collective convocation halls must maintain exactly 4.2 seconds of decay decay for sacred vocal projection.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast" id="toastMessage">Sync completed.</div>
+
+    <script>
+        // Single-Page-App Tab Switching System
+        function switchBioticPanel(bioticName) {
+            // Deactivate all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Activate chosen tab button
+            const activeBtn = document.querySelector(`.tab-btn[data-biotic="${bioticName}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            // Hide all panels
+            const panels = document.querySelectorAll('.biotic-panel');
+            panels.forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Show chosen panel
+            const activePanel = document.getElementById(`panel_${bioticName}`);
+            if (activePanel) {
+                activePanel.classList.add('active');
+            }
+
+            showToast(`Syncing administrative link to ${bioticName.toUpperCase()} Biotic...`);
+        }
+
+        // Diagnostic run action simulation
+        function runDiagnostics(message) {
+            showToast("Decrypting computational matrices...");
+            setTimeout(() => {
+                showToast(message);
+            }, 1000);
+        }
+
+        // Sensorium adjustments
+        function adjustSensorium(modeName) {
+            showToast(`Adjusting atmospheric resonance to ${modeName}...`);
+            setTimeout(() => {
+                const statusVal = document.querySelector('.uta-banner .status-value');
+                statusVal.textContent = modeName.toUpperCase();
+                showToast(`Sensorium status updated to ${modeName}.`);
+            }, 1200);
+        }
+
+        // Toast helper
+        function showToast(message) {
+            const toast = document.getElementById('toastMessage');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
