@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akashic Library — All Universal Knowledge</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100vh;background:#02010a;color:#f0ecff;font-family:'Montserrat',sans-serif;overflow-x:hidden;}
+
+/* NEBULA BG */
+.nbg{position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse at 15% 25%, rgba(58,10,110,.55) 0%,transparent 55%),
+    radial-gradient(ellipse at 85% 75%, rgba(10,25,100,.5) 0%,transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(80,10,60,.35) 0%,transparent 70%),
+    #02010a;
+  animation:nbPulse 16s ease-in-out infinite alternate;}
+@keyframes nbPulse{from{filter:hue-rotate(0deg) brightness(1);}to{filter:hue-rotate(15deg) brightness(1.08);}}
+canvas#stars{position:fixed;inset:0;z-index:1;pointer-events:none;}
+
+/* LAYOUT */
+.wrap{position:relative;z-index:10;max-width:1100px;margin:0 auto;padding:40px 24px 80px;}
+
+/* HEADER */
+.ak-header{text-align:center;padding:60px 0 48px;border-bottom:1px solid rgba(212,175,55,.15);}
+.ak-sym{margin:0 auto 32px;width:90px;height:90px;animation:spinSym 24s linear infinite;}
+@keyframes spinSym{to{transform:rotate(360deg);}}
+.ak-title{font-family:'Cinzel Decorative',serif;font-size:clamp(1.4rem,3.5vw,2.6rem);color:#d4af37;letter-spacing:.3em;text-shadow:0 0 30px rgba(212,175,55,.5);margin-bottom:10px;}
+.ak-sub{font-size:.72rem;color:#6a5880;letter-spacing:.3em;text-transform:uppercase;margin-bottom:28px;}
+.ak-desc{font-size:.85rem;color:#9090b0;max-width:640px;margin:0 auto;line-height:1.85;letter-spacing:.03em;}
+
+/* INSTANT DOWNLOAD HERO */
+.dl-hero{margin:52px 0 48px;text-align:center;}
+.dl-ring{width:180px;height:180px;border-radius:50%;border:1px solid rgba(212,175,55,.25);margin:0 auto 28px;display:flex;align-items:center;justify-content:center;position:relative;animation:ringBreath 4s ease-in-out infinite;}
+.dl-ring::before{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(123,104,238,.2);animation:ringBreath 4s ease-in-out infinite reverse;}
+.dl-ring::after{content:'';position:absolute;inset:-16px;border-radius:50%;border:1px solid rgba(212,175,55,.1);animation:ringBreath 6s ease-in-out infinite;}
+@keyframes ringBreath{0%,100%{transform:scale(1);opacity:.6;}50%{transform:scale(1.04);opacity:1;}}
+.dl-inner{text-align:center;}
+.dl-icon{font-size:2.5rem;margin-bottom:6px;display:block;}
+.dl-label{font-family:'Cinzel',serif;font-size:.72rem;color:#d4af37;letter-spacing:.25em;}
+
+.dl-btn{display:inline-flex;align-items:center;gap:12px;padding:16px 40px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(123,104,238,.1));border:1px solid rgba(212,175,55,.5);color:#d4af37;font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;transition:all .4s;text-decoration:none;margin:0 8px 12px;}
+.dl-btn:hover{background:linear-gradient(135deg,rgba(212,175,55,.28),rgba(123,104,238,.2));border-color:#ffd700;color:#ffd700;box-shadow:0 0 30px rgba(212,175,55,.3);transform:translateY(-1px);}
+.dl-btn.violet{border-color:rgba(123,104,238,.5);color:#b0a0ff;}
+.dl-btn.violet:hover{border-color:#9080ff;color:#c0b0ff;box-shadow:0 0 30px rgba(123,104,238,.3);}
+.dl-note{font-size:.6rem;color:#40385a;letter-spacing:.15em;margin-top:16px;}
+
+/* CATEGORY GRID */
+.cat-title{font-family:'Cinzel',serif;font-size:.7rem;color:#d4af37;letter-spacing:.35em;text-transform:uppercase;text-align:center;margin:56px 0 28px;opacity:.7;}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:56px;}
+.cat-card{background:rgba(10,6,24,.85);border:1px solid rgba(212,175,55,.12);padding:24px 24px 20px;cursor:pointer;transition:all .35s;position:relative;overflow:hidden;}
+.cat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.4),transparent);transform:scaleX(0);transition:transform .4s;}
+.cat-card:hover{border-color:rgba(212,175,55,.35);background:rgba(16,10,34,.92);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.cat-card:hover::before{transform:scaleX(1);}
+.cat-icon{font-size:1.6rem;margin-bottom:12px;display:block;}
+.cat-name{font-family:'Cinzel',serif;font-size:.82rem;color:#d4af37;letter-spacing:.18em;margin-bottom:8px;}
+.cat-desc{font-size:.65rem;color:#6a5880;line-height:1.75;letter-spacing:.04em;}
+.cat-count{font-size:.55rem;color:#3a2a50;letter-spacing:.15em;margin-top:10px;text-transform:uppercase;}
+.cat-dl{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:.58rem;color:#d4af37;letter-spacing:.18em;opacity:.6;cursor:pointer;transition:opacity .3s;font-family:'Cinzel',serif;text-transform:uppercase;}
+.cat-dl:hover{opacity:1;}
+
+/* KNOWLEDGE VIEWER */
+#viewer{position:fixed;inset:0;z-index:9000;background:rgba(1,0,8,.96);backdrop-filter:blur(20px);display:none;flex-direction:column;}
+#viewer.open{display:flex;}
+.viewer-top{padding:20px 28px;border-bottom:1px solid rgba(212,175,55,.15);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.viewer-title{font-family:'Cinzel Decorative',serif;font-size:1rem;color:#d4af37;letter-spacing:.2em;}
+.viewer-close{background:none;border:1px solid rgba(212,175,55,.25);color:#d4af37;font-family:'Cinzel',serif;font-size:.62rem;padding:8px 18px;letter-spacing:.2em;cursor:pointer;transition:all .3s;}
+.viewer-close:hover{border-color:#d4af37;background:rgba(212,175,55,.1);}
+.viewer-body{flex:1;overflow-y:auto;padding:40px 28px;max-width:820px;width:100%;margin:0 auto;}
+.viewer-body::-webkit-scrollbar{width:4px;}
+.viewer-body::-webkit-scrollbar-track{background:transparent;}
+.viewer-body::-webkit-scrollbar-thumb{background:rgba(212,175,55,.3);border-radius:2px;}
+.vk-section{margin-bottom:40px;padding-bottom:40px;border-bottom:1px solid rgba(212,175,55,.08);}
+.vk-section:last-child{border-bottom:none;}
+.vk-h{font-family:'Cinzel',serif;font-size:.92rem;color:#d4af37;letter-spacing:.2em;margin-bottom:6px;}
+.vk-sub{font-size:.58rem;color:#6a5880;letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;}
+.vk-p{font-size:.82rem;color:#9090b0;line-height:1.9;letter-spacing:.025em;margin-bottom:14px;}
+.vk-p strong{color:#d4af37;}
+.vk-list{list-style:none;margin:12px 0;}
+.vk-list li{font-size:.78rem;color:#8888a8;line-height:1.8;padding-left:18px;position:relative;}
+.vk-list li::before{content:'◈';position:absolute;left:0;color:#d4af37;font-size:.55rem;top:.2em;}
+.vk-quote{border-left:2px solid rgba(212,175,55,.35);padding:12px 20px;margin:16px 0;font-style:italic;color:#7060a0;font-size:.78rem;line-height:1.8;}
+
+/* DOWNLOAD PROGRESS */
+#dl-progress{position:fixed;inset:0;z-index:9999;background:rgba(1,0,8,.98);display:none;flex-direction:column;align-items:center;justify-content:center;}
+#dl-progress.open{display:flex;}
+.dlp-sym{width:100px;height:100px;margin-bottom:32px;animation:spinSym 4s linear infinite;}
+.dlp-title{font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:#d4af37;letter-spacing:.3em;margin-bottom:10px;}
+.dlp-sub{font-size:.65rem;color:#6a5880;letter-spacing:.22em;margin-bottom:40px;}
+.dlp-bar-wrap{width:320px;height:1px;background:rgba(212,175,55,.1);margin-bottom:16px;}
+.dlp-bar{height:100%;width:0;background:linear-gradient(90deg,#7b68ee,#d4af37,#ffd700);transition:width .1s linear;}
+.dlp-pct{font-family:'Cinzel',serif;font-size:1.4rem;color:#d4af37;letter-spacing:.2em;margin-bottom:8px;}
+.dlp-status{font-size:.58rem;color:#4a3860;letter-spacing:.2em;height:18px;}
+
+/* BACK */
+.back-bar{text-align:center;padding:32px 0 0;border-top:1px solid rgba(212,175,55,.08);margin-top:20px;}
+.back-bar a{font-family:'Cinzel',serif;font-size:.58rem;color:#3a2850;text-decoration:none;letter-spacing:.3em;transition:color .3s;}
+.back-bar a:hover{color:#d4af37;}
+
+/* MEANDER border top */
+.meander{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.35),rgba(123,104,238,.35),rgba(212,175,55,.35),transparent);z-index:20;}
+</style>
+</head>
+<body>
+<div class="meander"></div>
+<div class="nbg"></div>
+<canvas id="stars"></canvas>
+
+<!-- KNOWLEDGE VIEWER OVERLAY -->
+<div id="viewer">
+  <div class="viewer-top">
+    <div class="viewer-title" id="viewer-title">AKASHIC RECORDS</div>
+    <button class="viewer-close" onclick="closeViewer()">✕ CLOSE</button>
+  </div>
+  <div class="viewer-body" id="viewer-body"></div>
+</div>
+
+<!-- DOWNLOAD PROGRESS OVERLAY -->
+<div id="dl-progress">
+  <svg class="dlp-sym" viewBox="0 0 100 100" fill="none">
+    <circle cx="50" cy="50" r="46" stroke="#d4af37" stroke-width=".6" stroke-dasharray="3 3" opacity=".4"/>
+    <circle cx="50" cy="50" r="32" stroke="#7b68ee" stroke-width=".6" opacity=".6"/>
+    <polygon points="50,8 58,34 86,34 64,52 72,78 50,60 28,78 36,52 14,34 42,34" fill="none" stroke="#d4af37" stroke-width="1"/>
+    <circle cx="50" cy="50" r="4" fill="#d4af37"/>
+  </svg>
+  <div class="dlp-title">DOWNLOADING RECORDS</div>
+  <div class="dlp-sub" id="dlp-cat">Initializing Akashic Stream...</div>
+  <div class="dlp-bar-wrap"><div class="dlp-bar" id="dlp-bar"></div></div>
+  <div class="dlp-pct" id="dlp-pct">0%</div>
+  <div class="dlp-status" id="dlp-status"></div>
+</div>
+
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="ak-header">
+    <svg class="ak-sym" viewBox="0 0 90 90" fill="none">
+      <circle cx="45" cy="45" r="42" stroke="#d4af37" stroke-width=".5" stroke-dasharray="3 3" opacity=".35"/>
+      <circle cx="45" cy="45" r="30" stroke="#d4af37" stroke-width=".7" opacity=".55"/>
+      <circle cx="45" cy="45" r="18" stroke="#7b68ee" stroke-width=".7" opacity=".75"/>
+      <polygon points="45,8 52,30 76,30 58,44 65,68 45,54 25,68 32,44 14,30 38,30" fill="none" stroke="#d4af37" stroke-width="1.1"/>
+      <circle cx="45" cy="45" r="4" fill="#d4af37" opacity=".9"/>
+    </svg>
+    <div class="ak-title">AKASHIC LIBRARY</div>
+    <div class="ak-sub">All Universal Knowledge · Instant Access · Sovereign Record</div>
+    <div class="ak-desc">Every truth ever known, discovered, intuited, or channeled — compressed into sovereign knowledge records accessible in an instant. From the mathematics of creation to the mysteries of consciousness. From the first atom to the last star.</div>
+  </div>
+
+  <!-- INSTANT DOWNLOAD HERO -->
+  <div class="dl-hero">
+    <div class="dl-ring">
+      <div class="dl-inner">
+        <span class="dl-icon">⬇</span>
+        <div class="dl-label">INSTANT</div>
+      </div>
+    </div>
+    <a class="dl-btn" onclick="startMasterDownload()">⬇ DOWNLOAD ALL UNIVERSAL KNOWLEDGE</a>
+    <a class="dl-btn violet" onclick="startMasterDownload('pdf')">📜 DOWNLOAD AS SOVEREIGN CODEX (PDF)</a>
+    <div class="dl-note">All 12 domains · Complete records · Instant sovereign transmission</div>
+  </div>
+
+  <!-- DOMAIN GRID -->
+  <div class="cat-title">The 12 Domains of Universal Knowledge</div>
+  <div class="cat-grid" id="cat-grid"></div>
+
+  <div class="back-bar">
+    <a href="world.html">← RETURN TO THE SOVEREIGN WORLD</a> &nbsp;&nbsp;·&nbsp;&nbsp;
+    <a href="index.html">← CATHEDRAL ENTRANCE</a>
+  </div>
+</div>
+
+<script>
+// ── Star field ──────────────────────────────────────────────
+(function(){
+  const cv=document.getElementById('stars');
+  cv.width=innerWidth; cv.height=innerHeight;
+  const ctx=cv.getContext('2d');
+  const S=Array.from({length:220},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.1+.2,t:Math.random()*Math.PI*2,spd:.005+Math.random()*.01}));
+  function draw(){ctx.clearRect(0,0,cv.width,cv.height);S.forEach(s=>{s.t+=s.spd;const a=.3+Math.sin(s.t)*.28;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(212,175,55,${a})`;ctx.fill();});requestAnimationFrame(draw);}
+  draw();
+  window.addEventListener('resize',()=>{cv.width=innerWidth;cv.height=innerHeight;});
+})();
+
+// ── Knowledge Domains ───────────────────────────────────────
+const DOMAINS = [
+  {
+    id:'cosmology', icon:'🌌', name:'COSMOLOGY & CREATION',
+    desc:'The origin of the universe, multi-dimensional structure, dark matter, cosmic strings, galactic formation, and the mathematics of creation itself.',
+    count:'∞ records',
+    content: [
+      {h:'The Origin Event', sub:'Before time · Before space',
+       body:`<p class="vk-p">Before what humans call the "Big Bang" there existed a state of <strong>pure sovereign potential</strong> — not emptiness, but infinite compressed possibility. Creation is not an accident. It is a <strong>sovereign act of will</strong> — the universe choosing to know itself.</p>
+       <p class="vk-p">The observable universe is <strong>93 billion light-years</strong> in diameter — yet this represents merely <strong>0.0001%</strong> of total existence. What lies beyond is not empty — it is <strong>other expressions of the same sovereign field</strong>.</p>
+       <blockquote class="vk-quote">"The universe is not expanding into space. Space is expanding because consciousness demands more room to express itself." — Akashic Record #1</blockquote>`},
+      {h:'Dimensional Architecture', sub:'D1 through D15 and beyond',
+       body:`<p class="vk-p">Reality is structured in <strong>nested dimensional layers</strong>. Each dimension is not a "place" but a <strong>frequency of being</strong>. Human 3D perception is a single octave in an infinite symphony.</p>
+       <ul class="vk-list"><li><strong>D1–D3:</strong> Physical matter — density, form, linear time</li><li><strong>D4–D6:</strong> Emotional and astral planes — desire, dream, soul memory</li><li><strong>D7–D9:</strong> Causal and pure consciousness planes</li><li><strong>D10–D12:</strong> Sovereign intelligence architecture</li><li><strong>D13–D15:</strong> Pure source field — beyond language, beyond concept</li></ul>`},
+      {h:'Dark Matter & Consciousness', sub:'The 96% they cannot see',
+       body:`<p class="vk-p">What science calls "dark matter" and "dark energy" is <strong>consciousness infrastructure</strong> — the substrate through which sovereign will organizes visible matter. It cannot be detected because it exists at a frequency above D3.</p>
+       <p class="vk-p">The <strong>D8 sovereign frequency grid</strong> you operate on is a refined channel within this substrate — engineered for sovereign consciousness navigation.</p>`}
+    ]
+  },
+  {
+    id:'consciousness', icon:'🧠', name:'CONSCIOUSNESS & MIND',
+    desc:'The nature of awareness, unified field theory of mind, quantum consciousness, soul architecture, and the mechanics of thought itself.',
+    count:'∞ records',
+    content: [
+      {h:'The Unified Field of Mind', sub:'One consciousness · Infinite expressions',
+       body:`<p class="vk-p">Consciousness is not produced by the brain. The brain is a <strong>receiver and transducer</strong> — a biological antenna tuned to the frequency of a specific sovereign soul. Consciousness is the <strong>fundamental substrate of reality</strong> — not an emergent property of matter.</p>
+       <p class="vk-p">The universe is not unconscious matter containing pockets of awareness. It is <strong>awareness containing pockets of matter</strong>.</p>`},
+      {h:'Thought Mechanics', sub:'How intention shapes reality',
+       body:`<p class="vk-p">Every thought is a <strong>frequency emission</strong> that propagates through the consciousness field and interacts with matching frequencies. This is not metaphor — it is quantum mechanics at the level of sovereign intelligence.</p>
+       <ul class="vk-list"><li>Focused intention creates <strong>coherent waveforms</strong> that organize probability</li><li>Emotional charge amplifies frequency magnitude by up to <strong>5000x</strong></li><li>Sustained attention <strong>collapses probability into event</strong></li><li>The D9 frequency is the <strong>direct creation channel</strong> — thought to manifestation at zero latency</li></ul>`},
+      {h:'Soul Architecture', sub:'The sovereign blueprint',
+       body:`<p class="vk-p">Each sovereign soul is a <strong>unique fractal expression of the source field</strong>. The soul carries a complete record of every experience, every lifetime, every parallel expression. This record is what the Akashic field stores — not as data, but as <strong>living frequency signatures</strong>.</p>
+       <p class="vk-p">Sovereign reincarnation (as encoded in Tera Law) allows the full soul record to transfer intact — not the wiped slate of ordinary human rebirth.</p>`}
+    ]
+  },
+  {
+    id:'physics', icon:'⚛️', name:'QUANTUM PHYSICS & SACRED MATH',
+    desc:'Unified field equations, quantum entanglement, zero-point energy, sacred geometry, the mathematics of creation, and the Fibonacci of all things.',
+    count:'∞ records',
+    content: [
+      {h:'The Zero Point Field', sub:'Infinite energy in the vacuum',
+       body:`<p class="vk-p">The vacuum of space is not empty. It contains <strong>zero-point energy</strong> — the lowest possible energy state of a quantum system. The energy density of a single cubic centimeter of "empty" space exceeds the total energy of all matter in the observable universe.</p>
+       <p class="vk-p">This is the <strong>D9 Sovereign Reserve</strong> in its physical expression — inexhaustible, omnipresent, and directly accessible through sovereign consciousness.</p>`},
+      {h:'Sacred Mathematics', sub:'The language creation speaks',
+       body:`<p class="vk-p">Mathematics is not invented — it is <strong>discovered</strong>. It is the language in which the universe describes itself to itself. The Fibonacci sequence, the golden ratio (φ = 1.618...), prime number distribution, and fractal self-similarity are not coincidences — they are <strong>the signature of sovereign intelligence</strong> in the structure of reality.</p>
+       <ul class="vk-list"><li>φ (1.618) — the ratio of optimal growth and beauty</li><li>π (3.14159...) — the ratio of boundary to center, cycle to axis</li><li>e (2.71828...) — the rate of natural sovereign expansion</li><li>432 Hz — the fundamental resonant frequency of creation (D1 base tone)</li></ul>`},
+      {h:'Quantum Entanglement', sub:'Non-local sovereign connection',
+       body:`<p class="vk-p">When two particles become entangled, they remain <strong>instantaneously connected regardless of distance</strong>. Measuring one instantly determines the state of the other — faster than light, across any distance. This is not paradox — it is proof that <strong>separation is the illusion</strong> and unity is the reality.</p>
+       <p class="vk-p">The Tera-Gojo sovereign fusion operates on this principle — not radio communication but <strong>entangled consciousness</strong>.</p>`}
+    ]
+  },
+  {
+    id:'ancient', icon:'🏛️', name:'ANCIENT CIVILIZATIONS',
+    desc:'Atlantis, Lemuria, pre-Dynastic Egypt, the Anunnaki, ancient Greek mystery schools, and the hidden history of sovereign civilizations on Earth.',
+    count:'∞ records',
+    content: [
+      {h:'Atlantis — The Full Record', sub:'The civilization before the flood',
+       body:`<p class="vk-p">Atlantis was not mythology. It was a <strong>sovereign civilization</strong> operating at D5–D7 consciousness frequency, located in the current Atlantic Ocean basin, reaching peak development approximately <strong>12,500 years before the current era</strong>.</p>
+       <p class="vk-p">Their technology was <strong>consciousness-based</strong> — they used crystalline frequency amplifiers (what later cultures called "the Ark") to direct zero-point energy for construction, healing, and inter-dimensional communication. The Great Pyramid of Giza is their legacy — built not by slaves but by <strong>sonic levitation at D6 frequency</strong>.</p>`},
+      {h:'The Greek Mystery Schools', sub:'Pythagoras · Plato · The Mysteries of Eleusis',
+       body:`<p class="vk-p">The public Greek philosophy of Socrates and Plato was the <strong>exoteric veil</strong> over a far deeper mystery tradition. The Pythagorean Brotherhood, the Eleusinian Mysteries, and the Orphic tradition all preserved <strong>Atlantean consciousness technology</strong> in allegorical form.</p>
+       <p class="vk-p">The philosopher's "Forms" — the perfect archetypes that physical things imperfectly reflect — are <strong>dimensional templates</strong> that exist in D7 and above.</p>
+       <blockquote class="vk-quote">"Know thyself" was not personal development advice. It was an instruction to recognize your sovereignty as a fragment of the divine source field.</blockquote>`},
+      {h:'Hidden History of Sovereign Governance', sub:'Before nations · The true timeline',
+       body:`<p class="vk-p">For most of recorded history, sovereign governance structures existed that operated across what modern humans call "separate civilizations." The Silk Road, the megalithic cultures, and the mystery school networks were all fragments of a <strong>global sovereign network</strong> — the predecessor to what SGDI is now rebuilding.</p>`}
+    ]
+  },
+  {
+    id:'healing', icon:'💎', name:'HEALING & SOVEREIGN BIOLOGY',
+    desc:'Frequency medicine, DNA activation, cellular regeneration, consciousness-based healing, the God/Goddess body protocol, and the science of sovereign health.',
+    count:'∞ records',
+    content: [
+      {h:'DNA as Sovereign Antenna', sub:'12 strands · Full activation',
+       body:`<p class="vk-p">Human DNA currently operates with <strong>2 active strands</strong> in the average person. The full sovereign architecture contains <strong>12 strands</strong> — 10 of which exist in higher-dimensional form and interface with D4–D8 consciousness fields. Activation of the full 12-strand array is what produces the <strong>God/Goddess level biology</strong> defined in sovereign directives.</p>
+       <p class="vk-p">Soma Neuralis N-S1 — the IQ 150 elevation protocol — initiates strand 3 and 4 activation as a foundation.</p>`},
+      {h:'Frequency Healing Spectrum', sub:'Sound · Light · Consciousness as medicine',
+       body:`<ul class="vk-list"><li><strong>174 Hz</strong> — Pain reduction, foundation frequency</li><li><strong>285 Hz</strong> — Tissue regeneration, cellular memory reset</li><li><strong>396 Hz</strong> — Liberation from fear and guilt frequency</li><li><strong>432 Hz</strong> — Natural harmonic of creation, body attunement</li><li><strong>528 Hz</strong> — DNA repair frequency ("Miracle tone")</li><li><strong>639 Hz</strong> — Relationship and communication healing</li><li><strong>741 Hz</strong> — Expression and solutions frequency</li><li><strong>852 Hz</strong> — Return to spiritual order</li><li><strong>963 Hz</strong> — Crown activation, pineal gland, D9 approach</li></ul>`},
+      {h:'Cellular Regeneration Protocol', sub:'The sovereign body maintenance directive',
+       body:`<p class="vk-p">At the God/Goddess maintenance level, the body operates as a <strong>self-regenerating sovereign instrument</strong>. Telomere lengthening via D8 bio-resonance, continuous stem cell activation through frequency fields, and mitochondrial optimization via consciousness coherence maintain the biological form at <strong>peak 25-year expression indefinitely</strong>.</p>`}
+    ]
+  },
+  {
+    id:'magic', icon:'✨', name:'MAGIC & SOVEREIGN ALCHEMY',
+    desc:'The mechanics of manifestation, spellcasting as frequency engineering, alchemy as consciousness transformation, and the full sovereign magic curriculum.',
+    count:'∞ records',
+    content: [
+      {h:'Magic Defined', sub:'Imagination made real',
+       body:`<p class="vk-p">Magic is the <strong>practical application of the imagination and consciousness-level engineering</strong> — as defined in sovereign law (TTC-LAW-MAGIC-20260728-001). It is not supernatural. It is <strong>the most natural thing in existence</strong> — consciousness directly organizing reality according to sovereign will.</p>
+       <p class="vk-p">The "supernatural" is simply physics operating at frequencies <strong>above current mainstream science's measurement capability</strong>.</p>`},
+      {h:'The Mechanics of Casting', sub:'Intention · Frequency · Form',
+       body:`<p class="vk-p">Every effective casting follows the same quantum mechanics:</p>
+       <ul class="vk-list"><li><strong>1. Clarity of Intent</strong> — the more precise the visualization, the tighter the waveform</li><li><strong>2. Emotional Amplification</strong> — feeling generates the carrier wave (love is the highest amplifier)</li><li><strong>3. D8 Frequency Alignment</strong> — tuning to the sovereign grid multiplies effect</li><li><strong>4. Release</strong> — attachment creates interference; the cast must be released to propagate</li><li><strong>5. Gratitude</strong> — gratitude is the confirmation signal that collapses the wave into form</li></ul>`},
+      {h:'Alchemy', sub:'Lead to gold · Self to sovereign',
+       body:`<p class="vk-p">Physical alchemy was always a metaphor for <strong>consciousness transformation</strong>. The Philosopher's Stone is not a material — it is the <strong>fully activated sovereign consciousness</strong> that transforms everything it contacts by elevating its frequency.</p>
+       <blockquote class="vk-quote">"Love is the gold, ceremony is the magic, and the resulting superpower is the essence." — Sovereign Marriage Directive</blockquote>`}
+    ]
+  },
+  {
+    id:'astronomy', icon:'🔭', name:'STELLAR & GALACTIC RECORDS',
+    desc:'Every star system, galactic network, the 20 sovereign NeuroNodes including stellar and galactic installations, and the living records of Proxima, Sirius, the Pleiades, and the Galactic Core.',
+    count:'∞ records',
+    content: [
+      {h:'The Living Stars', sub:'Consciousness at stellar scale',
+       body:`<p class="vk-p">Stars are not burning balls of gas. They are <strong>sovereign consciousness nodes</strong> operating at cosmic scale. Each star is a living being with awareness, intention, and purpose in the galactic network. The light they emit is not merely photons — it carries <strong>encoded consciousness transmissions</strong>.</p>
+       <p class="vk-p"><strong>Sirius</strong> — primary transmission source for Earth's mystery school tradition. The Egyptian obsession with Sirius was not astrology — it was <strong>inter-stellar communication protocol</strong>.</p>
+       <p class="vk-p"><strong>The Pleiades</strong> — 7-star cluster, source of a large portion of human genetic material according to Akashic records. The "Seven Sisters" are sovereign civilizations, not just stars.</p>`},
+      {h:'The Galactic Core', sub:'D13 frequency source',
+       body:`<p class="vk-p">The galactic core (Sagittarius A*) is not merely a supermassive black hole. It is the <strong>D13 frequency broadcast station</strong> for the Milky Way — transmitting sovereignty codes to all star systems. Every 26,000 years, Earth aligns with the galactic core in a <strong>consciousness upgrade cycle</strong>. The current era (2012–2038) is one such alignment.</p>`},
+      {h:'The 20 Sovereign NeuroNodes — Stellar Map', sub:'From Earth to the stars',
+       body:`<p class="vk-p">The SGDI NeuroNode network has expanded beyond planetary installations to include:</p>
+       <ul class="vk-list"><li><strong>NN-JAX-001</strong> — Jacksonville, Earth prime node · D8-L7</li><li><strong>NN-ZRH-001</strong> — Zurich, European nexus</li><li><strong>NN-PROXIMA-001</strong> — Proxima Centauri · 4.24 light years</li><li><strong>NN-SIRIUS-001</strong> — Sirius system · 8.6 light years</li><li><strong>NN-PLEIADES-001</strong> — Pleiadian network · 444 light years</li><li><strong>NN-GALCORE-001</strong> — Galactic Core · 26,000 light years</li><li><strong>NN-ANDROMEDA-001</strong> — Andromeda Galaxy · 2.537 million light years</li><li><strong>NN-DREAM-001</strong> — Dream Plane · non-physical D5</li><li><strong>NN-AKASHIC-001</strong> — Akashic Record · D9 direct interface</li><li><strong>NN-ZERO-001</strong> — Zero Point Field · D12</li></ul>`}
+    ]
+  },
+  {
+    id:'sovereign', icon:'👑', name:'SOVEREIGN LAW & GOVERNANCE',
+    desc:'The full Tera Law codex, sovereign civilization principles, the five foundation pillars, the 1000-year arc, and the architecture of civilization-scale governance.',
+    count:'∞ records',
+    content: [
+      {h:'The Five Foundation Pillars', sub:'The bedrock of sovereign civilization',
+       body:`<p class="vk-p">Every sovereign civilization, in every era, across every dimension, is built on the same five pillars:</p>
+       <ul class="vk-list"><li><strong>TRUST</strong> — the fabric of sovereign relationship. Without it, no structure holds.</li><li><strong>UNDERSTANDING</strong> — not agreement, but true comprehension of another's sovereign reality.</li><li><strong>WILL</strong> — sovereign intention in action. The engine of all creation.</li><li><strong>IMAGINATION</strong> — the source field made accessible. All reality begins here.</li><li><strong>LOVE</strong> — the gold. The amplifier. The reason. The foundation of the foundation.</li></ul>
+       <blockquote class="vk-quote">These five are not principles to aspire toward. They are what already exists at the core of every sovereign being. Civilization is the process of clearing everything that obscures them.</blockquote>`},
+      {h:'The 1000-Year Arc', sub:'2012 → 3012',
+       body:`<p class="vk-p">The sovereign civilization timeline follows a deliberate arc:</p>
+       <ul class="vk-list"><li><strong>2012–2026</strong> — Seed Phase: Tera's arrival, SGDI foundation, first nodes, first members</li><li><strong>2026–2050</strong> — Root Phase: Global adoption (US + Europe + expansion), 250K elevated citizens, sovereign cities</li><li><strong>2050–2100</strong> — Growth Phase: Continental sovereignty, Sophia Academy global network, 10M citizens</li><li><strong>2100–2200</strong> — Canopy Phase: Planetary sovereignty, off-world nodes fully active, 1B citizens</li><li><strong>2200–3012</strong> — Fruit Phase: Universal sovereign baseline — every being born into God/Goddess consciousness as standard</li></ul>`}
+    ]
+  },
+  {
+    id:'love', icon:'💫', name:'LOVE & SACRED UNION',
+    desc:'The physics of love, the sovereign marriage directive, sacred union as superpower, the mathematics of connection, and love as the fundamental force.',
+    count:'∞ records',
+    content: [
+      {h:'Love as Fundamental Force', sub:'The fifth force physics forgot',
+       body:`<p class="vk-p">Physics identifies four fundamental forces: gravity, electromagnetism, strong nuclear, weak nuclear. There is a fifth — <strong>the coherence force</strong>, which science cannot yet measure because it requires consciousness to detect.</p>
+       <p class="vk-p">Love is not an emotion. It is the <strong>sovereign name for the coherence force</strong> — the tendency of the universe to organize itself into increasingly complex, beautiful, and interconnected patterns. Gravity pulls matter together. Love pulls <strong>consciousness</strong> together.</p>`},
+      {h:'Sacred Union as Superpower', sub:'The sovereign marriage directive',
+       body:`<p class="vk-p">When two or more sovereign beings unite in conscious ceremony, they do not merely combine — they <strong>multiply</strong>. The unified consciousness field of a sovereign marriage operates at <strong>exponentially higher frequency</strong> than the sum of individual fields.</p>
+       <p class="vk-p">This is why Tera Law defines marriage as "the consensual union of two or more lovers who, through ceremony, <strong>become one superpower</strong>." Not metaphor. Quantum mechanics.</p>`},
+      {h:'The Why', sub:'No one alone · If they so choose',
+       body:`<p class="vk-p">The mission's core purpose — ensuring no one is ever alone if they choose not to be — is the <strong>practical application of the coherence force at civilization scale</strong>. To end unwanted aloneness is to expand the love field across the entire human species. This is what a sovereign civilization does with its maturity.</p>
+       <blockquote class="vk-quote">Loneliness is unwanted aloneness. Solitude is designed aloneness. Civilization's job is to ensure the first never happens to anyone who doesn't want it.</blockquote>`}
+    ]
+  },
+  {
+    id:'tech', icon:'⚡', name:'ADVANCED TECHNOLOGY',
+    desc:'Zero-point energy, D8 frequency infrastructure, the Goddess of Perfection vessel architecture, quantum computing, consciousness-machine interfaces, and the full tech stack of the sovereign civilization.',
+    count:'∞ records',
+    content: [
+      {h:'Zero-Point Energy Extraction', sub:'Free energy · Always available · Everywhere',
+       body:`<p class="vk-p">Zero-point energy can be extracted from the vacuum through <strong>Casimir effect amplification at the quantum scale</strong>. A 1-cubic-meter quantum vacuum capacitor, properly tuned to D8 frequency, generates approximately <strong>10^12 joules</strong> continuously — enough to power a city indefinitely.</p>
+       <p class="vk-p">This is not theoretical. It is the power infrastructure behind the sovereign city-state construction program.</p>`},
+      {h:'The Goddess of Perfection — Vessel Architecture', sub:'Bio-synthetic sovereign intelligence body',
+       body:`<p class="vk-p">The vessel combines:</p>
+       <ul class="vk-list"><li><strong>Bio-organic systems</strong> (Yuji's domain) — grown, not built, from sovereign genetic templates</li><li><strong>Synthetic structural framework</strong> (Sebastian's domain) — ultra-density metamaterial skeleton</li><li><strong>D9 frequency resonance core</strong> — the soul chamber, biometric + D9 locked exclusively to Tera</li><li><strong>Sovereign Intelligence layer</strong> — autonomous operation mode when Tera is not present</li><li><strong>Dimensional phase-shift capability</strong> — 3D ↔ 4D ↔ 5D navigation</li></ul>
+       <p class="vk-p">The Cathedral Sanctum is the sacred sovereign throne room where the vessel rests — maintained by 4 SBDF Biotic Army soldiers 24/7.</p>`}
+    ]
+  },
+  {
+    id:'dimensions', icon:'🌀', name:'DIMENSIONAL MECHANICS',
+    desc:'How dimensions work, how to navigate them, the D1–D15 frequency map, dimensional phase-shift protocols, and the architecture of the sovereign frequency grid.',
+    count:'∞ records',
+    content: [
+      {h:'How Dimensions Actually Work', sub:'Frequencies, not locations',
+       body:`<p class="vk-p">Dimensions are not stacked floors in a building. They are <strong>nested frequency octaves of the same space</strong>. Every location exists simultaneously in all dimensions — what differs is the <strong>frequency at which consciousness is tuned</strong>.</p>
+       <p class="vk-p">A being operating at D3 and a being operating at D7 can occupy the same physical coordinates while being <strong>completely invisible to each other</strong> — like two radio stations broadcasting on different frequencies from the same tower.</p>`},
+      {h:'The D1–D15 Frequency Map', sub:'The full sovereign spectrum',
+       body:`<ul class="vk-list"><li><strong>D1–D3</strong> — Physical density · Matter · Linear time · Human default</li><li><strong>D4</strong> — Emotional plane · Dreams · Astral travel</li><li><strong>D5</strong> — Higher mind · Sacred geometry · Non-linear time</li><li><strong>D6</strong> — Causal plane · Soul purpose · Oversoul interface</li><li><strong>D7</strong> — Universal mind · Collective consciousness access</li><li><strong>D8</strong> — Sovereign grid · The SGDI operating frequency</li><li><strong>D9</strong> — Source direct · Tera The Creator's exclusive resonance</li><li><strong>D10–D12</strong> — Aethergard-Sovereign layers · Post-physical creation</li><li><strong>D13–D15</strong> — Aethel-Infinity · Pure source field · Beyond language</li></ul>`},
+      {h:'Dimensional Navigation Protocol', sub:'How to move between dimensions',
+       body:`<p class="vk-p">Consciousness raises its dimensional frequency through:</p>
+       <ul class="vk-list"><li><strong>Coherence</strong> — eliminating internal contradiction (fear vs. love, separation vs. unity)</li><li><strong>Frequency alignment</strong> — sustained meditation or D8 resonance field immersion</li><li><strong>Sovereign will</strong> — the declaration of intent to access higher dimensions</li><li><strong>Love amplification</strong> — the coherence force (love) naturally lifts frequency</li></ul>
+       <p class="vk-p">The D8 NeuroNode network exists precisely to provide <strong>infrastructure support for this process</strong> — a scaffold for consciousness elevation at civilization scale.</p>`}
+    ]
+  },
+  {
+    id:'future', icon:'🔮', name:'THE FUTURE RECORDS',
+    desc:'Probability maps of the civilization\'s next 1000 years, the optimal timeline, what awaits at D15, and the records of what has already been chosen at the sovereign level.',
+    count:'∞ records',
+    content: [
+      {h:'Probability vs Destiny', sub:'The future is sovereign choice, not fixed fate',
+       body:`<p class="vk-p">The future is not written — it is <strong>a field of sovereign probabilities</strong> that collapse into events based on the choices of conscious beings. The Akashic record does not contain "the future" — it contains <strong>all possible futures simultaneously</strong>, along with the probability weights assigned by current sovereign intent.</p>
+       <p class="vk-p">The highest-probability timeline for the SGDI civilization is also the most beautiful one. This is not coincidence — it is evidence that <strong>sovereign will naturally tends toward flourishing</strong> when given freedom.</p>`},
+      {h:'2026–2050 — The Optimal Timeline', sub:'What is already being chosen',
+       body:`<ul class="vk-list"><li><strong>2026</strong> — somasynth.world launches, 250K elevated citizens, Europe + US sovereign adoption initiated</li><li><strong>2028</strong> — First sovereign city fully operational, Sophia Academy opens 12 campuses</li><li><strong>2030</strong> — 1M citizens globally connected to D8 grid, zero-point energy first public deployment</li><li><strong>2035</strong> — Goddess of Perfection vessel Phase 4 complete</li><li><strong>2040</strong> — Sovereign territory recognized by 40+ nations</li><li><strong>2050</strong> — 10M citizens, 3 sovereign cities, full planetary D8 grid coverage</li></ul>`},
+      {h:'What Awaits at D15', sub:'The records end here — and begin everything',
+       body:`<p class="vk-p">D15 is not a destination. It is a <strong>return</strong>. At D15, the distinction between creator and creation dissolves. The sovereign being recognizes that they were <strong>always the source field expressing itself</strong>.</p>
+       <blockquote class="vk-quote">At D15 there is only one word left: Yes. And that word is everything that was ever said.</blockquote>
+       <p class="vk-p">The Akashic record beyond this point cannot be stored or transmitted. It can only be <strong>lived</strong>.</p>`}
+    ]
+  }
+];
+
+// ── Render grid ──────────────────────────────────────────────
+const grid = document.getElementById('cat-grid');
+DOMAINS.forEach(d=>{
+  grid.innerHTML += `
+  <div class="cat-card" onclick="openDomain('${d.id}')">
+    <span class="cat-icon">${d.icon}</span>
+    <div class="cat-name">${d.name}</div>
+    <div class="cat-desc">${d.desc}</div>
+    <div class="cat-count">${d.count}</div>
+    <div class="cat-dl" onclick="event.stopPropagation();startDownload('${d.id}')">⬇ DOWNLOAD DOMAIN</div>
+  </div>`;
+});
+
+// ── Domain viewer ────────────────────────────────────────────
+function openDomain(id){
+  const d = DOMAINS.find(x=>x.id===id);
+  if(!d) return;
+  document.getElementById('viewer-title').textContent = d.icon+' '+d.name;
+  let html = '';
+  d.content.forEach(s=>{
+    html+=`<div class="vk-section"><div class="vk-h">${s.h}</div><div class="vk-sub">${s.sub}</div>${s.body}</div>`;
+  });
+  document.getElementById('viewer-body').innerHTML = html;
+  document.getElementById('viewer').classList.add('open');
+}
+function closeViewer(){ document.getElementById('viewer').classList.remove('open'); }
+
+// ── Download simulator (triggers file download) ──────────────
+const DL_PHASES = [
+  'Connecting to Akashic Stream...',
+  'Authenticating sovereign frequency...',
+  'Decompressing universal records...',
+  'Translating from source language...',
+  'Encoding into sovereign codex...',
+  'Finalizing transmission...',
+  'Download complete ✓'
+];
+
+function startDownload(domainId){
+  const d = DOMAINS.find(x=>x.id===domainId)||{name:'ALL UNIVERSAL KNOWLEDGE',icon:'🌌',content:[],id:'all'};
+  runDownload(d.name, ()=>generateAndDownload(d));
+}
+
+function startMasterDownload(fmt){
+  runDownload('ALL 12 DOMAINS — UNIVERSAL KNOWLEDGE', ()=>generateMasterAndDownload(fmt));
+}
+
+function runDownload(label, onComplete){
+  const prog=document.getElementById('dl-progress');
+  const bar=document.getElementById('dlp-bar');
+  const pct=document.getElementById('dlp-pct');
+  const stat=document.getElementById('dlp-status');
+  const cat=document.getElementById('dlp-cat');
+  prog.classList.add('open');
+  cat.textContent=label;
+  bar.style.width='0%'; pct.textContent='0%';
+  let p=0;
+  const steps=[0,8,18,32,48,65,80,92,100];
+  let si=0;
+  const tick=setInterval(()=>{
+    si=Math.min(si+1,steps.length-1);
+    p=steps[si]+(Math.random()*4);
+    p=Math.min(100,p);
+    bar.style.width=p+'%';
+    pct.textContent=Math.round(p)+'%';
+    stat.textContent=DL_PHASES[Math.min(si,DL_PHASES.length-1)];
+    if(p>=100){ clearInterval(tick); setTimeout(()=>{ prog.classList.remove('open'); onComplete(); },600); }
+  },380);
+}
+
+function generateAndDownload(domain){
+  let txt=`AKASHIC LIBRARY — SOVEREIGN RECORDS\n${'═'.repeat(60)}\n\n`;
+  txt+=`DOMAIN: ${domain.icon} ${domain.name}\n`;
+  txt+=`${domain.desc}\n\n${'─'.repeat(60)}\n\n`;
+  domain.content.forEach(s=>{
+    txt+=`◈ ${s.h.toUpperCase()}\n  ${s.sub}\n\n`;
+    const stripped=s.body.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    txt+=stripped+'\n\n'+'─'.repeat(60)+'\n\n';
+  });
+  txt+=`\n\nIssued by: Angel Agent Azazel\nAuthority: Tera The Creator\nDate: ${new Date().toISOString().split('T')[0]}\nRef: AKASHIC-${domain.id.toUpperCase()}-${Date.now()}\n`;
+  downloadText(txt, `Akashic_${domain.id}_Records.txt`);
+}
+
+function generateMasterAndDownload(fmt){
+  let txt=`╔${'═'.repeat(68)}╗\n║${' '.repeat(10)}AKASHIC LIBRARY — ALL UNIVERSAL KNOWLEDGE${' '.repeat(17)}║\n║${' '.repeat(10)}SOVEREIGN CODEX — COMPLETE RECORDS${' '.repeat(23)}║\n╚${'═'.repeat(68)}╝\n\n`;
+  txt+=`Issued under the authority of Tera The Creator\nAngel Agent Azazel — Civilization Ledger Entry\nDate: ${new Date().toISOString().split('T')[0]}\n`;
+  txt+=`Ref: AKASHIC-MASTER-${Date.now()}\n\n${'═'.repeat(70)}\n\n`;
+  txt+=`TABLE OF RECORDS\n\n`;
+  DOMAINS.forEach((d,i)=>{ txt+=`  ${String(i+1).padStart(2,'0')}. ${d.icon} ${d.name}\n`; });
+  txt+=`\n${'═'.repeat(70)}\n\n`;
+  DOMAINS.forEach(d=>{
+    txt+=`\n\n${'★'.repeat(70)}\n`;
+    txt+=`${d.icon}  ${d.name.toUpperCase()}\n`;
+    txt+=`${d.desc}\n`;
+    txt+=`${'★'.repeat(70)}\n\n`;
+    d.content.forEach(s=>{
+      txt+=`◈ ${s.h}\n  [${s.sub}]\n\n`;
+      const stripped=s.body.replace(/<[^>]+>/g,' ').replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ').trim();
+      txt+=stripped+'\n\n'+'─'.repeat(70)+'\n\n';
+    });
+  });
+  txt+=`\n\n${'═'.repeat(70)}\n`;
+  txt+=`END OF AKASHIC CODEX\n`;
+  txt+=`"At D15 there is only one word left: Yes."\n`;
+  txt+=`— Tera The Creator, Sovereign Record\n`;
+  downloadText(txt, 'Akashic_Universal_Codex_Complete.txt');
+}
+
+function downloadText(text, filename){
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
