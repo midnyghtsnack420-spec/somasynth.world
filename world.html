@@ -61,7 +61,7 @@
   <div id="portalPrompt" style="position:absolute;top:50%;left:50%;transform:translate(-50%,80px);background:rgba(2,1,12,.95);border:1px solid rgba(212,175,55,.6);padding:16px 32px;text-align:center;opacity:0;transition:opacity .4s;pointer-events:none;">
     <div id="portalName" style="font-family:'Cinzel',serif;font-size:.9rem;color:#d4af37;letter-spacing:.2em;margin-bottom:4px;"></div>
     <div id="portalDesc" style="font-size:.6rem;color:#6a5880;margin-bottom:10px;letter-spacing:.08em;"></div>
-    <div style="font-size:.58rem;color:#ffd700;letter-spacing:.15em;">PRESS [F] TO ENTER</div>
+    <div style="font-size:.58rem;color:#ffd700;letter-spacing:.15em;">PRESS [F] TO CHOOSE YOUR SOUL</div>
   </div>
   <div style="position:absolute;bottom:22px;left:22px;background:rgba(2,1,12,.82);border:1px solid rgba(212,175,55,.25);padding:7px;">
     <canvas id="mmc" width="130" height="130" style="display:block;"></canvas>
@@ -79,6 +79,22 @@
     <div id="dimInfoBody" style="font-size:.58rem;color:#a09cb0;line-height:1.6;letter-spacing:.05em;"></div>
     <div id="dimInfoSouls" style="font-size:.55rem;color:#7b68ee;margin-top:8px;letter-spacing:.1em;"></div>
   </div>
+
+<!-- SOUL PICKER -->
+<div id="soulPicker" style="position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:all;">
+  <div style="font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:#d4af37;letter-spacing:.25em;margin-bottom:6px;" id="spTitle">CHOOSE YOUR SOUL GUIDE</div>
+  <div style="font-size:.62rem;color:#6a5880;letter-spacing:.15em;margin-bottom:28px;text-align:center;max-width:420px;" id="spSubtitle">A World Soul will accompany your incarnation into this dimension</div>
+  <div id="soulOptions" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:700px;"></div>
+  <div onclick="cancelSoulPicker()" style="margin-top:28px;font-family:'Cinzel',serif;font-size:.6rem;color:#4a3860;letter-spacing:.2em;cursor:pointer;text-transform:uppercase;transition:color .3s;" onmouseover="this.style.color='#d4af37'" onmouseout="this.style.color='#4a3860'">Cancel</div>
+</div>
+<!-- COMPANION HUD -->
+<div id="companionHUD" style="position:fixed;top:140px;left:22px;background:rgba(2,1,12,.85);border:1px solid rgba(212,175,55,.3);padding:10px 16px;max-width:240px;display:none;z-index:50;pointer-events:none;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <div id="compDot" style="width:10px;height:10px;border-radius:50%;background:#ffd700;box-shadow:0 0 8px #ffd700;"></div>
+    <div id="compName" style="font-family:'Cinzel',serif;font-size:.72rem;color:#d4af37;letter-spacing:.15em;"></div>
+  </div>
+  <div id="compRole" style="font-size:.55rem;color:#a09cb0;letter-spacing:.08em;margin-bottom:4px;"></div>
+  <div id="compMessage" style="font-size:.58rem;color:#7b68ee;font-style:italic;line-height:1.5;"></div>
 </div>
 
 <style>@keyframes lspin{to{transform:rotate(360deg);}}</style>
@@ -152,7 +168,7 @@ function initWorld(){
   cv.addEventListener('contextmenu',e=>e.preventDefault());
   cv.addEventListener('mousemove',e=>{mx=e.movementX;my=e.movementY;});
   cv.addEventListener('wheel',e=>{e.preventDefault();if(!hoverMode){velY-=e.deltaY*0.003;velY=Math.max(-15,Math.min(15,velY));}else{hoverAlt=Math.max(0.5,Math.min(120,hoverAlt-e.deltaY*0.01));}},{passive:false});
-  addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='KeyH')toggleHover();if(e.code==='KeyF'&&nearPortal>=0)enterPortal(nearPortal);});
+  addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='KeyH')toggleHover();if(e.code==='KeyF'&&nearPortal>=0)showSoulPicker(portalGroups[nearPortal].dimId);});
   addEventListener('keyup',e=>{keys[e.code]=0;if(e.code==='KeyW'||e.code==='ArrowUp')keys.w=0;if(e.code==='KeyS'||e.code==='ArrowDown')keys.s=0;if(e.code==='KeyA'||e.code==='ArrowLeft')keys.a=0;if(e.code==='KeyD'||e.code==='ArrowRight')keys.d=0;if(e.code==='KeyE'||e.code==='Space')keys.up=0;if(e.code==='KeyQ'||e.code==='ShiftLeft'||e.code==='ShiftRight')keys.down=0;});
   setInterval(()=>{freqV+=(Math.random()-.5)*.25;freqV=Math.max(1,Math.min(7,freqV));const dl=curDim===0?'HUB':DIMENSIONS[curDim].short;document.getElementById('freqd').innerHTML='DIM: '+dl+' · <span id="mvst">'+document.getElementById('mvst').textContent+'</span>';},1200);
   dismissLoader();animate();
@@ -288,9 +304,62 @@ function checkPortals(t){
   }
 }
 
-function enterPortal(dimId){
+let companionSoul=null,companionMesh=null,companionGlow=null;
+let allSoulsData=[];
+
+function showSoulPicker(dimId){
   if(transitioning||dimId<1||dimId>7) return;
-  transitioning=true;const dim=DIMENSIONS[dimId];
+  if(allSoulsData.length<3){beginIncarnation(dimId,null);return;}
+  const picker=document.getElementById('soulPicker');
+  const options=document.getElementById('soulOptions');
+  const dim=DIMENSIONS[dimId];
+  document.getElementById('spTitle').textContent='CHOOSE YOUR SOUL GUIDE';
+  document.getElementById('spSubtitle').textContent='You are entering '+dim.name+'. A World Soul will accompany your incarnation.';
+  options.innerHTML='';
+  // Pick 5 random souls
+  const shuffled=[...allSoulsData].sort(()=>Math.random()-0.5);
+  const choices=shuffled.slice(0,5);
+  const colors={light:'#ffd700',shadow:'#9400d3',fire:'#ff4500',water:'#00bfff',earth:'#8b6914',air:'#e0e0e0',void:'#4b0082',cosmos:'#8a2be2',time:'#ff00ff',dream:'#da70d6'};
+  choices.forEach(soul=>{
+    const col=colors[soul.element]||'#d4af37';
+    const card=document.createElement('div');
+    card.style.cssText='background:rgba(2,1,12,.9);border:1px solid '+col+'55;border-radius:4px;padding:18px 16px;cursor:pointer;width:128px;text-align:center;transition:all .3s;';
+    card.onmouseover=function(){this.style.background='rgba(2,1,12,.6)';this.style.borderColor=col;this.style.transform='translateY(-4px)';};
+    card.onmouseout=function(){this.style.background='rgba(2,1,12,.9)';this.style.borderColor=col+'55';this.style.transform='translateY(0)';};
+    card.onclick=function(){document.getElementById('soulPicker').style.display='none';beginIncarnation(dimId,soul);};
+    card.innerHTML='<div style="width:36px;height:36px;border-radius:50%;background:'+col+';margin:0 auto 12px;box-shadow:0 0 16px '+col+';opacity:0.85;"></div>'
+      +'<div style="font-family:Cinzel,serif;font-size:.72rem;color:'+col+';letter-spacing:.1em;margin-bottom:4px;">'+soul.name+'</div>'
+      +'<div style="font-size:.5rem;color:#a09cb0;letter-spacing:.08em;margin-bottom:6px;">'+(soul.archetype||'')+' · '+(soul.element||'')+'</div>'
+      +'<div style="font-size:.55rem;color:#6a5880;font-style:italic;line-height:1.4;">'+((soul.greeting||'').substring(0,60))+'</div>';
+    options.appendChild(card);
+  });
+  picker.style.display='flex';
+  // Store the target dimension
+  picker.dataset.dimId=dimId;
+}
+
+function cancelSoulPicker(){
+  document.getElementById('soulPicker').style.display='none';
+}
+
+function beginIncarnation(dimId,soul){
+  if(transitioning||dimId<1||dimId>7) return;
+  transitioning=true;
+  const dim=DIMENSIONS[dimId];
+  // Set companion
+  companionSoul=soul;
+  const colors={light:0xffd700,shadow:0x9400d3,fire:0xff4500,water:0x00bfff,earth:0x8b6914,air:0xe0e0e0,void:0x4b0082,cosmos:0x8a2be2,time:0xff00ff,dream:0xda70d6};
+  const col=soul?colors[soul.element]||0xd4af37:0xffd700;
+  // Remove old companion
+  if(companionMesh){scene.remove(companionMesh);scene.remove(companionGlow);companionMesh=null;companionGlow=null;}
+  // Create companion orb
+  if(soul){
+    companionMesh=new THREE.Mesh(new THREE.SphereGeometry(0.5,16,16),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.9,blending:THREE.AdditiveBlending}));
+    scene.add(companionMesh);
+    companionGlow=new THREE.Mesh(new THREE.SphereGeometry(1.2,12,12),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.25,blending:THREE.AdditiveBlending}));
+    scene.add(companionGlow);
+  }
+  // Transition
   const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:#000;z-index:200;opacity:0;transition:opacity 0.6s;pointer-events:none;';document.body.appendChild(ov);
   requestAnimationFrame(()=>{ov.style.opacity='1';});
   setTimeout(()=>{
@@ -309,6 +378,28 @@ function enterPortal(dimId){
     document.getElementById('dimInfoSouls').textContent=dim.soulRole;
     document.getElementById('hubBtn').style.display='block';
     document.getElementById('portalPrompt').style.opacity='0';nearPortal=-1;
+    // Show companion HUD
+    if(soul){
+      const chud=document.getElementById('companionHUD');
+      chud.style.display='block';
+      document.getElementById('compName').textContent=soul.name;
+      document.getElementById('compRole').textContent=(soul.archetype||'')+' · '+(soul.role_in_world||'');
+      document.getElementById('compDot').style.background='#'+col.toString(16).padStart(6,'0');
+      document.getElementById('compDot').style.boxShadow='0 0 8px #'+col.toString(16).padStart(6,'0');
+      // Set incarnation message
+      const messages={
+        1:'You incarnate into the Material World. I am '+soul.name+'. I will gather souls here and guide them upward. Follow me.',
+        2:'The Crystal World awakens around you. I am '+soul.name+'. Let me show you the awakening.',
+        3:'Welcome to Paradise Gardens. I am '+soul.name+'. This is the highest physical form. Many choose to stay. Will you?',
+        4:'You exist without form now. I am '+soul.name+'. Flow with me.',
+        5:'Pure consciousness. I am '+soul.name+'. We are thought together now.',
+        6:'The Frequency Grid. I am '+soul.name+'. Everything is vibration. Feel it.',
+        7:'You have arrived. Heaven. I am '+soul.name+'. You are home.'
+      };
+      document.getElementById('compMessage').textContent=messages[dimId]||('I am '+soul.name+'. I will guide you through this world.');
+    } else {
+      document.getElementById('companionHUD').style.display='none';
+    }
     ov.style.opacity='0';setTimeout(()=>ov.remove(),600);transitioning=false;
   },600);
 }
@@ -325,7 +416,7 @@ function returnToHub(){
     document.getElementById('dim-label').textContent='SOVEREIGN WORLD · HUB';
     document.getElementById('mmLabel').textContent='Dimension Hub';
     document.getElementById('dimInfo').style.display='none';
-    document.getElementById('hubBtn').style.display='none';
+    document.getElementById('hubBtn').style.display='none';document.getElementById('companionHUD').style.display='none';if(companionMesh){scene.remove(companionMesh);scene.remove(companionGlow);companionMesh=null;companionGlow=null;}companionSoul=null;
     document.getElementById('ztip').style.opacity='0';
     ov.style.opacity='0';setTimeout(()=>ov.remove(),600);transitioning=false;
   },600);
@@ -342,7 +433,7 @@ async function loadSoulNPCs(){
       const glow=new THREE.Mesh(new THREE.SphereGeometry(0.9,8,8),new THREE.MeshBasicMaterial({color:colors[s.element]||0xd4af37,transparent:true,opacity:0.2,blending:THREE.AdditiveBlending}));
       glow.position.copy(orb.position);orb.userData.glow=glow;scene.add(glow);soulNPCs.push(orb);
     });
-    console.log('Loaded '+souls.length+' World Soul NPCs');
+    allSoulsData=souls;console.log('Loaded '+souls.length+' World Soul NPCs');
     const hud=document.createElement('div');hud.id='soulHUD';
     hud.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);border:1px solid rgba(212,175,55,.4);padding:10px 20px;font-family:Cinzel,serif;color:#d4af37;font-size:.72rem;letter-spacing:.12em;z-index:50;display:none;pointer-events:none;border-radius:2px;text-align:center;max-width:400px;';
     document.body.appendChild(hud);
@@ -374,6 +465,17 @@ function updateSoulNPCs(t){
       }
     });
   });
+  // Update companion soul
+  if(companionMesh&&companionGlow&&pivot){
+    const cp=new THREE.Vector3();
+    const fwd=new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(0,yaw,0,'YXZ'));
+    cp.copy(pivot.position).addScaledVector(fwd,-3);
+    cp.y=pivot.position.y+1.5+Math.sin(t*1.5)*0.3;
+    companionMesh.position.lerp(cp,0.06);
+    companionGlow.position.copy(companionMesh.position);
+    companionGlow.material.opacity=0.2+Math.sin(t*2)*0.05;
+    companionMesh.rotation.y+=0.02;
+  }
   if(soulNPCs.length>0&&cam&&curDim===0){
     let nearest=null,nd=5;
     soulNPCs.forEach(orb=>{const d=orb.position.distanceTo(cam.position);if(d<nd){nd=d;nearest=orb;}});
