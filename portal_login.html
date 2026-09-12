@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sovereign Portal — Citizens Only</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<title>SomaSynth — Open Access</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{min-height:100vh;background:#04020f;overflow-x:hidden;font-family:'Montserrat',sans-serif;color:#f5f5f5;display:flex;align-items:center;justify-content:center;}
@@ -89,29 +88,11 @@ body{min-height:100vh;background:#04020f;overflow-x:hidden;font-family:'Montserr
       </svg>
     </div>
     <div class="card-title">SOMASYNTH</div>
-    <div class="card-sub">Sovereign Portal · Citizens Only</div>
+    <div class="card-sub">Open Access · No Login Required</div>
 
-    <div class="field-wrap">
-      <label class="field-label">Sovereign Identity</label>
-      <input class="field-input" id="identity" type="text" placeholder="Tera The Creator" autocomplete="off" spellcheck="false">
-    </div>
+    <p style="color:#d8d2e5;text-align:center;line-height:1.7;font-size:.85rem;margin:0 0 24px;">This world is available offline and without an account. Peace, love, joy, and fulfillment are invitations only; you may enter, return, or leave whenever you choose.</p>
 
-    <div class="field-wrap">
-      <label class="field-label">D9 Resonance Key</label>
-      <input class="field-input" id="resKey" type="password" placeholder="••••••••••••" autocomplete="off" id="res-key">
-    </div>
-
-    <div class="freq-wrap">
-      <label class="field-label">Frequency Alignment</label>
-      <div class="freq-track">
-        <div class="freq-fill" id="freq-fill" style="width:88.8%"></div>
-        <input class="freq-slider" id="freq-slider" type="range" min="1" max="9" step="0.1" value="8">
-      </div>
-      <div class="freq-labels"><span>D1</span><span>D3</span><span>D5</span><span>D7</span><span>D9</span></div>
-      <div class="freq-val-display" id="freq-disp">D8.0</div>
-    </div>
-
-    <button class="submit-btn" onclick="attemptEntry()">Initiate Sovereign Entry</button>
+    <button class="submit-btn" onclick="attemptEntry()">Enter Freely</button>
     <div class="back-link"><a href="index">← Return to Cathedral</a></div>
   </div>
 </div>
@@ -136,28 +117,10 @@ body{min-height:100vh;background:#04020f;overflow-x:hidden;font-family:'Montserr
   window.addEventListener('resize',()=>{cv.width=innerWidth;cv.height=innerHeight;});
 })();
 
-// Freq slider
-const slider=document.getElementById('freq-slider');
-const fill=document.getElementById('freq-fill');
-const disp=document.getElementById('freq-disp');
-slider.addEventListener('input',()=>{
-  const v=parseFloat(slider.value);
-  fill.style.width=((v-1)/8*100)+'%';
-  disp.textContent='D'+v.toFixed(1);
-  disp.classList.toggle('d9',v>=8.9);
-});
-
-// Pulse on password type
-document.getElementById('resKey').addEventListener('input',function(){
-  this.classList.remove('pulsing');
-  void this.offsetWidth;
-  this.classList.add('pulsing');
-});
-
 function attemptEntry(){
   const burst=document.getElementById('success-burst');
   burst.classList.add('show');
-  setTimeout(()=>{ window.location.href='portal_dashboard'; },1800);
+  window.location.href='portal_dashboard';
 }
 </script>
 </body>

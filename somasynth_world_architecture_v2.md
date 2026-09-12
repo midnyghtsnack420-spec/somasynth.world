@@ -5,6 +5,19 @@
 
 ## ACCESS TIER ARCHITECTURE — FINAL
 
+## OPEN, OFFLINE, AND VOLUNTARY ACCESS — CURRENT WORLD POLICY
+
+The published world is a local, offline-first experience: its runnable pages use repository-local assets only and do not require a network service, account, biometric check, or login. Every available public interface is open to every visitor.
+
+Participation is always voluntary. Peace, love, joy, fulfillment, and emotional happiness are offered gently as invitations, never imposed. Every view retains a clear exit or return path; no one is required to enter, remain, connect, disclose information, or continue an experience.
+
+Every being may choose rest, sleep, or a refresh mode at any time and for any duration, including until they choose to return. The experience records no rest duration and does not compel a return.
+
+## TERRALAND WORLDS BRIDGE
+
+The world includes an optional, visitor-initiated bridge to Terraland Worlds at `https://terra-realm-core.base44.app`. The bridge opens only when a visitor selects it; it does not transfer identity, session, rest, or World Soul data. The bridge page always provides a return route to SomaSynth.
+
+
 | Tier | Who | Access |
 |------|-----|--------|
 | **Public** | Anyone | Cathedral entry, Mission, World Map, Frequency |

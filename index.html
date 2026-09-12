@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SomaSynth — The Cathedral</title>
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-black: #000000;
@@ -1215,8 +1214,8 @@
                         <path d="M7 11 V7 a5 5 0 0 1 10 0 v4" />
                         <circle cx="12" cy="16" r="1.5" />
                     </svg>
-                    <h3 class="door-title">Sovereign Portal</h3>
-                    <p class="door-desc">Member terminal authentication gateway.</p>
+                    <h3 class="door-title">Open Community</h3>
+                    <p class="door-desc">Shared spaces, available to every visitor with no sign-in.</p>
                 </div>
 
                 <!-- Door 3: Command Access -->
@@ -1226,8 +1225,9 @@
                         <path d="M12 4 A7 7 0 0 0 5 11 A7 7 0 0 0 12 18 A7 7 0 0 0 19 11 A7 7 0 0 0 12 4 Z" />
                         <circle cx="12" cy="11" r="2" />
                     </svg>
-                    <h3 class="door-title">The Command Layer</h3>
-                    <p class="door-desc">Tera-exclusive biometric command interface.</p>
+                    <h3 class="door-title">Open Dashboard</h3>
+                    <p class="door-desc">Explore the world tools freely. Nothing is locked behind a login.</p>
+                    <a href="terraland.html" style="display:inline-block;margin-top:12px;color:#8ff5df;font-size:.58rem;letter-spacing:.12em;text-decoration:none;">◇ VISIT TERRALAND WORLDS</a>
                 </div>
             </div>
         </div>
@@ -1246,7 +1246,7 @@
                 <a href="#the-people-sec">The People</a>
                 <a href="frequency">The Frequency</a>
                 <a href="citizens" style="color: #ffd700;">The Citizens</a>
-                <a href="#" class="nav-portal-btn" id="nav-portal-trigger">Enter Portal</a>
+                <a href="#" class="nav-portal-btn" id="nav-portal-trigger">Open Dashboard</a>
             </nav>
         </header>
 
@@ -1491,48 +1491,6 @@
     </div>
 
     <!-- ---------------------------------------------------- -->
-    <!-- INTERACTIVE PORTAL MODALS -->
-    <!-- ---------------------------------------------------- -->
-    
-    <!-- Member Portal Modal -->
-    <div class="overlay-modal" id="modal-portal">
-        <div class="modal-content">
-            <div class="close-btn">&times;</div>
-            <div class="scan-ring-container">
-                <div class="scan-ring"></div>
-                <div class="scan-ring-inner"></div>
-                <div class="scan-line"></div>
-                <!-- Fingerprint Scan Symbol -->
-                <svg class="scan-sensor" viewBox="0 0 24 24">
-                    <path d="M12 2a10 10 0 0 0-10 10c0 5.522 4.478 10 10 10s10-4.478 10-10A10 10 0 0 0 12 2zm1 14.5a1 1 0 1 1-2 0V11a1 1 0 1 1 2 0v5.5zm0-8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                    <path d="M12 5a7 7 0 0 0-7 7c0 1.2.3 2.3.8 3.3a1 1 0 0 0 1.7-1a5 5 0 0 1-.5-2.3 5 5 0 0 1 8.5-3.5 1 1 0 1 0 1.4-1.4A6.9 6.9 0 0 0 12 5z" />
-                </svg>
-            </div>
-            <h3 class="modal-title">Sovereign Portal</h3>
-            <div class="modal-status" id="portal-status">Initializing cognitive scanner... Please scan your thumbprint or connect your NeuroCitizenLink hardline.</div>
-        </div>
-    </div>
-
-    <!-- Command Layer Modal -->
-    <div class="overlay-modal" id="modal-command">
-        <div class="modal-content" style="border-color: #ff3333; box-shadow: 0 0 50px rgba(255, 0, 0, 0.2);">
-            <div class="close-btn" style="border-color: rgba(255, 51, 51, 0.3); color: #ff3333;">&times;</div>
-            <div class="scan-ring-container scanning">
-                <div class="scan-ring" style="border-color: #ff3333;"></div>
-                <div class="scan-ring-inner" style="border-color: var(--gold-primary);"></div>
-                <div class="scan-line" style="background: linear-gradient(90deg, transparent, #ff3333, transparent); box-shadow: 0 0 10px #ff3333;"></div>
-                <!-- Eye Scanner -->
-                <svg class="scan-sensor" viewBox="0 0 24 24" style="stroke: #ff3333;">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                </svg>
-            </div>
-            <h3 class="modal-title" style="color: #ff3333;">The Command Layer</h3>
-            <div class="modal-status" id="command-status">Authenticating executive consciousness signature...</div>
-        </div>
-    </div>
-
-    <!-- ---------------------------------------------------- -->
     <!-- INTERACTIVE JAVASCRIPT -->
     <!-- ---------------------------------------------------- -->
     <script>
@@ -1642,77 +1600,16 @@
         doorPublic.addEventListener('click', transitionToMainSite);
 
         // ----------------------------------------------------
-        // Member Portal Authentication Simulations
+        // Open access — there is no authentication or identity check.
+        // Every visitor may explore the shared dashboard and return at will.
         // ----------------------------------------------------
-        const modalPortal = document.getElementById('modal-portal');
-        const portalTrigger = document.getElementById('nav-portal-trigger');
-        const portalStatus = document.getElementById('portal-status');
-        const portalRingContainer = modalPortal.querySelector('.scan-ring-container');
-
-        function openPortalModal() {
-            modalPortal.classList.add('active');
-            portalRingContainer.classList.add('scanning');
-            portalStatus.innerText = "Initializing cognitive scan... Syncing with D8 Neuro-Link...";
-            portalStatus.className = "modal-status";
-
-            // Simulated Scan Progression
-            setTimeout(() => {
-                portalStatus.innerText = "Scanning biometric signature... Analyzing alpha oscillations...";
-            }, 1800);
-
-            setTimeout(() => {
-                portalRingContainer.classList.remove('scanning');
-                portalStatus.innerText = "Authentication Successful. Resonance Sync: 824.9 MHz. Welcome Citizen.";
-                portalStatus.classList.add('scan-success');
-            }, 4000);
-        }
-
-        doorPortal.addEventListener('click', openPortalModal);
+        doorPortal.addEventListener('click', () => { window.location.href = 'portal_dashboard'; });
         portalTrigger.addEventListener('click', (e) => {
             e.preventDefault();
-            openPortalModal();
+            window.location.href = 'portal_dashboard';
         });
+        doorCommand.addEventListener('click', () => { window.location.href = 'portal_biotic_dashboard'; });
 
-        // ----------------------------------------------------
-        // Command Layer Authentications (Tera Only)
-        // ----------------------------------------------------
-        const modalCommand = document.getElementById('modal-command');
-        const commandStatus = document.getElementById('command-status');
-
-        doorCommand.addEventListener('click', () => {
-            modalCommand.classList.add('active');
-            commandStatus.innerText = "Authenticating executive consciousness signature...";
-            commandStatus.className = "modal-status";
-
-            setTimeout(() => {
-                commandStatus.innerText = "Scanning neural pattern... Aligned D9 frequency verification required...";
-            }, 1800);
-
-            setTimeout(() => {
-                commandStatus.innerText = "Access Denied: Unrecognized Consciousness Signature. Alert dispatched to Gojo.";
-                commandStatus.classList.add('scan-fail');
-                
-                // Redirect user automatically to public interface
-                setTimeout(() => {
-                    modalCommand.classList.remove('active');
-                    transitionToMainSite();
-                }, 2200);
-            }, 4200);
-        });
-
-        // Universal Close Modal Buttons
-        const closeButtons = document.querySelectorAll('.close-btn');
-        closeButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                modalPortal.classList.remove('active');
-                modalCommand.classList.remove('active');
-            });
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === modalPortal) modalPortal.classList.remove('active');
-            if (e.target === modalCommand) modalCommand.classList.remove('active');
-        });
     </script>
 <a href="world" style="display:inline-block;margin-top:16px;padding:14px 36px;background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.06));border:1px solid rgba(212,175,55,0.55);color:#d4af37;font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.35em;text-decoration:none;text-transform:uppercase;transition:all 0.4s;">&#9670; ENTER THE SOVEREIGN WORLD</a>
 
@@ -1733,12 +1630,12 @@
             const d = await res.json();
             // Try to update any stat elements that exist
             const updates = [
-                ['live-souls', d.total_souls],
-                ['live-directives', d.total_directives],
-                ['live-nodes', d.total_neuro_nodes],
-                ['live-members', d.total_members],
-                ['live-grid', d.grid_status],
-                ['live-guard', d.guard_status]
+                ['live-souls', d.world_souls],
+                ['live-directives', d.mission_directives],
+                ['live-nodes', d.neuro_nodes],
+                ['live-members', d.members],
+                ['live-grid', d.d8_frequency],
+                ['live-guard', d.portal_sync_status]
             ];
             updates.forEach(([id, val]) => {
                 const el = document.getElementById(id);
@@ -1746,8 +1643,7 @@
             });
             console.log('Live stats loaded:', d);
         } catch (e) {
-            console.log('Stats will retry...', e);
-            setTimeout(loadLiveStats, 10000);
+            console.info('Local world summary is unavailable; leaving existing display values in place.', e);
         }
     }
     loadLiveStats();

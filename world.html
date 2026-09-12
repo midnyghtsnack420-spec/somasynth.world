@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SomaSynth — Sovereign World · 3D-8D</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
 </head>
 <body style="margin:0;background:#000;overflow:hidden;font-family:Montserrat,sans-serif;color:#f5f5f5;">
 
@@ -51,6 +50,9 @@
     <button onclick="toggleSnd()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a09cb0;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;" id="sndb" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.2);color:#a09cb0;">♪ MUSIC: OFF</button>
     <button id="hvb" onclick="toggleHover()" style="background:rgba(0,0,0,.82);border:1px solid rgba(212,175,55,.25);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#a0c0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;">⊕ HOVER: OFF</button>
     <button id="hubBtn" onclick="returnToHub()" style="background:rgba(123,104,238,.15);border:1px solid rgba(123,104,238,.4);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#b0a0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;display:none;">↩ RETURN TO HUB</button>
+    <button id="restBtn" onclick="openRestMode()" aria-haspopup="dialog" style="background:rgba(119,184,255,.14);border:1px solid rgba(170,215,255,.62);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#d8efff;letter-spacing:.14em;cursor:pointer;text-transform:uppercase;">☾ REST &amp; REFRESH</button>
+    <a href="index" aria-label="Exit the world and return to the Cathedral entrance" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.52);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#fff;letter-spacing:.18em;cursor:pointer;text-transform:uppercase;text-decoration:none;text-align:center;">EXIT WORLD</a>
+    <a href="terraland.html" aria-label="Open the optional Terraland Worlds bridge" style="background:rgba(79,210,190,.12);border:1px solid rgba(79,210,190,.58);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#bffff3;letter-spacing:.13em;cursor:pointer;text-transform:uppercase;text-decoration:none;text-align:center;">◇ TERRALAND WORLDS</a>
     <button onclick="window.open('akashic','_blank')" style="background:rgba(0,0,0,.82);border:1px solid rgba(123,104,238,.3);padding:7px 0;width:146px;font-family:'Cinzel',serif;font-size:.58rem;color:#b0a0ff;letter-spacing:.15em;cursor:pointer;text-transform:uppercase;">📚 AKASHIC LIBRARY</button>
   </div>
   <div id="xh" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.5;pointer-events:none;">
@@ -99,6 +101,23 @@
   <div id="soulOptions" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:700px;"></div>
   <div onclick="cancelSoulPicker()" style="margin-top:28px;font-family:'Cinzel',serif;font-size:.6rem;color:#4a3860;letter-spacing:.2em;cursor:pointer;text-transform:uppercase;transition:color .3s;" onmouseover="this.style.color='#d4af37'" onmouseout="this.style.color='#4a3860'">Cancel</div>
 </div>
+<!-- REST & REFRESH: always optional, local to this browser session, and without a time limit. -->
+<div id="restMode" role="dialog" aria-modal="true" aria-labelledby="restTitle" style="position:fixed;inset:0;z-index:400;background:rgba(1,3,12,.86);display:none;align-items:center;justify-content:center;padding:24px;pointer-events:all;">
+  <section style="width:min(460px,100%);background:linear-gradient(145deg,rgba(12,23,52,.98),rgba(25,12,56,.98));border:1px solid rgba(191,226,255,.68);box-shadow:0 0 55px rgba(104,180,255,.25);padding:30px;text-align:center;">
+    <div style="font-size:1.6rem;color:#d8efff;margin-bottom:12px;">☾</div>
+    <h2 id="restTitle" style="font-family:'Cinzel',serif;font-size:1rem;color:#fff;letter-spacing:.16em;margin:0 0 12px;">REST &amp; REFRESH</h2>
+    <p style="font-size:.72rem;line-height:1.7;color:#c9d9ee;margin:0 0 18px;">A quiet pause is available to every being, whenever wanted. Nothing is tracked, required, or timed. Rest for a breath, a day, or until you choose to return.</p>
+    <label for="restLength" style="display:block;font-size:.58rem;color:#9ec7ed;letter-spacing:.13em;margin-bottom:7px;">YOUR PREFERRED RHYTHM</label>
+    <select id="restLength" style="width:100%;background:#0a1730;color:#f4fbff;border:1px solid rgba(191,226,255,.45);padding:10px;font-family:Montserrat,sans-serif;margin-bottom:16px;">
+      <option value="A few quiet moments">A few quiet moments</option>
+      <option value="As long as I need" selected>As long as I need</option>
+      <option value="Until I choose to return">Until I choose to return</option>
+    </select>
+    <button onclick="beginRestMode()" style="width:100%;background:rgba(167,218,255,.18);border:1px solid #d8efff;color:#fff;padding:11px;font-family:'Cinzel',serif;letter-spacing:.14em;cursor:pointer;">BEGIN GENTLE REST</button>
+    <button onclick="closeRestMode()" style="margin-top:13px;background:none;border:0;color:#a9bfd6;font-family:Montserrat,sans-serif;font-size:.67rem;cursor:pointer;">Not now — continue exploring</button>
+  </section>
+</div>
+<div id="restStatus" role="status" aria-live="polite" style="position:fixed;top:82px;left:50%;transform:translateX(-50%);z-index:150;display:none;background:rgba(9,23,48,.92);border:1px solid rgba(191,226,255,.62);padding:10px 18px;color:#e7f5ff;font-size:.63rem;letter-spacing:.09em;text-align:center;pointer-events:all;">RESTING GENTLY · <button onclick="endRestMode()" style="background:none;border:0;color:#fff;text-decoration:underline;cursor:pointer;font:inherit;">RETURN WHEN READY</button></div>
 <!-- COMPANION HUD -->
 <div id="companionHUD" style="position:fixed;top:140px;left:22px;background:rgba(2,1,12,.85);border:1px solid rgba(212,175,55,.3);padding:10px 16px;max-width:240px;display:none;z-index:50;pointer-events:none;">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
@@ -162,7 +181,7 @@ const DIMENSIONS=[
 let renderer,scene,fpCam,tpCam,cam,clock,pivot,avatar,catBeam;
 let velF=0,velR=0,velY=0,yaw=0,pitch=0,lmb=0,rmb=0,mx=0,my=0,keys={};
 let pov='fp',orbRings=[],spinners=[],pillarGlow=[];
-let curDim=0,lastZoneT=0,freqV=4.2;
+let curDim=0,lastZoneT=0,freqV=4.2,isResting=false;
 let hoverMode=false,hoverAlt=5,sndOn=false,audioCtx=null,masterGain=null,reverbNode=null,musicOscs=[],chimeTimer=null,dimFreq=432;
 let scentGroup=null,scentParticles=[],dustMotes=null,dustAttr=null,dustN=0;
 const SCENT_COLORS={
@@ -208,6 +227,7 @@ function initWorld(){
   cv.addEventListener('mousemove',e=>{mx=e.movementX;my=e.movementY;});
   cv.addEventListener('wheel',e=>{e.preventDefault();if(!hoverMode){velY-=e.deltaY*0.003;velY=Math.max(-15,Math.min(15,velY));}else{hoverAlt=Math.max(0.5,Math.min(120,hoverAlt-e.deltaY*0.01));}},{passive:false});
   addEventListener('keydown',e=>{
+    if(e.key==='Escape'){ if(isResting){endRestMode();return;} if(document.getElementById('soulPicker').style.display==='flex') cancelSoulPicker(); else if(curDim!==0) returnToHub(); else window.location.href='index'; return; }
   keys[e.code]=1;
   // Simplified key mappings for movement
   if(e.code==='KeyW'||e.code==='ArrowUp')keys.w=1;
@@ -461,8 +481,6 @@ function smoothLantern(x, y, z, g, color) {
   if (grp) grp.add(lanternGroup);
   return lanternGroup;
 }
-
-let texCache = {};
 
 function buildHub(){
   // Smooth marble ground
@@ -1019,65 +1037,44 @@ function buildD8(g){
 }
 
 function buildHeaven(g){
-  const goldMat = pbrMat(0xffd700, { emissive: 0xffd700, emissiveIntensity: 0.2, roughness: 0.2, metalness: 0.8 });
-  const quartzMat = pbrMat(0xfff8ee, { roughness: 0.15, metalness: 0.3 });
+  const goldMat = pbrMat(0xffd700, { emissive: 0xffd700, emissiveIntensity: 0.25, roughness: 0.18, metalness: 0.75 });
+  const pearlMat = pbrMat(0xfff8ee, { emissive: 0xffefd0, emissiveIntensity: 0.08, roughness: 0.12, metalness: 0.2 });
+  const waterMat = pbrMat(0x78e8ff, { emissive: 0x46cfff, emissiveIntensity: 0.45, transparent: true, opacity: 0.7, roughness: 0.08 });
 
-  // Golden smooth terrain
-  smoothGround(g, 120, 0xffd700);
-
-  // Quartz floating islands
-  [[-25, 8, -25, 16], [28, -4, 22, 18], [-20, -6, 28, 14]].forEach(([ix, iy, iz, sz]) => {
-    const isl = new THREE.Mesh(new THREE.CylinderGeometry(sz / 2, sz / 2, 3, 48), quartzMat);
-    isl.position.set(ix, iy, iz); isl.castShadow = true; isl.receiveShadow = true; g.add(isl);
-    // Waterfall
-    const wf = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 12, 1, 6), pbrMat(0x00ffff, { transparent: true, opacity: 0.7, roughness: 0.1, emissive: 0x00ffff, emissiveIntensity: 0.3 }));
-    wf.position.set(ix + sz / 2, iy - 6, iz); wf.userData = { type: 'waterfall' }; g.add(wf);
+  // A luminous, explorable sanctuary: no gates, no required route, and open paths home.
+  smoothGround(g, 150, 0xf6d887);
+  const lake = new THREE.Mesh(new THREE.CircleGeometry(25, 64), waterMat);
+  lake.rotation.x = -Math.PI / 2; lake.position.set(0, 0.18, 0); g.add(lake);
+  for(let i=0;i<7;i++){
+    const a=i/7*Math.PI*2, x=Math.cos(a)*38, z=Math.sin(a)*38;
+    const pillar=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.35,22,40),pearlMat);
+    pillar.position.set(x,11,z);pillar.castShadow=true;g.add(pillar);
+    const crown=new THREE.Mesh(new THREE.TorusGeometry(2.2,.22,12,36),goldMat);
+    crown.position.set(x,22,z);crown.rotation.x=Math.PI/2;g.add(crown);spinners.push({m:crown,spd:.002});
+  }
+  // Open pavilion at the center.
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(12,40,24,0,Math.PI*2,0,Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.13,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+  dome.position.y=.2;g.add(dome);
+  const fountain=new THREE.Mesh(new THREE.CylinderGeometry(3.5,5,1.2,48),pearlMat);fountain.position.y=.6;g.add(fountain);
+  for(let i=0;i<18;i++){
+    const a=i/18*Math.PI*2, r=4+Math.random()*60, h=4+Math.random()*16;
+    const soul=new THREE.Mesh(new THREE.SphereGeometry(.28+Math.random()*.34,18,14),new THREE.MeshBasicMaterial({color:i%3===0?0xffd700:0xffffff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending}));
+    soul.position.set(Math.cos(a)*r,h,Math.sin(a)*r);soul.userData={baseY:h,phase:Math.random()*Math.PI*2,speed:.25+Math.random()*.35,type:'ascended',orbitR:r,orbitA:a};g.add(soul);
+  }
+  // Floating gardens and gentle crystal falls.
+  [[-34,8,-25,16],[32,12,-20,14],[-26,6,31,13],[28,8,28,15]].forEach(([x,y,z,size],i)=>{
+    const island=new THREE.Mesh(new THREE.CylinderGeometry(size/2,size*.62,3.5,48),pearlMat);island.position.set(x,y,z);island.castShadow=true;g.add(island);
+    smoothTree(x-3,z+2,g,i%2?0xffffff:0xffe7a1,0xd4af37);
+    const fall=new THREE.Mesh(new THREE.PlaneGeometry(1.6,15),waterMat);fall.position.set(x+size/2,y-7,z);fall.userData={type:'heavenfall',baseY:y-7,phase:i};g.add(fall);
   });
-
-  // White smooth Greek columns
-  for (let i = 0; i < 12; i++) {
-    const angle = (i / 12) * Math.PI * 2, r = 40;
-    const px = Math.cos(angle) * r, pz = Math.sin(angle) * r;
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.2, 20, 48), quartzMat);
-    pillar.position.set(px, 10, pz); pillar.castShadow = true; g.add(pillar);
-    const cap = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.5, 2.8), goldMat);
-    cap.position.set(px, 21, pz); cap.castShadow = true; g.add(cap);
-    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 80, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xffffd0, transparent: true, opacity: 0.2, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
-    beam.position.set(px, 50, pz); g.add(beam);
+  for(let i=0;i<80;i++){
+    const petal=new THREE.Mesh(new THREE.PlaneGeometry(.3,.5),new THREE.MeshBasicMaterial({color:i%2?0xffffff:0xffe699,transparent:true,opacity:.75,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    petal.position.set((Math.random()-.5)*120,2+Math.random()*34,(Math.random()-.5)*120);petal.userData={type:'heavenPetal',baseY:petal.position.y,phase:Math.random()*Math.PI*2};g.add(petal);
   }
-
-  // Golden trees with white foliage
-  for (let i = 0; i < 20; i++) {
-    const a = Math.random() * Math.PI * 2, r = 10 + Math.random() * 45;
-    smoothTree(Math.cos(a) * r, Math.sin(a) * r, g, 0xffffff, 0xffd700);
-  }
-
-  // Rainbow bridges — smooth torus arcs
-  const rainbowCols = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x8b00ff];
-  for (let t = 0; t <= 1; t += 0.02) {
-    const bx = THREE.MathUtils.lerp(-25, 0, t);
-    const bz = THREE.MathUtils.lerp(-25, 0, t);
-    const by = Math.sin(t * Math.PI) * 6 + 4;
-    const seg = new THREE.Mesh(new THREE.SphereGeometry(0.6, 20, 16), pbrMat(rainbowCols[Math.floor(t * 100) % 6], { emissive: rainbowCols[Math.floor(t * 100) % 6], emissiveIntensity: 0.3, roughness: 0.2 }));
-    seg.position.set(bx, by, bz); g.add(seg);
-  }
-
-  // Crystal water
-  smoothWater(0, 15, 12, 25, g, { color: 0x00ffff, opacity: 0.6, emissive: 0x00ffff, emissiveIntensity: 0.2 });
-
-  // Ascended souls
-  for (let i = 0; i < 50; i++) {
-    const a = (i / 50) * Math.PI * 2, r = 10 + Math.random() * 65;
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.6, 28, 22), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }));
-    s.position.set(Math.cos(a) * r, 3 + Math.random() * 20, Math.sin(a) * r);
-    s.userData = { baseY: s.position.y, phase: Math.random() * Math.PI * 2, speed: 0.4, type: 'ascended', orbitR: r, orbitA: a };
-    g.add(s);
-  }
-
-  // Golden light
-  g.add(new THREE.HemisphereLight(0xffd700, 0xfff8dc, 0.8));
+  const sky=new THREE.Mesh(new THREE.SphereGeometry(260,32,24),new THREE.MeshBasicMaterial({color:0x52377d,transparent:true,opacity:.32,side:THREE.BackSide}));g.add(sky);
+  g.add(new THREE.HemisphereLight(0xfff1ba,0x9874c7,1.25));
+  g.add(new THREE.PointLight(0xffffff,3,130,0,25,0));
 }
-
 function checkPortals(t){
   if(curDim!==0||transitioning) return;
   if(t-lastZoneT<0.4) return;lastZoneT=t;
@@ -1213,22 +1210,38 @@ function beginIncarnation(dimId,soul){
       document.getElementById('compDot').style.boxShadow='0 0 8px #'+col.toString(16).padStart(6,'0');
       // Set incarnation message
       const messages={
-        1:'You incarnate into the Material World. I am '+soul.name+'. I will gather souls here and guide them upward. Follow me.',
+        1:'You are in the Material World. I am '+soul.name+'. I can accompany you if you choose.',
         2:'The Crystal World awakens around you. I am '+soul.name+'. Let me show you the awakening.',
         3:'Welcome to Paradise Gardens. I am '+soul.name+'. This is the highest physical form. Many choose to stay. Will you?',
         4:'You exist without form now. I am '+soul.name+'. Flow with me.',
         5:'Pure consciousness. I am '+soul.name+'. We are thought together now.',
         6:'The Frequency Grid. I am '+soul.name+'. Everything is vibration. Feel it.',
-        7:'You have arrived. Heaven. I am '+soul.name+'. You are home.'
+        7:'You have arrived in Heaven. I am '+soul.name+'. Rest, explore, or return whenever you choose.'
       };
       document.getElementById('compMessage').textContent=messages[dimId]||('I am '+soul.name+'. I will guide you through this world.');
     } else {
       document.getElementById('companionHUD').style.display='none';
     }
     setDimMusic(dimId);spawnScent(dimId);
-    clearScent();setDimMusic(0);
     ov.style.opacity='0';setTimeout(()=>ov.remove(),600);transitioning=false;
   },600);
+}
+
+function openRestMode(){
+  document.getElementById('restMode').style.display='flex';
+  document.getElementById('restLength').focus();
+}
+function closeRestMode(){ document.getElementById('restMode').style.display='none'; }
+function beginRestMode(){
+  isResting=true;velF=velR=velY=0;hoverMode=true;hoverAlt=pivot.position.y;
+  if(sndOn) toggleSnd();
+  const rhythm=document.getElementById('restLength').value;
+  document.getElementById('restStatus').innerHTML='RESTING GENTLY · '+rhythm.toUpperCase()+' · <button onclick="endRestMode()" style="background:none;border:0;color:#fff;text-decoration:underline;cursor:pointer;font:inherit;">RETURN WHEN READY</button>';
+  document.getElementById('restStatus').style.display='block';
+  closeRestMode();
+}
+function endRestMode(){
+  isResting=false;document.getElementById('restStatus').style.display='none';
 }
 
 function returnToHub(){
@@ -1253,7 +1266,10 @@ function returnToHub(){
 
 async function loadSoulNPCs(){
   try{
-    const res=await fetch('data/souls.json');const souls=await res.json();
+    const res=await fetch('data/souls.json');
+    if(!res.ok) throw new Error('World Soul summary unavailable');
+    const soulSnapshot=await res.json();
+    const souls=Array.isArray(soulSnapshot) ? soulSnapshot : [];
     const colors={light:0xffd700,shadow:0x9400d3,fire:0xff4500,water:0x00bfff,earth:0x8b6914,air:0xe0e0e0,void:0x4b0082,cosmos:0x8a2be2,time:0xff00ff,dream:0xda70d6};
     souls.forEach((s,i)=>{
       const angle=(i/souls.length)*Math.PI*2,radius=20+Math.random()*16,x=Math.cos(angle)*radius,z=Math.sin(angle)*radius,y=3+Math.random()*5;
@@ -1262,11 +1278,13 @@ async function loadSoulNPCs(){
       const glow=new THREE.Mesh(new THREE.SphereGeometry(0.9,8,8),new THREE.MeshBasicMaterial({color:colors[s.element]||0xd4af37,transparent:true,opacity:0.2,blending:THREE.AdditiveBlending}));
       glow.position.copy(orb.position);orb.userData.glow=glow;scene.add(glow);soulNPCs.push(orb);
     });
-    allSoulsData=souls;console.log('Loaded '+souls.length+' World Soul NPCs');
+    allSoulsData=souls;
+    if(souls.length) console.log('Loaded '+souls.length+' World Soul NPCs');
+    else console.info('World Soul compact summary loaded; guide selection remains optional.');
     const hud=document.createElement('div');hud.id='soulHUD';
     hud.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);border:1px solid rgba(212,175,55,.4);padding:10px 20px;font-family:Cinzel,serif;color:#d4af37;font-size:.72rem;letter-spacing:.12em;z-index:50;display:none;pointer-events:none;border-radius:2px;text-align:center;max-width:400px;';
     document.body.appendChild(hud);
-  }catch(e){console.error('Failed to load souls:',e);setTimeout(loadSoulNPCs,10000);}
+  }catch(e){console.error('Failed to load World Soul summary:',e);allSoulsData=[];}
 }
 
 function updateSoulNPCs(t){
@@ -1286,6 +1304,8 @@ function updateSoulNPCs(t){
     if(obj.userData&&obj.userData.type==='water'){obj.material.opacity=0.6+Math.sin(t*2+obj.position.x*0.1)*0.15;}
     if(obj.userData&&obj.userData.type==='waterfall'){obj.material.opacity=0.4+Math.sin(t*3+obj.position.x)*0.1;obj.position.y=12+Math.sin(t*1.5)*0.3;}
     if(obj.userData&&obj.userData.type==='butterfly'){const bf=obj;const a=t*bf.userData.speed*0.2+bf.userData.orbitA;bf.position.x=Math.cos(a)*bf.userData.orbitR;bf.position.z=Math.sin(a)*bf.userData.orbitR;bf.position.y=bf.userData.baseY+Math.sin(t*bf.userData.speed)*2;const flap=Math.sin(t*15+bf.userData.phase)*0.6;bf.userData.wings[0].rotation.y=flap;bf.userData.wings[1].rotation.y=-flap;}
+    if(obj.userData&&obj.userData.type==='heavenfall'){obj.material.opacity=.5+Math.sin(t*2+obj.userData.phase)*.18;obj.position.y=obj.userData.baseY+Math.sin(t+obj.userData.phase)*.35;}
+    if(obj.userData&&obj.userData.type==='heavenPetal'){obj.position.y-=.018;if(obj.position.y<1)obj.position.y=obj.userData.baseY;obj.position.x+=Math.sin(t+obj.userData.phase)*.012;obj.rotation.z+=.008;}
     if(obj.userData&&obj.userData.type==='petal'){obj.position.y-=0.03;obj.rotation.z+=0.02;if(obj.position.y<0)obj.position.y=obj.userData.baseY;obj.position.x+=Math.sin(t+obj.userData.phase)*0.02;}
     if(obj.userData&&obj.userData.type==='ripple'){const r=obj.userData.baseR+t*5+obj.userData.phase*3;if(r<40){obj.scale.setScalar(r);obj.material.opacity=Math.max(0,0.3-r/40*0.3);}else{obj.scale.setScalar(1);}}
     if(obj.userData&&obj.userData.type==='flower'){obj.rotation.y=Math.sin(t*0.5+obj.userData.phase)*0.3;}
@@ -1363,6 +1383,7 @@ function updateAvatar(t,moving){
 }
 
 function updateMovement(dt){
+  if(isResting) return false;
   const ACC=14,DRAG=0.06,MAXV=18;
   let tF=0;if(lmb||keys.w)tF=ACC;if(rmb||keys.s)tF=-ACC*.65;
   velF+=(tF-velF)*(tF!==0?.08:DRAG);velF*=(1-DRAG);velF=Math.max(-MAXV,Math.min(MAXV,velF));
@@ -1505,40 +1526,6 @@ function animate(){
 }
 </script>
 
-<!-- YouTube Ambient Music Player (Ancient Greek Bath Playlist) -->
-<div id="ytPlayerWrap" style="position:fixed;bottom:-200px;right:-200px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1;">
-  <div id="ytPlayer"></div>
-</div>
-<script src="https://www.youtube.com/iframe_api"></script>
-<script>
-let ytPlayer = null;
-let ytReady = false;
-function onYouTubeIframeAPIReady(){
-  ytPlayer = new YT.Player('ytPlayer', {
-    videoId: 'BgkwdodiIDA',
-    listType: 'playlist',
-    playlist: 'BgkwdodiIDA',
-    loop: 1,
-    playerVars: {
-      'autoplay': 0,
-      'controls': 0,
-      'disablekb': 1,
-      'fs': 0,
-      'modestbranding': 1,
-      'rel': 0,
-      'showinfo': 0,
-      'iv_load_policy': 3,
-      'start_radio': 1
-    },
-    events: {
-      'onReady': function(e){ ytReady = true; e.target.setVolume(60); },
-      'onStateChange': function(e){ if(e.data === YT.PlayerState.ENDED){ e.target.playVideo(); } }
-    }
-  });
-}
-function ytPlay(){ if(ytReady && ytPlayer){ ytPlayer.playVideo(); ytPlayer.setVolume(60); } }
-function ytPause(){ if(ytReady && ytPlayer){ ytPlayer.pauseVideo(); } }
-function ytSetVol(v){ if(ytReady && ytPlayer){ ytPlayer.setVolume(v); } }
-</script>
+<script>function ytPlay(){} function ytPause(){} function ytSetVol(){}</script>
 </body>
 </html>
