@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sovereign Citizen Dashboard | somasynth.world</title>
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --color-bg: #070509;
@@ -831,7 +828,7 @@
         </ul>
 
         <div class="sidebar-footer">
-            <button class="biotic-mode-btn" onclick="goToBioticView()">
+            <button class="biotic-mode-btn" onclick="window.location.href='portal_biotic_dashboard'">
                 <!-- Biotic Hexagram/Keyhole Icon -->
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5" />
@@ -846,13 +843,13 @@
     <main class="main-content">
         <header class="dashboard-header">
             <div class="welcome-title-area">
-                <h2>Citizen Portal</h2>
-                <h1>Welcome home, Aurelius Vance</h1>
+                <h2>Open Community Dashboard</h2>
+                <h1>Welcome — explore freely</h1>
             </div>
 
             <div class="sovereign-badge">
                 <span class="badge-dot"></span>
-                <span class="badge-text">Sovereign ID: SS-8809-DELTA</span>
+                <span class="badge-text">OPEN ACCESS · NO LOGIN REQUIRED</span>
             </div>
         </header>
 
@@ -862,7 +859,7 @@
             <!-- A. YOUR SOVEREIGN PROFILE (Col 4) -->
             <section class="card col-4" id="profileCard">
                 <div class="card-header">
-                    <h3 class="card-title">Sovereign Profile</h3>
+                    <h3 class="card-title">Visitor Choice & Wellbeing</h3>
                     <svg class="card-icon" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                     </svg>
@@ -894,7 +891,7 @@
             <!-- B. YOUR CONTRIBUTIONS (Col 4) -->
             <section class="card col-4">
                 <div class="card-header">
-                    <h3 class="card-title">Sovereign Contributions</h3>
+                    <h3 class="card-title">Shared Resources</h3>
                     <svg class="card-icon" viewBox="0 0 24 24">
                         <path d="M12 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 2c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2h12v-2zm-6-9C6.48 4 2 8.48 2 14s4.48 10 10 10 10-4.48 10-10S17.52 4 12 4zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
                     </svg>
@@ -1016,7 +1013,7 @@
             <!-- D. AMENITIES (Col 6) -->
             <section class="card col-6" id="amenitiesCard">
                 <div class="card-header">
-                    <h3 class="card-title">Exclusive Amenities</h3>
+                    <h3 class="card-title">Available Amenities</h3>
                     <svg class="card-icon" viewBox="0 0 24 24">
                         <path d="M12 2c1.1 0 2 .9 2 2v1.13c3.04.46 5.42 2.84 5.88 5.88H21c1.1 0 2 .9 2 2v1c0 1.1-.9 2-2 2h-1.13c-.46 3.04-2.84 5.42-5.88 5.88V21c0 1.1-.9 2-2 2h-1a2 2 0 0 1-2-2v-1.13c-3.04-.46-5.42-2.84-5.88-5.88H3c-1.1 0-2-.9-2-2v-1c0-1.1.9-2 2-2h1.13c.46-3.04 2.84-5.42 5.88-5.88V4c0-1.1.9-2 2-2h1zm0 4.1C8.74 6.1 6.1 8.74 6.1 12c0 3.26 2.64 5.9 5.9 5.9s5.9-2.64 5.9-5.9c0-3.26-2.64-5.9-5.9-5.9z"/>
                     </svg>
@@ -1049,7 +1046,7 @@
                             <input type="datetime-local" id="bookingTime" class="input-styled" required value="2026-07-30T14:00">
                         </div>
                     </div>
-                    <button type="submit" class="btn-gold-card" style="margin-top: 8px;">Book Sovereign Space</button>
+                    <button type="submit" class="btn-gold-card" style="margin-top: 8px;">Request a Space</button>
                 </form>
             </section>
 
@@ -1085,7 +1082,7 @@
             <!-- G. SUGGESTIONS (Col 6) -->
             <section class="card col-6">
                 <div class="card-header">
-                    <h3 class="card-title">Sovereign Directives</h3>
+                    <h3 class="card-title">Community Directives</h3>
                     <svg class="card-icon" viewBox="0 0 24 24">
                         <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
                     </svg>
